@@ -1,0 +1,470 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="2320" viewBox="0 0 1440 2320" fill="none">
+  <defs>
+    <!-- Glow filters -->
+    <filter id="neonGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="45" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <filter id="subtleGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="12" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <linearGradient id="heroCardGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1E1E1E" />
+      <stop offset="100%" stop-color="#141414" />
+    </linearGradient>
+    <linearGradient id="shoeBody" x1="0" y1="0" x2="1" y2="0.4">
+      <stop offset="0%" stop-color="#383838" />
+      <stop offset="50%" stop-color="#1F1F1F" />
+      <stop offset="100%" stop-color="#121212" />
+    </linearGradient>
+  </defs>
+
+  <!-- ==================== 0. BASE BACKGROUND (#121212) ==================== -->
+  <rect id="Background-Base" width="1440" height="2320" fill="#121212" />
+
+  <!-- ==================== 1. NAVBAR (80px) ==================== -->
+  <g id="Navbar">
+    <rect width="1440" height="80" fill="#121212" />
+    <line x1="0" y1="80" x2="1440" y2="80" stroke="#2A2A2A" stroke-width="1.5" />
+
+    <!-- Wordmark Logo VELOX -->
+    <g id="Logo-VELOX" transform="translate(80, 50)">
+      <text font-family="Space Grotesk, Inter, Arial Black, sans-serif" font-size="28" font-weight="800" letter-spacing="4" fill="#FFFFFF">VELO<tspan fill="#39FF14">X</tspan></text>
+    </g>
+
+    <!-- Nav Links (R1: 6 Main Routes) -->
+    <g id="Nav-Links" font-family="Inter, Segoe UI, sans-serif" font-size="14" font-weight="600">
+      <text x="430" y="45" fill="#39FF14">INICIO (/)</text>
+      <rect x="430" y="53" width="66" height="2" fill="#39FF14" />
+      <text x="536" y="45" fill="#D1D5DB">CATÁLOGO (/productos)</text>
+      <text x="738" y="45" fill="#D1D5DB">TECNOLOGÍA (/tecnologia)</text>
+      <text x="958" y="45" fill="#D1D5DB">DASHBOARD (/dashboard)</text>
+    </g>
+
+    <!-- Right Actions: Login + CartContext Badge -->
+    <g id="Nav-Actions" transform="translate(1150, 20)">
+      <!-- Login Button (/login) -->
+      <rect x="0" y="0" width="96" height="40" rx="8" fill="#2A2A2A" stroke="#3A3A3A" stroke-width="1" />
+      <text x="48" y="25" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF">ACCEDER</text>
+
+      <!-- Cart Button (/carrito) -->
+      <rect x="108" y="0" width="102" height="40" rx="8" fill="#39FF14" />
+      <text x="159" y="25" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" font-weight="800" fill="#121212">CARRITO (2)</text>
+    </g>
+  </g>
+
+  <!-- ==================== 2. HERO SECTION ==================== -->
+  <g id="Hero-Section" transform="translate(80, 120)">
+    <!-- Left Column: Copywriting & CTAs -->
+    <g id="Hero-Copy" transform="translate(0, 30)">
+      <!-- Tag Pill -->
+      <rect x="0" y="0" width="290" height="30" rx="6" fill="#1D2B1A" stroke="#39FF14" stroke-width="1" />
+      <circle cx="16" cy="15" r="4" fill="#39FF14" />
+      <text x="30" y="19" font-family="Space Grotesk, monospace" font-size="11" font-weight="700" letter-spacing="1.5" fill="#39FF14">SERIE CARBON PRO • 2026</text>
+
+      <!-- H1 Headline -->
+      <text x="0" y="82" font-family="Space Grotesk, Arial Black, sans-serif" font-size="56" font-weight="800" fill="#FFFFFF" letter-spacing="-1">VELOCIDAD</text>
+      <text x="0" y="144" font-family="Space Grotesk, Arial Black, sans-serif" font-size="56" font-weight="800" fill="#39FF14" letter-spacing="-1">SIN FRICCIÓN.</text>
+      <text x="0" y="204" font-family="Space Grotesk, Arial Black, sans-serif" font-size="48" font-weight="800" fill="#FFFFFF" letter-spacing="-1">RENDIMIENTO PURO.</text>
+
+      <!-- Body Copy -->
+      <text x="0" y="246" font-family="Inter, sans-serif" font-size="16" fill="#D1D5DB">Ingeniería biomecánica con placa de fibra de carbono de doble</text>
+      <text x="0" y="270" font-family="Inter, sans-serif" font-size="16" fill="#D1D5DB">densidad. Diseñado para atletas que buscan romper su marca.</text>
+
+      <!-- CTA Buttons (Brand Voice: ACELERAR / ANALIZAR RENDIMIENTO) -->
+      <g id="Hero-CTAs" transform="translate(0, 305)">
+        <rect x="0" y="0" width="220" height="52" rx="8" fill="#39FF14" />
+        <text x="110" y="31" text-anchor="middle" font-family="Inter, sans-serif" font-size="14" font-weight="800" letter-spacing="1" fill="#121212">ACELERAR AHORA →</text>
+
+        <rect x="238" y="0" width="240" height="52" rx="8" fill="#2A2A2A" stroke="#444444" stroke-width="1.5" />
+        <text x="358" y="31" text-anchor="middle" font-family="Inter, sans-serif" font-size="14" font-weight="700" letter-spacing="0.8" fill="#FFFFFF">ANALIZAR RENDIMIENTO</text>
+      </g>
+
+      <!-- Technical KPIs -->
+      <g id="Hero-KPIs" transform="translate(0, 395)">
+        <g transform="translate(0, 0)">
+          <text x="0" y="24" font-family="Space Grotesk, sans-serif" font-size="28" font-weight="800" fill="#39FF14">168 g</text>
+          <text x="0" y="44" font-family="Inter, sans-serif" font-size="12" fill="#D1D5DB">Peso ultraligero (Talle 41)</text>
+        </g>
+        <line x1="155" y1="6" x2="155" y2="48" stroke="#2A2A2A" stroke-width="1.5" />
+        <g transform="translate(180, 0)">
+          <text x="0" y="24" font-family="Space Grotesk, sans-serif" font-size="28" font-weight="800" fill="#FFFFFF">+87%</text>
+          <text x="0" y="44" font-family="Inter, sans-serif" font-size="12" fill="#D1D5DB">Retorno de energía reactiva</text>
+        </g>
+        <line x1="365" y1="6" x2="365" y2="48" stroke="#2A2A2A" stroke-width="1.5" />
+        <g transform="translate(390, 0)">
+          <text x="0" y="24" font-family="Space Grotesk, sans-serif" font-size="28" font-weight="800" fill="#FFFFFF">8.0 mm</text>
+          <text x="0" y="44" font-family="Inter, sans-serif" font-size="12" fill="#D1D5DB">Drop aerodinámico oficial</text>
+        </g>
+      </g>
+    </g>
+
+    <!-- Right Column: Featured Shoe Showcase with Neon Glow -->
+    <g id="Hero-Visual" transform="translate(650, 0)">
+      <rect x="0" y="0" width="630" height="470" rx="12" fill="url(#heroCardGrad)" stroke="#2A2A2A" stroke-width="1.5" />
+
+      <!-- Subtle Neon Glow Behind Product (Brand Guidelines Page 3) -->
+      <ellipse cx="315" cy="240" rx="195" ry="95" fill="#39FF14" fill-opacity="0.22" filter="url(#neonGlow)" />
+
+      <!-- Technical Grid Overlay -->
+      <line x1="40" y1="90" x2="590" y2="90" stroke="#2A2A2A" stroke-dasharray="4 4" />
+      <line x1="40" y1="380" x2="590" y2="380" stroke="#2A2A2A" stroke-dasharray="4 4" />
+
+      <!-- Top Spec Badge inside Hero Card -->
+      <rect x="28" y="24" width="185" height="28" rx="6" fill="#2A2A2A" />
+      <text x="42" y="42" font-family="Space Grotesk, monospace" font-size="11" font-weight="700" fill="#39FF14">SKU: VLX-HYP-42-NEO</text>
+
+      <rect x="475" y="24" width="127" height="28" rx="6" fill="#182C15" stroke="#39FF14" stroke-width="1" />
+      <text x="538" y="42" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" font-weight="700" fill="#39FF14">STOCK ACTIVO</text>
+
+      <!-- Stylized Vector Sneaker Silhouette (Editable in Figma) -->
+      <g id="Sneaker-Vector-Render" transform="translate(85, 115)">
+        <!-- Shadow -->
+        <ellipse cx="230" cy="235" rx="200" ry="16" fill="#090909" />
+        <!-- Neon Carbon Midsole -->
+        <path d="M20 190 Q140 205 290 195 Q395 188 445 162 Q458 178 442 198 Q380 222 240 222 Q95 222 15 208 Z" fill="#39FF14" filter="url(#subtleGlow)" />
+        <!-- Upper Shoe Body -->
+        <path d="M35 188 L75 95 Q115 80 155 108 L245 65 Q275 58 295 85 L385 132 Q435 142 442 162 Q345 194 185 195 Q85 195 35 188 Z" fill="url(#shoeBody)" stroke="#4A4A4A" stroke-width="2" />
+        <!-- Neon Aerodynamic Stripes -->
+        <path d="M125 145 L285 115 L265 135 L110 162 Z" fill="#39FF14" />
+        <path d="M175 168 L335 142 L322 156 L165 178 Z" fill="#39FF14" fill-opacity="0.75" />
+        <!-- Collar & Tongue -->
+        <path d="M82 95 Q115 62 152 68 L175 102 Z" fill="#2A2A2A" stroke="#39FF14" stroke-width="1.5" />
+      </g>
+
+      <!-- Bottom Caption inside Hero Visual -->
+      <text x="32" y="422" font-family="Space Grotesk, sans-serif" font-size="22" font-weight="700" fill="#FFFFFF">VELOX HYPERION CARBON X</text>
+      <text x="32" y="446" font-family="Inter, sans-serif" font-size="13" fill="#D1D5DB">Categoría: Competición / Maratón • Placa Fibra de Carbono</text>
+      <text x="598" y="436" text-anchor="end" font-family="Space Grotesk, sans-serif" font-size="26" font-weight="800" fill="#39FF14">$219.900</text>
+    </g>
+  </g>
+
+  <!-- ==================== 3. FILTER BAR (FilterBar.jsx - Client Component) ==================== -->
+  <g id="FilterBar-Component" transform="translate(80, 640)">
+    <rect width="1280" height="88" rx="8" fill="#2A2A2A" stroke="#383838" stroke-width="1" />
+
+    <!-- Search Input (searchParams ?search=...) -->
+    <g id="Input-Search" transform="translate(20, 18)">
+      <rect width="360" height="52" rx="8" fill="#121212" stroke="#3F3F3F" stroke-width="1" />
+      <text x="20" y="31" font-family="Inter, sans-serif" font-size="13" fill="#9CA3AF">🔍 Buscar por nombre, descripción o SKU...</text>
+    </g>
+
+    <!-- Category Filter (?categoria=...) -->
+    <g id="Select-Categoria" transform="translate(396, 18)">
+      <rect width="200" height="52" rx="8" fill="#121212" stroke="#3F3F3F" stroke-width="1" />
+      <text x="16" y="21" font-family="Inter, sans-serif" font-size="10" font-weight="700" fill="#39FF14">CATEGORÍA</text>
+      <text x="16" y="39" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="#FFFFFF">Running &amp; Maratón ▾</text>
+    </g>
+
+    <!-- Brand Filter (?marca=...) -->
+    <g id="Select-Marca" transform="translate(612, 18)">
+      <rect width="180" height="52" rx="8" fill="#121212" stroke="#3F3F3F" stroke-width="1" />
+      <text x="16" y="21" font-family="Inter, sans-serif" font-size="10" font-weight="700" fill="#39FF14">MARCA</text>
+      <text x="16" y="39" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="#FFFFFF">VELOX Lab ▾</text>
+    </g>
+
+    <!-- Gender Filter (?genero=...) -->
+    <g id="Select-Genero" transform="translate(808, 18)">
+      <rect width="160" height="52" rx="8" fill="#121212" stroke="#3F3F3F" stroke-width="1" />
+      <text x="16" y="21" font-family="Inter, sans-serif" font-size="10" font-weight="700" fill="#39FF14">GÉNERO</text>
+      <text x="16" y="39" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="#FFFFFF">Unisex Pro ▾</text>
+    </g>
+
+    <!-- Size Pills (Talle) -->
+    <g id="Filter-Talles" transform="translate(984, 18)">
+      <rect x="0" y="0" width="48" height="52" rx="8" fill="#121212" stroke="#3F3F3F" />
+      <text x="24" y="31" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="13" font-weight="700" fill="#D1D5DB">40</text>
+
+      <rect x="56" y="0" width="48" height="52" rx="8" fill="#39FF14" />
+      <text x="80" y="31" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="13" font-weight="800" fill="#121212">41</text>
+
+      <rect x="112" y="0" width="48" height="52" rx="8" fill="#121212" stroke="#3F3F3F" />
+      <text x="136" y="31" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="13" font-weight="700" fill="#D1D5DB">42</text>
+
+      <rect x="168" y="0" width="108" height="52" rx="8" fill="#1A1A1A" stroke="#39FF14" stroke-width="1" />
+      <text x="222" y="31" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" font-weight="700" fill="#39FF14">FILTRAR (12)</text>
+    </g>
+  </g>
+
+  <!-- ==================== 4. CATALOG SECTION (ProductCard.jsx Grid) ==================== -->
+  <g id="Catalog-Section" transform="translate(80, 770)">
+    <!-- Section Header -->
+    <text x="0" y="28" font-family="Space Grotesk, sans-serif" font-size="28" font-weight="700" fill="#FFFFFF">CATÁLOGO DE ALTO RENDIMIENTO</text>
+    <text x="0" y="52" font-family="Inter, sans-serif" font-size="14" fill="#D1D5DB">Datos servidos por ProductoViewSet (NestedSerializer con Marca, Categoría y Variantes SKU)</text>
+    <text x="1280" y="34" text-anchor="end" font-family="Space Grotesk, monospace" font-size="13" font-weight="700" fill="#39FF14">MOSTRANDO 3 DE 12 RESULTADOS (PÁG. 1)</text>
+
+    <!-- ===== PRODUCT CARD 1 ===== -->
+    <g id="ProductCard-1" transform="translate(0, 80)">
+      <rect width="405" height="520" rx="8" fill="#2A2A2A" stroke="#383838" stroke-width="1" />
+      <!-- Image Box -->
+      <rect x="16" y="16" width="373" height="230" rx="6" fill="#181818" />
+      <ellipse cx="202" cy="140" rx="110" ry="45" fill="#39FF14" fill-opacity="0.16" filter="url(#subtleGlow)" />
+      <!-- Shoe Silhouette 1 -->
+      <path d="M75 165 L110 105 L180 112 L245 85 L315 128 L330 160 L75 165 Z" fill="#2E2E2E" stroke="#39FF14" stroke-width="2" />
+      <rect x="70" y="162" width="265" height="14" rx="6" fill="#39FF14" />
+
+      <!-- Badges (Badge.jsx) -->
+      <rect x="28" y="28" width="95" height="24" rx="4" fill="#121212" />
+      <text x="75" y="44" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" font-weight="700" fill="#39FF14">COMPETICIÓN</text>
+      <rect x="302" y="28" width="75" height="24" rx="4" fill="#182C15" />
+      <text x="339" y="44" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" font-weight="700" fill="#39FF14">STOCK: 14</text>
+
+      <!-- Card Info -->
+      <text x="24" y="278" font-family="Inter, sans-serif" font-size="12" font-weight="700" letter-spacing="1" fill="#9CA3AF">VELOX LAB • UNISEX</text>
+      <text x="24" y="306" font-family="Space Grotesk, sans-serif" font-size="22" font-weight="700" fill="#FFFFFF">VELOX AERO NITRO ELITE</text>
+      <text x="24" y="330" font-family="Inter, sans-serif" font-size="13" fill="#D1D5DB">Suela de carbono propulsiva y malla</text>
+      <text x="24" y="348" font-family="Inter, sans-serif" font-size="13" fill="#D1D5DB">ultraligera. SKU: VLX-AER-41-NEO</text>
+
+      <!-- Size Variant Selector Preview -->
+      <text x="24" y="382" font-family="Inter, sans-serif" font-size="11" font-weight="700" fill="#D1D5DB">TALLES DISPONIBLES (AR):</text>
+      <g transform="translate(24, 392)">
+        <rect x="0" y="0" width="38" height="28" rx="4" fill="#121212" />
+        <text x="19" y="18" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="12" fill="#D1D5DB">39</text>
+        <rect x="44" y="0" width="38" height="28" rx="4" fill="#121212" />
+        <text x="63" y="18" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="12" fill="#D1D5DB">40</text>
+        <rect x="88" y="0" width="38" height="28" rx="4" fill="#39FF14" />
+        <text x="107" y="18" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="12" font-weight="800" fill="#121212">41</text>
+        <rect x="132" y="0" width="38" height="28" rx="4" fill="#121212" />
+        <text x="151" y="18" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="12" fill="#D1D5DB">42</text>
+      </g>
+
+      <!-- Price & CTA (Button.jsx) -->
+      <text x="24" y="476" font-family="Space Grotesk, sans-serif" font-size="26" font-weight="800" fill="#FFFFFF">$189.500</text>
+      <rect x="195" y="446" width="186" height="46" rx="8" fill="#39FF14" />
+      <text x="288" y="474" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" font-weight="800" fill="#121212">AÑADIR AL CARRITO</text>
+    </g>
+
+    <!-- ===== PRODUCT CARD 2 ===== -->
+    <g id="ProductCard-2" transform="translate(437, 80)">
+      <rect width="405" height="520" rx="8" fill="#2A2A2A" stroke="#39FF14" stroke-width="1.5" />
+      <!-- Image Box -->
+      <rect x="16" y="16" width="373" height="230" rx="6" fill="#181818" />
+      <ellipse cx="202" cy="140" rx="110" ry="45" fill="#39FF14" fill-opacity="0.22" filter="url(#subtleGlow)" />
+      <!-- Shoe Silhouette 2 -->
+      <path d="M70 162 L105 98 L175 108 L250 78 L325 125 L335 160 L70 162 Z" fill="#242424" stroke="#FFFFFF" stroke-width="2" />
+      <rect x="68" y="160" width="270" height="15" rx="6" fill="#39FF14" />
+
+      <!-- Badges -->
+      <rect x="28" y="28" width="110" height="24" rx="4" fill="#39FF14" />
+      <text x="83" y="44" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" font-weight="800" fill="#121212">★ DESTACADO</text>
+      <rect x="302" y="28" width="75" height="24" rx="4" fill="#182C15" />
+      <text x="339" y="44" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" font-weight="700" fill="#39FF14">STOCK: 8</text>
+
+      <!-- Card Info -->
+      <text x="24" y="278" font-family="Inter, sans-serif" font-size="12" font-weight="700" letter-spacing="1" fill="#9CA3AF">VELOX LAB • MARATÓN</text>
+      <text x="24" y="306" font-family="Space Grotesk, sans-serif" font-size="22" font-weight="700" fill="#FFFFFF">VELOX VORTEX PRO X2</text>
+      <text x="24" y="330" font-family="Inter, sans-serif" font-size="13" fill="#D1D5DB">Doble cámara de nitrógeno inyectado</text>
+      <text x="24" y="348" font-family="Inter, sans-serif" font-size="13" fill="#D1D5DB">y agarre en pista húmeda. SKU: VLX-VOR-42</text>
+
+      <!-- Size Variant Selector Preview -->
+      <text x="24" y="382" font-family="Inter, sans-serif" font-size="11" font-weight="700" fill="#D1D5DB">TALLES DISPONIBLES (AR):</text>
+      <g transform="translate(24, 392)">
+        <rect x="0" y="0" width="38" height="28" rx="4" fill="#121212" />
+        <text x="19" y="18" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="12" fill="#D1D5DB">40</text>
+        <rect x="44" y="0" width="38" height="28" rx="4" fill="#121212" />
+        <text x="63" y="18" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="12" fill="#D1D5DB">41</text>
+        <rect x="88" y="0" width="38" height="28" rx="4" fill="#39FF14" />
+        <text x="107" y="18" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="12" font-weight="800" fill="#121212">42</text>
+        <rect x="132" y="0" width="38" height="28" rx="4" fill="#121212" />
+        <text x="151" y="18" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="12" fill="#D1D5DB">43</text>
+      </g>
+
+      <!-- Price & CTA -->
+      <text x="24" y="476" font-family="Space Grotesk, sans-serif" font-size="26" font-weight="800" fill="#39FF14">$214.000</text>
+      <rect x="195" y="446" width="186" height="46" rx="8" fill="#39FF14" />
+      <text x="288" y="474" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" font-weight="800" fill="#121212">ANALIZAR RENDIMIENTO</text>
+    </g>
+
+    <!-- ===== PRODUCT CARD 3 ===== -->
+    <g id="ProductCard-3" transform="translate(875, 80)">
+      <rect width="405" height="520" rx="8" fill="#2A2A2A" stroke="#383838" stroke-width="1" />
+      <!-- Image Box -->
+      <rect x="16" y="16" width="373" height="230" rx="6" fill="#181818" />
+      <ellipse cx="202" cy="140" rx="110" ry="45" fill="#39FF14" fill-opacity="0.14" filter="url(#subtleGlow)" />
+      <!-- Shoe Silhouette 3 -->
+      <path d="M72 164 L112 100 L185 112 L248 82 L320 128 L332 162 L72 164 Z" fill="#1F1F1F" stroke="#9CA3AF" stroke-width="2" />
+      <rect x="68" y="162" width="268" height="14" rx="6" fill="#39FF14" />
+
+      <!-- Badges -->
+      <rect x="28" y="28" width="95" height="24" rx="4" fill="#121212" />
+      <text x="75" y="44" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" font-weight="700" fill="#D1D5DB">TRAIL PRO</text>
+      <rect x="292" y="28" width="85" height="24" rx="4" fill="#3B1D1D" />
+      <text x="334" y="44" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" font-weight="700" fill="#F87171">ÚLTIMAS 3</text>
+
+      <!-- Card Info -->
+      <text x="24" y="278" font-family="Inter, sans-serif" font-size="12" font-weight="700" letter-spacing="1" fill="#9CA3AF">VELOX TRAIL • MONTAÑA</text>
+      <text x="24" y="306" font-family="Space Grotesk, sans-serif" font-size="22" font-weight="700" fill="#FFFFFF">VELOX TERRA GRIP GT</text>
+      <text x="24" y="330" font-family="Inter, sans-serif" font-size="13" fill="#D1D5DB">Tacos multidireccionales de 5mm y</text>
+      <text x="24" y="348" font-family="Inter, sans-serif" font-size="13" fill="#D1D5DB">membrana hidrofóbica. SKU: VLX-TER-43</text>
+
+      <!-- Size Variant Selector Preview -->
+      <text x="24" y="382" font-family="Inter, sans-serif" font-size="11" font-weight="700" fill="#D1D5DB">TALLES DISPONIBLES (AR):</text>
+      <g transform="translate(24, 392)">
+        <rect x="0" y="0" width="38" height="28" rx="4" fill="#121212" />
+        <text x="19" y="18" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="12" fill="#D1D5DB">41</text>
+        <rect x="44" y="0" width="38" height="28" rx="4" fill="#121212" />
+        <text x="63" y="18" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="12" fill="#D1D5DB">42</text>
+        <rect x="88" y="0" width="38" height="28" rx="4" fill="#39FF14" />
+        <text x="107" y="18" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="12" font-weight="800" fill="#121212">43</text>
+        <rect x="132" y="0" width="38" height="28" rx="4" fill="#121212" />
+        <text x="151" y="18" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="12" fill="#D1D5DB">44</text>
+      </g>
+
+      <!-- Price & CTA -->
+      <text x="24" y="476" font-family="Space Grotesk, sans-serif" font-size="26" font-weight="800" fill="#FFFFFF">$198.000</text>
+      <rect x="195" y="446" width="186" height="46" rx="8" fill="#39FF14" />
+      <text x="288" y="474" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" font-weight="800" fill="#121212">AÑADIR AL CARRITO</text>
+    </g>
+
+    <!-- DRF Pagination Bar ({ count, next, previous, results }) -->
+    <g id="Pagination-DRF" transform="translate(450, 628)">
+      <rect x="0" y="0" width="110" height="40" rx="8" fill="#2A2A2A" />
+      <text x="55" y="25" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" font-weight="600" fill="#9CA3AF">← Anterior</text>
+
+      <rect x="122" y="0" width="40" height="40" rx="8" fill="#39FF14" />
+      <text x="142" y="25" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="14" font-weight="800" fill="#121212">1</text>
+
+      <rect x="172" y="0" width="40" height="40" rx="8" fill="#2A2A2A" />
+      <text x="192" y="25" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="14" font-weight="700" fill="#FFFFFF">2</text>
+
+      <rect x="222" y="0" width="40" height="40" rx="8" fill="#2A2A2A" />
+      <text x="242" y="25" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="14" font-weight="700" fill="#FFFFFF">3</text>
+
+      <rect x="274" y="0" width="110" height="40" rx="8" fill="#2A2A2A" stroke="#39FF14" stroke-width="1" />
+      <text x="329" y="25" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" font-weight="700" fill="#39FF14">Siguiente →</text>
+    </g>
+  </g>
+
+  <!-- ==================== 5. PERFORMANCE MANIFESTO & CART DRAWER PREVIEW ==================== -->
+  <g id="Bottom-Showcase" transform="translate(80, 1485)">
+    <!-- Left: Technology / Brand Manifesto Banner -->
+    <g id="Manifesto-Card">
+      <rect width="760" height="470" rx="10" fill="#1B1B1B" stroke="#2A2A2A" stroke-width="1.5" />
+      <text x="36" y="48" font-family="Space Grotesk, monospace" font-size="12" font-weight="700" letter-spacing="1.5" fill="#39FF14">ARQUITECTURA FULL-STACK • INGENIERÍA VELOX</text>
+      <text x="36" y="92" font-family="Space Grotesk, sans-serif" font-size="32" font-weight="800" fill="#FFFFFF">SISTEMA DE VARIANTES POR SKU</text>
+      <text x="36" y="124" font-family="Inter, sans-serif" font-size="14" fill="#D1D5DB">Cada calzado conecta en tiempo real con el endpoint @action stock_por_talle</text>
+      <text x="36" y="146" font-family="Inter, sans-serif" font-size="14" fill="#D1D5DB">de Django REST Framework para garantizar disponibilidad exacta por color y número.</text>
+
+      <!-- 3 Feature Boxes inside Manifesto -->
+      <g transform="translate(36, 180)">
+        <rect x="0" y="0" width="216" height="150" rx="8" fill="#2A2A2A" />
+        <text x="20" y="36" font-family="Space Grotesk, sans-serif" font-size="22" font-weight="800" fill="#39FF14">01. SKU ÚNICO</text>
+        <text x="20" y="66" font-family="Inter, sans-serif" font-size="12" fill="#D1D5DB">Separación 3FN entre</text>
+        <text x="20" y="84" font-family="Inter, sans-serif" font-size="12" fill="#D1D5DB">Producto conceptual y</text>
+        <text x="20" y="102" font-family="Inter, sans-serif" font-size="12" fill="#D1D5DB">VarianteProducto física.</text>
+
+        <rect x="236" y="0" width="216" height="150" rx="8" fill="#2A2A2A" />
+        <text x="256" y="36" font-family="Space Grotesk, sans-serif" font-size="22" font-weight="800" fill="#39FF14">02. JWT COOKIE</text>
+        <text x="256" y="66" font-family="Inter, sans-serif" font-size="12" fill="#D1D5DB">Autenticación segura</text>
+        <text x="256" y="84" font-family="Inter, sans-serif" font-size="12" fill="#D1D5DB">con Server Actions y</text>
+        <text x="256" y="102" font-family="Inter, sans-serif" font-size="12" fill="#D1D5DB">Cookies HTTP-Only.</text>
+
+        <rect x="472" y="0" width="216" height="150" rx="8" fill="#2A2A2A" />
+        <text x="492" y="36" font-family="Space Grotesk, sans-serif" font-size="22" font-weight="800" fill="#39FF14">03. ZOD + RHF</text>
+        <text x="492" y="66" font-family="Inter, sans-serif" font-size="12" fill="#D1D5DB">Validación estricta con</text>
+        <text x="492" y="84" font-family="Inter, sans-serif" font-size="12" fill="#D1D5DB">paridad snake_case</text>
+        <text x="492" y="102" font-family="Inter, sans-serif" font-size="12" fill="#D1D5DB">hacia Serializers DRF.</text>
+      </g>
+
+      <!-- Design Tokens Reference Bar -->
+      <g transform="translate(36, 365)">
+        <text x="0" y="18" font-family="Space Grotesk, monospace" font-size="11" font-weight="700" fill="#9CA3AF">TOKENS OFICIALES TAILWIND CSS v4:</text>
+        <rect x="0" y="32" width="120" height="36" rx="6" fill="#121212" stroke="#444" />
+        <text x="60" y="54" text-anchor="middle" font-family="Space Grotesk, monospace" font-size="11" fill="#FFF">Base #121212</text>
+
+        <rect x="132" y="32" width="135" height="36" rx="6" fill="#2A2A2A" stroke="#444" />
+        <text x="199" y="54" text-anchor="middle" font-family="Space Grotesk, monospace" font-size="11" fill="#FFF">Surface #2A2A2A</text>
+
+        <rect x="279" y="32" width="135" height="36" rx="6" fill="#39FF14" />
+        <text x="346" y="54" text-anchor="middle" font-family="Space Grotesk, monospace" font-size="11" font-weight="800" fill="#121212">Accent #39FF14</text>
+
+        <rect x="426" y="32" width="125" height="36" rx="6" fill="#FFFFFF" />
+        <text x="488" y="54" text-anchor="middle" font-family="Space Grotesk, monospace" font-size="11" font-weight="800" fill="#121212">Text 1 #FFFFFF</text>
+
+        <rect x="563" y="32" width="125" height="36" rx="6" fill="#D1D5DB" />
+        <text x="625" y="54" text-anchor="middle" font-family="Space Grotesk, monospace" font-size="11" font-weight="800" fill="#121212">Text 2 #D1D5DB</text>
+      </g>
+    </g>
+
+    <!-- Right: CartContext / Quick Checkout Widget Preview (R5 + R6) -->
+    <g id="CartContext-Widget" transform="translate(795, 0)">
+      <rect width="485" height="470" rx="10" fill="#2A2A2A" stroke="#39FF14" stroke-width="1.5" />
+      <text x="28" y="42" font-family="Space Grotesk, sans-serif" font-size="20" font-weight="800" fill="#FFFFFF">RESUMEN DE COMPRA (CartContext)</text>
+      <text x="457" y="42" text-anchor="end" font-family="Space Grotesk, monospace" font-size="11" font-weight="700" fill="#39FF14">2 ITEMS</text>
+      <line x1="28" y1="58" x2="457" y2="58" stroke="#3A3A3A" />
+
+      <!-- Cart Item 1 -->
+      <g transform="translate(28, 76)">
+        <rect width="429" height="72" rx="8" fill="#181818" />
+        <text x="16" y="28" font-family="Space Grotesk, sans-serif" font-size="15" font-weight="700" fill="#FFFFFF">1x VELOX AERO NITRO ELITE</text>
+        <text x="16" y="50" font-family="Inter, sans-serif" font-size="12" fill="#9CA3AF">Talle: 41 AR • Color: Carbon/Neón • SKU: VLX-AER-41</text>
+        <text x="412" y="42" text-anchor="end" font-family="Space Grotesk, sans-serif" font-size="16" font-weight="700" fill="#39FF14">$189.500</text>
+      </g>
+
+      <!-- Cart Item 2 -->
+      <g transform="translate(28, 160)">
+        <rect width="429" height="72" rx="8" fill="#181818" />
+        <text x="16" y="28" font-family="Space Grotesk, sans-serif" font-size="15" font-weight="700" fill="#FFFFFF">1x VELOX VORTEX PRO X2</text>
+        <text x="16" y="50" font-family="Inter, sans-serif" font-size="12" fill="#9CA3AF">Talle: 42 AR • Color: Negro/Verde • SKU: VLX-VOR-42</text>
+        <text x="412" y="42" text-anchor="end" font-family="Space Grotesk, sans-serif" font-size="16" font-weight="700" fill="#39FF14">$214.000</text>
+      </g>
+
+      <!-- RHF + Zod Input Preview (snake_case) -->
+      <g transform="translate(28, 250)">
+        <text x="0" y="16" font-family="Inter, sans-serif" font-size="11" font-weight="700" fill="#D1D5DB">MÉTODO DE PAGO (metodo_pago — OrderSchema Zod):</text>
+        <rect x="0" y="26" width="429" height="44" rx="6" fill="#121212" stroke="#3F3F3F" />
+        <text x="16" y="53" font-family="Inter, sans-serif" font-size="13" fill="#FFFFFF">💳 Tarjeta de Crédito / Transferencia Instantánea ▾</text>
+      </g>
+
+      <!-- Total & Submit -->
+      <line x1="28" y1="342" x2="457" y2="342" stroke="#3A3A3A" />
+      <text x="28" y="376" font-family="Inter, sans-serif" font-size="14" font-weight="600" fill="#D1D5DB">TOTAL A PAGAR:</text>
+      <text x="457" y="380" text-anchor="end" font-family="Space Grotesk, sans-serif" font-size="28" font-weight="800" fill="#39FF14">$403.500</text>
+
+      <rect x="28" y="400" width="429" height="48" rx="8" fill="#39FF14" />
+      <text x="242" y="429" text-anchor="middle" font-family="Inter, sans-serif" font-size="14" font-weight="800" letter-spacing="1" fill="#121212">ADQUIRIR Y CONFIRMAR PEDIDO (POST /api/pedidos/)</text>
+    </g>
+  </g>
+
+  <!-- ==================== 6. FOOTER (Footer.jsx - Server Component) ==================== -->
+  <g id="Footer-Component" transform="translate(0, 2020)">
+    <rect width="1440" height="300" fill="#0D0D0D" />
+    <line x1="0" y1="0" x2="1440" y2="0" stroke="#2A2A2A" stroke-width="1.5" />
+
+    <g transform="translate(80, 55)">
+      <text font-family="Space Grotesk, Arial Black, sans-serif" font-size="30" font-weight="800" letter-spacing="4" fill="#FFFFFF">VELO<tspan fill="#39FF14">X</tspan></text>
+      <text x="0" y="36" font-family="Inter, sans-serif" font-size="13" fill="#9CA3AF">Velocidad sin fricción. Rendimiento en cada paso. Diseñado para el movimiento.</text>
+      <text x="0" y="58" font-family="Inter, sans-serif" font-size="12" fill="#6B7280">Evaluación Final Integradora (EFI 2026) — ITEC Río Cuarto</text>
+      <text x="0" y="78" font-family="Inter, sans-serif" font-size="12" fill="#6B7280">Ingeniería de Software (Prof. Facundo Lemo) &amp; Programación III (Prof. Valentino Arballo)</text>
+
+      <!-- Footer Columns -->
+      <g transform="translate(650, -10)" font-family="Inter, sans-serif" font-size="13">
+        <text x="0" y="0" font-weight="700" fill="#39FF14">RUTAS NEXT.JS (R1)</text>
+        <text x="0" y="28" fill="#D1D5DB">/ (Landing &amp; Hero)</text>
+        <text x="0" y="50" fill="#D1D5DB">/productos (Catálogo)</text>
+        <text x="0" y="72" fill="#D1D5DB">/productos/[id] (Ficha SKU)</text>
+        <text x="0" y="94" fill="#D1D5DB">/carrito &amp; /login</text>
+        <text x="0" y="116" fill="#D1D5DB">/dashboard/pedidos/[id]</text>
+      </g>
+
+      <g transform="translate(940, -10)" font-family="Inter, sans-serif" font-size="13">
+        <text x="0" y="0" font-weight="700" fill="#39FF14">ENDPOINTS DRF (API)</text>
+        <text x="0" y="28" fill="#D1D5DB">GET /api/productos/ (Paginado)</text>
+        <text x="0" y="50" fill="#D1D5DB">GET /api/productos/destacados/</text>
+        <text x="0" y="72" fill="#D1D5DB">GET /api/productos/{id}/stock_por_talle/</text>
+        <text x="0" y="94" fill="#D1D5DB">POST /api/pedidos/ &amp; cancelar_pedido/</text>
+        <text x="0" y="116" fill="#D1D5DB">GET /api/docs/ (Swagger OpenAPI 3)</text>
+      </g>
+    </g>
+
+    <line x1="80" y1="225" x2="1360" y2="225" stroke="#1F1F1F" />
+    <text x="80" y="258" font-family="Inter, sans-serif" font-size="12" fill="#6B7280">© 2026 Equipo VELOX (4 Integrantes) • Plantilla Oficial UI v1.0 — Lista para importar en Figma (Arrastrar archivo .svg al lienzo)</text>
+  </g>
+</svg>
