@@ -112,7 +112,30 @@ Este archivo es la **memoria técnica viva y guía de estudio del equipo de 4 in
 ### Plantilla para próximas entregas (Copiar por cada `Etapa / Feature PR`)
 
 ```markdown
-### Etapa X / PR #XX: <Título de la funcionalidad — ej. Modelos y Admin de Catálogo>
+### Etapa 2 / Card #22: Módulo Transaccional de Pedidos, Control Atómico de Stock, @action cancelar_pedido y Reseñas
+- **Rama:** `feature/back-pedidos-resenas` -> `develop`
+- **Responsable(s):** Manuel Gómez (Backend 1)
+- **Archivos clave:**
+  - `backend/src/apps/pedidos/models.py` (modelos `Pedido`, `DetallePedido`, `Resena` completando los 12 modelos)
+  - `backend/src/apps/pedidos/serializers.py` (`PedidoCreateSerializer` transaccional, `PedidoListSerializer` con NestedSerializer #2, `ResenaSerializer`)
+  - `backend/src/apps/pedidos/permissions.py` (`EsPropietarioOStaff`)
+  - `backend/src/apps/pedidos/views.py` (`PedidoViewSet` con `@action cancelar_pedido` y `ResenaViewSet`)
+  - `backend/src/apps/pedidos/admin.py` (`PedidoAdmin` con inlines y `ResenaAdmin`)
+  - `backend/src/apps/pedidos/migrations/0001_initial.py`, `tests.py` (suite completa con 8 tests)
+- **Qué se implementó:**
+  - Creación de los **Modelos 10, 11 y 12**: `Pedido`, `DetallePedido` y `Resena`, alcanzando la totalidad de los modelos exigidos por la cátedra de Ingeniería de Software.
+  - Implementación del **Checkout transaccional (`POST /api/pedidos/`)**: utiliza `transaction.atomic()` y bloqueo pesimista `select_for_update()` sobre cada `VarianteProducto` para validar que haya stock físico suficiente, descontarlo de inmediato y congelar el precio unitario del momento.
+  - Implementación del **NestedSerializer #2 (`PedidoListSerializer`)**: en listados y detalle, anida el objeto completo del comprador (`UsuarioSerializer`) y la lista de artículos comprados (`DetallePedidoSerializer`) exponiendo SKU, producto, talle y color.
+  - Implementación de la **Acción Personalizada @action #3 (`POST /api/pedidos/{id}/cancelar_pedido/`)**: valida el estado del pedido, lo marca como `CANCELADO` y **restituye automáticamente el stock** a cada `VarianteProducto` dentro de una transacción atómica.
+  - Módulo completo de reseñas con restricción de unicidad (`UniqueConstraint`) para que cada atleta solo pueda dejar una reseña por calzado.
+  - Panel administrativo configurado con `TabularInline` para ver los ítems de cada orden en su ficha de Django Admin.
+- **Defensa Oral ante el Prof. Facundo Lemo:**
+  - *"¿Por qué congelar el precio en `DetallePedido` en vez de leer siempre el precio de la variante?": Si la variante aumenta de precio la próxima semana, los pedidos históricos no deben alterar sus totales de facturación.*
+  - *"¿Cómo prevenimos condiciones de carrera (race conditions) en compras concurrentes?": En `PedidoCreateSerializer`, dentro de un bloque `transaction.atomic()`, bloqueamos las filas de las variantes involucradas con `select_for_update()`, asegurando que no se vendan pares sin stock.*
+
+---
+
+### Plantilla para próximas entregas
 - **Rama:** `feature/<area>-<descripcion>` -> `develop`
 - **Responsable(s):** <Nombre(s) de los integrantes>
 - **Archivos clave:** `<rutas de archivos creados o modificados>`
