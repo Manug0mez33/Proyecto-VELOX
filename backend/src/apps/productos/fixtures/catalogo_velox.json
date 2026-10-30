@@ -1,0 +1,1290 @@
+[
+  {
+    "model": "productos.marca",
+    "pk": 1,
+    "fields": {
+      "nombre": "Nike",
+      "origen": "Estados Unidos",
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.marca",
+    "pk": 2,
+    "fields": {
+      "nombre": "Adidas",
+      "origen": "Alemania",
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.marca",
+    "pk": 3,
+    "fields": {
+      "nombre": "Puma",
+      "origen": "Alemania",
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.marca",
+    "pk": 4,
+    "fields": {
+      "nombre": "Asics",
+      "origen": "Japón",
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.marca",
+    "pk": 5,
+    "fields": {
+      "nombre": "VELOX Performance",
+      "origen": "Argentina",
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.categoria",
+    "pk": 1,
+    "fields": {
+      "nombre": "Running",
+      "descripcion": "Calzado con amortiguación para correr en asfalto y pista.",
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.categoria",
+    "pk": 2,
+    "fields": {
+      "nombre": "Training",
+      "descripcion": "Zapatillas estables para gimnasio y entrenamiento funcional.",
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.categoria",
+    "pk": 3,
+    "fields": {
+      "nombre": "Básquet",
+      "descripcion": "Botitas con soporte de tobillo y tracción para cancha.",
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.categoria",
+    "pk": 4,
+    "fields": {
+      "nombre": "Trail",
+      "descripcion": "Suela de alto agarre para terrenos irregulares y montaña.",
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.categoria",
+    "pk": 5,
+    "fields": {
+      "nombre": "Urbano",
+      "descripcion": "Modelos deportivos de uso diario.",
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.proveedor",
+    "pk": 1,
+    "fields": {
+      "razon_social": "Distribuidora Deportiva del Centro S.A.",
+      "cuit": "30-71234567-8",
+      "email": "ventas@ddcentro.com.ar",
+      "telefono": "+54 358 462-1100",
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.proveedor",
+    "pk": 2,
+    "fields": {
+      "razon_social": "Importadora Sur Sports S.R.L.",
+      "cuit": "30-70987654-3",
+      "email": "pedidos@sursports.com.ar",
+      "telefono": "+54 11 4321-5500",
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.proveedor",
+    "pk": 3,
+    "fields": {
+      "razon_social": "VELOX Fábrica Río Cuarto S.A.",
+      "cuit": "30-71555444-1",
+      "email": "fabrica@velox.com.ar",
+      "telefono": "+54 358 470-2020",
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.talle",
+    "pk": 1,
+    "fields": {
+      "numero": "38.0",
+      "sistema": "AR"
+    }
+  },
+  {
+    "model": "productos.talle",
+    "pk": 2,
+    "fields": {
+      "numero": "39.0",
+      "sistema": "AR"
+    }
+  },
+  {
+    "model": "productos.talle",
+    "pk": 3,
+    "fields": {
+      "numero": "40.0",
+      "sistema": "AR"
+    }
+  },
+  {
+    "model": "productos.talle",
+    "pk": 4,
+    "fields": {
+      "numero": "41.0",
+      "sistema": "AR"
+    }
+  },
+  {
+    "model": "productos.talle",
+    "pk": 5,
+    "fields": {
+      "numero": "42.0",
+      "sistema": "AR"
+    }
+  },
+  {
+    "model": "productos.talle",
+    "pk": 6,
+    "fields": {
+      "numero": "43.0",
+      "sistema": "AR"
+    }
+  },
+  {
+    "model": "productos.talle",
+    "pk": 7,
+    "fields": {
+      "numero": "44.0",
+      "sistema": "AR"
+    }
+  },
+  {
+    "model": "productos.color",
+    "pk": 1,
+    "fields": {
+      "nombre": "Negro",
+      "codigo_hex": "#000000"
+    }
+  },
+  {
+    "model": "productos.color",
+    "pk": 2,
+    "fields": {
+      "nombre": "Blanco",
+      "codigo_hex": "#FFFFFF"
+    }
+  },
+  {
+    "model": "productos.color",
+    "pk": 3,
+    "fields": {
+      "nombre": "Verde Neón",
+      "codigo_hex": "#39FF14"
+    }
+  },
+  {
+    "model": "productos.color",
+    "pk": 4,
+    "fields": {
+      "nombre": "Gris Carbón",
+      "codigo_hex": "#2A2A2A"
+    }
+  },
+  {
+    "model": "productos.color",
+    "pk": 5,
+    "fields": {
+      "nombre": "Azul",
+      "codigo_hex": "#1E40AF"
+    }
+  },
+  {
+    "model": "productos.producto",
+    "pk": 1,
+    "fields": {
+      "marca": 1,
+      "categoria": 1,
+      "proveedor": 1,
+      "nombre": "Air Zoom Pegasus 40",
+      "descripcion": "Zapatilla de running versátil con unidad Zoom Air para entrenamientos diarios.",
+      "precio_base": "189999.00",
+      "genero": "UNISEX",
+      "activo": true,
+      "creado_en": "2026-10-21T10:00:00Z"
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 1,
+    "fields": {
+      "producto": 1,
+      "talle": 3,
+      "color": 1,
+      "sku": "NK-PEG40-40-NEG",
+      "stock": 13,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 2,
+    "fields": {
+      "producto": 1,
+      "talle": 4,
+      "color": 1,
+      "sku": "NK-PEG40-41-NEG",
+      "stock": 14,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 3,
+    "fields": {
+      "producto": 1,
+      "talle": 5,
+      "color": 1,
+      "sku": "NK-PEG40-42-NEG",
+      "stock": 0,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 4,
+    "fields": {
+      "producto": 1,
+      "talle": 6,
+      "color": 1,
+      "sku": "NK-PEG40-43-NEG",
+      "stock": 1,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 5,
+    "fields": {
+      "producto": 1,
+      "talle": 3,
+      "color": 2,
+      "sku": "NK-PEG40-40-BLA",
+      "stock": 1,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 6,
+    "fields": {
+      "producto": 1,
+      "talle": 4,
+      "color": 2,
+      "sku": "NK-PEG40-41-BLA",
+      "stock": 2,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 7,
+    "fields": {
+      "producto": 1,
+      "talle": 5,
+      "color": 2,
+      "sku": "NK-PEG40-42-BLA",
+      "stock": 3,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 8,
+    "fields": {
+      "producto": 1,
+      "talle": 6,
+      "color": 2,
+      "sku": "NK-PEG40-43-BLA",
+      "stock": 4,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.imagenproducto",
+    "pk": 1,
+    "fields": {
+      "producto": 1,
+      "url": "https://placehold.co/800x600/121212/39FF14?text=Air+Zoom+Pegasus+40+-+Portada",
+      "es_portada": true,
+      "orden": 0
+    }
+  },
+  {
+    "model": "productos.imagenproducto",
+    "pk": 2,
+    "fields": {
+      "producto": 1,
+      "url": "https://placehold.co/800x600/121212/39FF14?text=Air+Zoom+Pegasus+40+-+Lateral",
+      "es_portada": false,
+      "orden": 1
+    }
+  },
+  {
+    "model": "productos.imagenproducto",
+    "pk": 3,
+    "fields": {
+      "producto": 1,
+      "url": "https://placehold.co/800x600/121212/39FF14?text=Air+Zoom+Pegasus+40+-+Suela",
+      "es_portada": false,
+      "orden": 2
+    }
+  },
+  {
+    "model": "productos.producto",
+    "pk": 2,
+    "fields": {
+      "marca": 2,
+      "categoria": 1,
+      "proveedor": 2,
+      "nombre": "Ultraboost Light",
+      "descripcion": "Running de máxima devolución de energía con mediasuela Light BOOST.",
+      "precio_base": "229999.00",
+      "genero": "HOMBRE",
+      "activo": true,
+      "creado_en": "2026-10-22T10:00:00Z"
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 9,
+    "fields": {
+      "producto": 2,
+      "talle": 4,
+      "color": 1,
+      "sku": "AD-UBL-41-NEG",
+      "stock": 6,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 10,
+    "fields": {
+      "producto": 2,
+      "talle": 5,
+      "color": 1,
+      "sku": "AD-UBL-42-NEG",
+      "stock": 7,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 11,
+    "fields": {
+      "producto": 2,
+      "talle": 6,
+      "color": 1,
+      "sku": "AD-UBL-43-NEG",
+      "stock": 8,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 12,
+    "fields": {
+      "producto": 2,
+      "talle": 7,
+      "color": 1,
+      "sku": "AD-UBL-44-NEG",
+      "stock": 9,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 13,
+    "fields": {
+      "producto": 2,
+      "talle": 4,
+      "color": 4,
+      "sku": "AD-UBL-41-GRI",
+      "stock": 0,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 14,
+    "fields": {
+      "producto": 2,
+      "talle": 5,
+      "color": 4,
+      "sku": "AD-UBL-42-GRI",
+      "stock": 1,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 15,
+    "fields": {
+      "producto": 2,
+      "talle": 6,
+      "color": 4,
+      "sku": "AD-UBL-43-GRI",
+      "stock": 2,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 16,
+    "fields": {
+      "producto": 2,
+      "talle": 7,
+      "color": 4,
+      "sku": "AD-UBL-44-GRI",
+      "stock": 3,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.imagenproducto",
+    "pk": 4,
+    "fields": {
+      "producto": 2,
+      "url": "https://placehold.co/800x600/121212/39FF14?text=Ultraboost+Light+-+Portada",
+      "es_portada": true,
+      "orden": 0
+    }
+  },
+  {
+    "model": "productos.imagenproducto",
+    "pk": 5,
+    "fields": {
+      "producto": 2,
+      "url": "https://placehold.co/800x600/121212/39FF14?text=Ultraboost+Light+-+Lateral",
+      "es_portada": false,
+      "orden": 1
+    }
+  },
+  {
+    "model": "productos.imagenproducto",
+    "pk": 6,
+    "fields": {
+      "producto": 2,
+      "url": "https://placehold.co/800x600/121212/39FF14?text=Ultraboost+Light+-+Suela",
+      "es_portada": false,
+      "orden": 2
+    }
+  },
+  {
+    "model": "productos.producto",
+    "pk": 3,
+    "fields": {
+      "marca": 4,
+      "categoria": 4,
+      "proveedor": 2,
+      "nombre": "Gel-Trabuco 12",
+      "descripcion": "Trail running con suela de alto agarre y amortiguación GEL.",
+      "precio_base": "199999.00",
+      "genero": "UNISEX",
+      "activo": true,
+      "creado_en": "2026-10-23T10:00:00Z"
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 17,
+    "fields": {
+      "producto": 3,
+      "talle": 3,
+      "color": 4,
+      "sku": "AS-GTR12-40-GRI",
+      "stock": 6,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 18,
+    "fields": {
+      "producto": 3,
+      "talle": 4,
+      "color": 4,
+      "sku": "AS-GTR12-41-GRI",
+      "stock": 7,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 19,
+    "fields": {
+      "producto": 3,
+      "talle": 5,
+      "color": 4,
+      "sku": "AS-GTR12-42-GRI",
+      "stock": 8,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 20,
+    "fields": {
+      "producto": 3,
+      "talle": 6,
+      "color": 4,
+      "sku": "AS-GTR12-43-GRI",
+      "stock": 9,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 21,
+    "fields": {
+      "producto": 3,
+      "talle": 3,
+      "color": 5,
+      "sku": "AS-GTR12-40-AZU",
+      "stock": 9,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 22,
+    "fields": {
+      "producto": 3,
+      "talle": 4,
+      "color": 5,
+      "sku": "AS-GTR12-41-AZU",
+      "stock": 10,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 23,
+    "fields": {
+      "producto": 3,
+      "talle": 5,
+      "color": 5,
+      "sku": "AS-GTR12-42-AZU",
+      "stock": 11,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 24,
+    "fields": {
+      "producto": 3,
+      "talle": 6,
+      "color": 5,
+      "sku": "AS-GTR12-43-AZU",
+      "stock": 12,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.imagenproducto",
+    "pk": 7,
+    "fields": {
+      "producto": 3,
+      "url": "https://placehold.co/800x600/121212/39FF14?text=Gel-Trabuco+12+-+Portada",
+      "es_portada": true,
+      "orden": 0
+    }
+  },
+  {
+    "model": "productos.imagenproducto",
+    "pk": 8,
+    "fields": {
+      "producto": 3,
+      "url": "https://placehold.co/800x600/121212/39FF14?text=Gel-Trabuco+12+-+Lateral",
+      "es_portada": false,
+      "orden": 1
+    }
+  },
+  {
+    "model": "productos.imagenproducto",
+    "pk": 9,
+    "fields": {
+      "producto": 3,
+      "url": "https://placehold.co/800x600/121212/39FF14?text=Gel-Trabuco+12+-+Suela",
+      "es_portada": false,
+      "orden": 2
+    }
+  },
+  {
+    "model": "productos.producto",
+    "pk": 4,
+    "fields": {
+      "marca": 3,
+      "categoria": 2,
+      "proveedor": 1,
+      "nombre": "Fuse 3.0",
+      "descripcion": "Training para cargas pesadas con talón estable.",
+      "precio_base": "139999.00",
+      "genero": "MUJER",
+      "activo": true,
+      "creado_en": "2026-10-24T10:00:00Z"
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 25,
+    "fields": {
+      "producto": 4,
+      "talle": 1,
+      "color": 1,
+      "sku": "PM-FUS3-38-NEG",
+      "stock": 2,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 26,
+    "fields": {
+      "producto": 4,
+      "talle": 2,
+      "color": 1,
+      "sku": "PM-FUS3-39-NEG",
+      "stock": 3,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 27,
+    "fields": {
+      "producto": 4,
+      "talle": 3,
+      "color": 1,
+      "sku": "PM-FUS3-40-NEG",
+      "stock": 4,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 28,
+    "fields": {
+      "producto": 4,
+      "talle": 4,
+      "color": 1,
+      "sku": "PM-FUS3-41-NEG",
+      "stock": 5,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 29,
+    "fields": {
+      "producto": 4,
+      "talle": 1,
+      "color": 2,
+      "sku": "PM-FUS3-38-BLA",
+      "stock": 5,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 30,
+    "fields": {
+      "producto": 4,
+      "talle": 2,
+      "color": 2,
+      "sku": "PM-FUS3-39-BLA",
+      "stock": 6,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 31,
+    "fields": {
+      "producto": 4,
+      "talle": 3,
+      "color": 2,
+      "sku": "PM-FUS3-40-BLA",
+      "stock": 7,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 32,
+    "fields": {
+      "producto": 4,
+      "talle": 4,
+      "color": 2,
+      "sku": "PM-FUS3-41-BLA",
+      "stock": 8,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.imagenproducto",
+    "pk": 10,
+    "fields": {
+      "producto": 4,
+      "url": "https://placehold.co/800x600/121212/39FF14?text=Fuse+3.0+-+Portada",
+      "es_portada": true,
+      "orden": 0
+    }
+  },
+  {
+    "model": "productos.imagenproducto",
+    "pk": 11,
+    "fields": {
+      "producto": 4,
+      "url": "https://placehold.co/800x600/121212/39FF14?text=Fuse+3.0+-+Lateral",
+      "es_portada": false,
+      "orden": 1
+    }
+  },
+  {
+    "model": "productos.imagenproducto",
+    "pk": 12,
+    "fields": {
+      "producto": 4,
+      "url": "https://placehold.co/800x600/121212/39FF14?text=Fuse+3.0+-+Suela",
+      "es_portada": false,
+      "orden": 2
+    }
+  },
+  {
+    "model": "productos.producto",
+    "pk": 5,
+    "fields": {
+      "marca": 1,
+      "categoria": 3,
+      "proveedor": 1,
+      "nombre": "LeBron XXI",
+      "descripcion": "Botita de básquet con soporte de tobillo y Zoom Turbo.",
+      "precio_base": "279999.00",
+      "genero": "HOMBRE",
+      "activo": true,
+      "creado_en": "2026-10-25T10:00:00Z"
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 33,
+    "fields": {
+      "producto": 5,
+      "talle": 5,
+      "color": 1,
+      "sku": "NK-LBJ21-42-NEG",
+      "stock": 13,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 34,
+    "fields": {
+      "producto": 5,
+      "talle": 6,
+      "color": 1,
+      "sku": "NK-LBJ21-43-NEG",
+      "stock": 14,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 35,
+    "fields": {
+      "producto": 5,
+      "talle": 7,
+      "color": 1,
+      "sku": "NK-LBJ21-44-NEG",
+      "stock": 0,
+      "precio_ajustado": "289999.00",
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 36,
+    "fields": {
+      "producto": 5,
+      "talle": 5,
+      "color": 2,
+      "sku": "NK-LBJ21-42-BLA",
+      "stock": 1,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 37,
+    "fields": {
+      "producto": 5,
+      "talle": 6,
+      "color": 2,
+      "sku": "NK-LBJ21-43-BLA",
+      "stock": 2,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 38,
+    "fields": {
+      "producto": 5,
+      "talle": 7,
+      "color": 2,
+      "sku": "NK-LBJ21-44-BLA",
+      "stock": 3,
+      "precio_ajustado": "289999.00",
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.imagenproducto",
+    "pk": 13,
+    "fields": {
+      "producto": 5,
+      "url": "https://placehold.co/800x600/121212/39FF14?text=LeBron+XXI+-+Portada",
+      "es_portada": true,
+      "orden": 0
+    }
+  },
+  {
+    "model": "productos.imagenproducto",
+    "pk": 14,
+    "fields": {
+      "producto": 5,
+      "url": "https://placehold.co/800x600/121212/39FF14?text=LeBron+XXI+-+Lateral",
+      "es_portada": false,
+      "orden": 1
+    }
+  },
+  {
+    "model": "productos.imagenproducto",
+    "pk": 15,
+    "fields": {
+      "producto": 5,
+      "url": "https://placehold.co/800x600/121212/39FF14?text=LeBron+XXI+-+Suela",
+      "es_portada": false,
+      "orden": 2
+    }
+  },
+  {
+    "model": "productos.producto",
+    "pk": 6,
+    "fields": {
+      "marca": 5,
+      "categoria": 1,
+      "proveedor": 3,
+      "nombre": "Velox Carbon X",
+      "descripcion": "Modelo insignia VELOX con placa de carbono para competencia.",
+      "precio_base": "249999.00",
+      "genero": "UNISEX",
+      "activo": true,
+      "creado_en": "2026-10-26T10:00:00Z"
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 39,
+    "fields": {
+      "producto": 6,
+      "talle": 2,
+      "color": 3,
+      "sku": "VX-VCX-39-VER",
+      "stock": 8,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 40,
+    "fields": {
+      "producto": 6,
+      "talle": 3,
+      "color": 3,
+      "sku": "VX-VCX-40-VER",
+      "stock": 9,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 41,
+    "fields": {
+      "producto": 6,
+      "talle": 4,
+      "color": 3,
+      "sku": "VX-VCX-41-VER",
+      "stock": 10,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 42,
+    "fields": {
+      "producto": 6,
+      "talle": 5,
+      "color": 3,
+      "sku": "VX-VCX-42-VER",
+      "stock": 11,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 43,
+    "fields": {
+      "producto": 6,
+      "talle": 6,
+      "color": 3,
+      "sku": "VX-VCX-43-VER",
+      "stock": 12,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 44,
+    "fields": {
+      "producto": 6,
+      "talle": 2,
+      "color": 1,
+      "sku": "VX-VCX-39-NEG",
+      "stock": 2,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 45,
+    "fields": {
+      "producto": 6,
+      "talle": 3,
+      "color": 1,
+      "sku": "VX-VCX-40-NEG",
+      "stock": 3,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 46,
+    "fields": {
+      "producto": 6,
+      "talle": 4,
+      "color": 1,
+      "sku": "VX-VCX-41-NEG",
+      "stock": 4,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 47,
+    "fields": {
+      "producto": 6,
+      "talle": 5,
+      "color": 1,
+      "sku": "VX-VCX-42-NEG",
+      "stock": 5,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 48,
+    "fields": {
+      "producto": 6,
+      "talle": 6,
+      "color": 1,
+      "sku": "VX-VCX-43-NEG",
+      "stock": 6,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.imagenproducto",
+    "pk": 16,
+    "fields": {
+      "producto": 6,
+      "url": "https://placehold.co/800x600/121212/39FF14?text=Velox+Carbon+X+-+Portada",
+      "es_portada": true,
+      "orden": 0
+    }
+  },
+  {
+    "model": "productos.imagenproducto",
+    "pk": 17,
+    "fields": {
+      "producto": 6,
+      "url": "https://placehold.co/800x600/121212/39FF14?text=Velox+Carbon+X+-+Lateral",
+      "es_portada": false,
+      "orden": 1
+    }
+  },
+  {
+    "model": "productos.imagenproducto",
+    "pk": 18,
+    "fields": {
+      "producto": 6,
+      "url": "https://placehold.co/800x600/121212/39FF14?text=Velox+Carbon+X+-+Suela",
+      "es_portada": false,
+      "orden": 2
+    }
+  },
+  {
+    "model": "productos.producto",
+    "pk": 7,
+    "fields": {
+      "marca": 5,
+      "categoria": 5,
+      "proveedor": 3,
+      "nombre": "Velox Street Run",
+      "descripcion": "Zapatilla urbana liviana inspirada en el running.",
+      "precio_base": "99999.00",
+      "genero": "UNISEX",
+      "activo": true,
+      "creado_en": "2026-10-27T10:00:00Z"
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 49,
+    "fields": {
+      "producto": 7,
+      "talle": 1,
+      "color": 4,
+      "sku": "VX-VSR-38-GRI",
+      "stock": 2,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 50,
+    "fields": {
+      "producto": 7,
+      "talle": 2,
+      "color": 4,
+      "sku": "VX-VSR-39-GRI",
+      "stock": 3,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 51,
+    "fields": {
+      "producto": 7,
+      "talle": 3,
+      "color": 4,
+      "sku": "VX-VSR-40-GRI",
+      "stock": 4,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 52,
+    "fields": {
+      "producto": 7,
+      "talle": 4,
+      "color": 4,
+      "sku": "VX-VSR-41-GRI",
+      "stock": 5,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 53,
+    "fields": {
+      "producto": 7,
+      "talle": 5,
+      "color": 4,
+      "sku": "VX-VSR-42-GRI",
+      "stock": 6,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 54,
+    "fields": {
+      "producto": 7,
+      "talle": 1,
+      "color": 2,
+      "sku": "VX-VSR-38-BLA",
+      "stock": 11,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 55,
+    "fields": {
+      "producto": 7,
+      "talle": 2,
+      "color": 2,
+      "sku": "VX-VSR-39-BLA",
+      "stock": 12,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 56,
+    "fields": {
+      "producto": 7,
+      "talle": 3,
+      "color": 2,
+      "sku": "VX-VSR-40-BLA",
+      "stock": 13,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 57,
+    "fields": {
+      "producto": 7,
+      "talle": 4,
+      "color": 2,
+      "sku": "VX-VSR-41-BLA",
+      "stock": 14,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.varianteproducto",
+    "pk": 58,
+    "fields": {
+      "producto": 7,
+      "talle": 5,
+      "color": 2,
+      "sku": "VX-VSR-42-BLA",
+      "stock": 0,
+      "precio_ajustado": null,
+      "activo": true
+    }
+  },
+  {
+    "model": "productos.imagenproducto",
+    "pk": 19,
+    "fields": {
+      "producto": 7,
+      "url": "https://placehold.co/800x600/121212/39FF14?text=Velox+Street+Run+-+Portada",
+      "es_portada": true,
+      "orden": 0
+    }
+  },
+  {
+    "model": "productos.imagenproducto",
+    "pk": 20,
+    "fields": {
+      "producto": 7,
+      "url": "https://placehold.co/800x600/121212/39FF14?text=Velox+Street+Run+-+Lateral",
+      "es_portada": false,
+      "orden": 1
+    }
+  },
+  {
+    "model": "productos.imagenproducto",
+    "pk": 21,
+    "fields": {
+      "producto": 7,
+      "url": "https://placehold.co/800x600/121212/39FF14?text=Velox+Street+Run+-+Suela",
+      "es_portada": false,
+      "orden": 2
+    }
+  }
+]

@@ -42,6 +42,39 @@ Este archivo es la **memoria técnica viva y guía de estudio del equipo de 4 in
 
 ---
 
+### Etapa 1 / PR: Proyecto Django base + Modelos de Catálogo e Inventario + Admin
+- **Rama:** `feature/back-modelos-catalogo` -> `develop`
+- **Responsable(s):** Valentino Cambria (Backend 2)
+- **Archivos clave:**
+  - `backend/pyproject.toml`, `backend/uv.lock`, `backend/.python-version` (proyecto inicializado con `uv`)
+  - `backend/src/manage.py`, `backend/src/nucleo/settings.py` (apps registradas, `AUTH_USER_MODEL`, idioma `es-ar`, zona horaria Córdoba, secretos por variable de entorno)
+  - `backend/src/apps/usuarios/models.py`, `admin.py`, `migrations/0001_initial.py` (Custom User `Usuario`)
+  - `backend/src/apps/productos/models.py` (8 modelos)
+  - `backend/src/apps/productos/admin.py` (panel configurado con inlines)
+  - `backend/src/apps/productos/apps.py`, `backend/src/apps/productos/migrations/0001_initial.py`
+  - `backend/src/apps/productos/fixtures/catalogo_velox.json` (seed de pruebas)
+  - `README.md`, `docs/bitacora_defensa.md`
+- **Qué se implementó:**
+  - Proyecto Django 6.1 inicializado con `uv` (`uv init` + `uv add django` + `startproject nucleo`), con la estructura `backend/src/{manage.py, nucleo/, apps/}` del repositorio guía.
+  - `Usuario(AbstractUser)` con `rol`, `telefono`, `direccion`, `ciudad` y `email` único, registrado como `AUTH_USER_MODEL`. Se creó en esta etapa porque Django exige definir el usuario personalizado **antes de la primera migración**: cambiarlo después obliga a borrar la base y las migraciones.
+  - Modelos `Marca`, `Categoria`, `Proveedor`, `Producto`, `Talle`, `Color`, `VarianteProducto` e `ImagenProducto` con sus relaciones `ForeignKey`, respetando el diagrama ER de `docs/backend/arquitectura_y_dominio.md`.
+  - `admin.py` con `list_display`, `list_filter`, `search_fields` y `ordering` en los 8 modelos; `ProductoAdmin` carga variantes e imágenes en la misma ficha (`TabularInline`) y `VarianteProductoAdmin` permite editar el stock desde el listado (`list_editable`).
+  - Fixture `catalogo_velox` con 7 calzados, 58 variantes con SKU (formato `MARCA-MODELO-TALLE-COLOR`, ej. `NK-PEG40-41-NEG`), algunas con stock 0 y precio ajustado para probar casos borde.
+- **Decisiones técnicas y problemas resueltos:**
+  - **Integridad en la base de datos, no solo en el código:** `sku` es `unique=True`, y un `UniqueConstraint(producto, talle, color)` impide cargar la misma variante física dos veces con SKUs distintos. `Talle` es único por `(numero, sistema)`.
+  - **`on_delete` elegido por relación:** `PROTECT` en `Marca`/`Categoria`/`Proveedor` → `Producto` y en `Talle`/`Color` → `VarianteProducto` (no se pierde catálogo por borrar un dato maestro); `CASCADE` en `Producto` → `VarianteProducto`/`ImagenProducto` (son partes del producto y no existen sin él).
+  - **`precio_ajustado` opcional:** si es `NULL`, la propiedad `precio_final` devuelve el `precio_base` del producto. Así no se duplica el precio en cada variante (evita anomalías de actualización, 3FN).
+  - **`Talle.numero` es `DecimalField`** para soportar medios talles (9.5 US) sin errores de redondeo de `float`.
+  - Validadores con `RegexValidator` para `cuit` (`XX-XXXXXXXX-X`) y `codigo_hex` (`#RRGGBB`).
+  - `list_select_related` en el admin evita el problema de consultas N+1 al listar productos y variantes.
+  - Verificado con Django 6.1 sobre el proyecto real: `migrate` crea las 8 tablas del catálogo + `usuarios_usuario` con sus claves foráneas, y el admin responde en los 9 modelos.
+  - Verificado además: `check` sin issues, `migrate` + `loaddata` (111 objetos) OK, y pruebas manuales de que la base rechaza SKU duplicado, variante duplicada, segunda portada, talle duplicado y borrado de marca con productos.
+- **Guía para la defensa oral (Cómo explicarlo al docente):**
+  - **Para Facundo Lemo (Proceso / Backend):** "El producto es el concepto comercial y la variante es lo que físicamente está en el depósito. Por eso el stock y el SKU viven en `VarianteProducto`, y las reglas de unicidad están como constraints en la base para que ni el admin ni la API puedan romperlas."
+  - **Para Valentino Arballo (Componentes / Frontend):** "Los nombres de campo (`precio_base`, `es_portada`, `codigo_hex`, `stock`) son los que va a recibir el frontend en `snake_case`; `codigo_hex` permite pintar el selector de color y `es_portada` define la imagen de `ProductCard`."
+
+---
+
 ### Plantilla para próximas entregas (Copiar por cada `Etapa / Feature PR`)
 
 ```markdown
@@ -67,11 +100,15 @@ Esta tabla resume las respuestas técnicas que los 4 integrantes deben dominar p
 | Pregunta / Concepto de Examen | Ubicación en Código | Respuesta Técnica para la Defensa Oral |
 | :--- | :--- | :--- |
 | **1. ¿Por qué `Usuario` hereda de `AbstractUser` con campo `rol`?** | `src/apps/usuarios/models.py` | Permite mantener todo el sistema de autenticación nativo de Django (hashing de contraseñas, sesiones, permisos y compatibilidad con `SimpleJWT`) agregando el campo `rol` (`ADMIN`, `EMPLEADO`, `CLIENTE`) desde la migración inicial (`AUTH_USER_MODEL`) para controlar permisos de endpoints sin tablas extras innecesarias. |
-| **2. ¿Por qué separar `Producto` de `VarianteProducto` con `SKU`?** | `src/apps/productos/models.py` | Porque `Producto` almacena los datos conceptuales compartidos (nombre, marca, categoría, precio base), mientras que el inventario físico real depende de la combinación única ` (producto, talle, color) ` identificada por un `sku`. Así los descuentos de stock en `DetallePedido` son exactos por talle y color. |
-| **3. ¿Por qué `ImagenProducto` es una relación `1:N` separada?** | `src/apps/productos/models.py` | Si guardáramos `imagen_1`, `imagen_2` en `Producto`, violaríamos la Primera Forma Normal (1FN) y limitaríamos la galería. Con una tabla `ImagenProducto` vinculada por `ForeignKey`, cada calzado puede tener N fotos ordenadas y una marcada como `es_principal`. |
+| **2. ¿Por qué separar `Producto` de `VarianteProducto` con `SKU`?** | `backend/src/apps/productos/models.py` | Porque `Producto` almacena los datos conceptuales compartidos (nombre, marca, categoría, precio base), mientras que el inventario físico real depende de la combinación única ` (producto, talle, color) ` identificada por un `sku`. Así los descuentos de stock en `DetallePedido` son exactos por talle y color. |
+| **3. ¿Por qué `ImagenProducto` es una relación `1:N` separada?** | `backend/src/apps/productos/models.py` | Si guardáramos `imagen_1`, `imagen_2` en `Producto`, violaríamos la Primera Forma Normal (1FN) y limitaríamos la galería. Con una tabla `ImagenProducto` vinculada por `ForeignKey`, cada calzado puede tener N fotos ordenadas y una marcada como `es_portada`. Un `UniqueConstraint` parcial (`condition=Q(es_portada=True)`) garantiza a nivel base de datos que haya **como máximo una portada** por producto. |
 | **4. ¿Cómo funcionan los `NestedSerializers` en la acción `list`?** | `src/apps/productos/views.py` y `src/apps/pedidos/views.py` | En `ProductoViewSet` y `PedidoViewSet` se sobrescribe el método `get_serializer_class(self)`. Cuando `self.action == 'list'` (o `'retrieve'`), devuelve el serializador de lectura con objetos anidados (marca, categoría, variantes o items del pedido); cuando es `'create'`/`'update'`, usa el serializador plano con IDs (`PrimaryKeyRelatedField`). |
 | **5. ¿Cómo funcionan los `@action` personalizados y los permisos?** | `views.py` y `permissions.py` | El decorador `@action(detail=False/True, methods=[...])` agrega rutas semánticas fuera del CRUD estándar: `destacados` (`GET` de colección), `stock_por_talle` (`GET` de instancia) y `cancelar_pedido` (`POST` de instancia que valida estado y restituye stock). Las clases `BasePermission` verifican `request.user.rol` antes de ejecutar la acción. |
 | **6. ¿Por qué coexisten `SessionAuthentication` y `JWTAuthentication`?** | `src/nucleo/settings.py` | `SessionAuthentication` permite usar el Panel de Administración de Django (`/admin/`) y probar la Browsable API en el navegador durante el desarrollo, mientras que `JWTAuthentication` (`SimpleJWT`) provee autenticación stateless mediante tokens para el frontend desacoplado en Next.js. |
+| **7. ¿Qué garantiza que no haya variantes duplicadas?** | `backend/src/apps/productos/models.py` | Dos reglas en la base de datos: `sku` con `unique=True` y un `UniqueConstraint(fields=["producto", "talle", "color"])`. Si se intenta cargar dos veces la misma combinación, PostgreSQL/SQLite lanza `IntegrityError` aunque se use el admin o la API. |
+| **8. ¿Por qué `PROTECT` en unas FK y `CASCADE` en otras?** | `backend/src/apps/productos/models.py` | `PROTECT` en datos maestros (`Marca`, `Categoria`, `Proveedor`, `Talle`, `Color`): no se puede borrar una marca que tiene productos. `CASCADE` en las partes del producto (`VarianteProducto`, `ImagenProducto`): si se elimina el producto, sus variantes e imágenes dejan de tener sentido. |
+| **9. ¿Por qué `precio_ajustado` puede ser nulo?** | `backend/src/apps/productos/models.py` | La mayoría de las variantes se venden al `precio_base` del producto. Guardar el mismo precio en cada variante sería redundante (3FN). Solo se completa cuando una variante cuesta distinto (ej. talles especiales) y la propiedad `precio_final` resuelve cuál usar. |
+| **10. ¿Cómo está configurado el panel de administración?** | `backend/src/apps/productos/admin.py` | Los 8 modelos tienen `list_display`, `list_filter`, `search_fields` y `ordering`. `ProductoAdmin` usa `TabularInline` para cargar variantes e imágenes en la misma pantalla y `list_select_related` para evitar consultas N+1; en `VarianteProductoAdmin` el stock es editable desde el listado (`list_editable`). |
 
 ---
 
