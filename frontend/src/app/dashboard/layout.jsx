@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Badge from "../../components/Badge";
+import LogoutButton from "../../components/LogoutButton";
 
 const DASHBOARD_LINKS = [
   { href: "/dashboard", label: "RESUMEN EJECUTIVO", icon: "📊" },
@@ -72,13 +73,14 @@ export default function DashboardLayout({ children }) {
             </div>
           </div>
 
-          <div className="pt-2">
+          <div className="pt-2 space-y-2">
             <Link
               href="/"
               className="inline-flex w-full items-center justify-center rounded-lg bg-[#2A2A2A] py-2.5 text-xs font-bold uppercase tracking-wider text-[#FFFFFF] transition-colors hover:bg-[#333333] hover:text-[#39FF14]"
             >
               ← VOLVER A LA TIENDA
             </Link>
+            <LogoutButton />
           </div>
         </aside>
 

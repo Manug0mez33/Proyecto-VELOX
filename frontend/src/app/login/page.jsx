@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema } from "../../validations/authSchema";
@@ -11,6 +12,7 @@ import Button from "../../components/Button";
 import Badge from "../../components/Badge";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [serverError, setServerError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loginSuccess, setLoginSuccess] = useState(false);
@@ -33,8 +35,24 @@ export default function LoginPage() {
 
     try {
       // Envío de credenciales a endpoint POST /api/token/ mediante cliente HTTP unificado (R3)
-      await api.post("/token/", data);
+      const res = await api.post("/token/", data);
+      
+      // Almacenamiento seguro de tokens JWT en localStorage
+      if (res?.access) {
+        localStorage.setItem("velox_access_token", res.access);
+        if (res.refresh) {
+          localStorage.setItem("velox_refresh_token", res.refresh);
+        }
+        localStorage.setItem("velox_username", data.username);
+        window.dispatchEvent(new Event("velox-auth-changed"));
+      }
+
       setLoginSuccess(true);
+
+      // Redirección reactiva al dashboard
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 700);
     } catch (err) {
       if (err instanceof ApiError) {
         setServerError(err.message || "Credenciales inválidas. Verifica tu usuario y contraseña.");

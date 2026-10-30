@@ -1,7 +1,7 @@
 "use client";
 // Client Component ("use client"): Utiliza usePathname, useState y lectura reactiva del carrito para resaltar la ruta activa, abrir el menú móvil y mostrar el contador de items en tiempo real.
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCart } from "../context/CartContext";
@@ -17,6 +17,40 @@ export default function Navbar() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { totalItems: cartCount } = useCart();
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    const syncAuth = () => {
+      try {
+        const token = localStorage.getItem("velox_access_token");
+        const user = localStorage.getItem("velox_username");
+        setCurrentUser(token && user ? user : null);
+      } catch {
+        setCurrentUser(null);
+      }
+    };
+
+    syncAuth();
+    window.addEventListener("velox-auth-changed", syncAuth);
+    window.addEventListener("storage", syncAuth);
+
+    return () => {
+      window.removeEventListener("velox-auth-changed", syncAuth);
+      window.removeEventListener("storage", syncAuth);
+    };
+  }, []);
+
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem("velox_access_token");
+      localStorage.removeItem("velox_refresh_token");
+      localStorage.removeItem("velox_username");
+      window.dispatchEvent(new Event("velox-auth-changed"));
+    } catch {
+      // Ignorar en entornos sin localStorage
+    }
+    window.location.href = "/login";
+  };
 
 
 
@@ -62,14 +96,31 @@ export default function Navbar() {
           })}
         </nav>
 
-        {/* Acciones Derecha: Login (/login) y Carrito (/carrito) */}
+        {/* Acciones Derecha: Login / Sesión Activa y Carrito (/carrito) */}
         <div className="hidden md:flex items-center gap-3">
-          <Link
-            href="/login"
-            className="inline-flex h-10 items-center justify-center rounded-lg bg-[#2A2A2A] border border-[#3A3A3A] px-5 text-xs font-bold uppercase tracking-wider text-[#FFFFFF] transition-colors hover:border-[#39FF14] hover:text-[#39FF14]"
-          >
-            ACCEDER
-          </Link>
+          {currentUser ? (
+            <div className="flex items-center gap-2">
+              <span className="inline-flex h-10 items-center px-3.5 rounded-lg bg-[#1E1E1E] border border-[#2A2A2A] text-xs font-heading font-bold uppercase tracking-wider text-[#39FF14]">
+                👤 {currentUser}
+              </span>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="inline-flex h-10 items-center justify-center rounded-lg bg-[#2A2A2A] border border-[#3A3A3A] px-4 text-xs font-bold uppercase tracking-wider text-[#EF4444] transition-colors hover:border-[#EF4444] hover:bg-[#2A1515]"
+                title="Cerrar Sesión"
+              >
+                SALIR
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className="inline-flex h-10 items-center justify-center rounded-lg bg-[#2A2A2A] border border-[#3A3A3A] px-5 text-xs font-bold uppercase tracking-wider text-[#FFFFFF] transition-colors hover:border-[#39FF14] hover:text-[#39FF14]"
+            >
+              ACCEDER
+            </Link>
+          )}
+
           <Link
             href="/carrito"
             className="inline-flex h-10 items-center justify-center rounded-lg bg-[#39FF14] px-5 text-xs font-extrabold uppercase tracking-wider text-[#121212] transition-transform hover:brightness-110 active:scale-95"
@@ -114,18 +165,36 @@ export default function Navbar() {
               );
             })}
           </div>
-          <div className="flex gap-3 pt-3 border-t border-[#2A2A2A]">
-            <Link
-              href="/login"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex-1 text-center rounded-lg bg-[#2A2A2A] py-2.5 text-xs font-bold uppercase text-[#FFFFFF]"
-            >
-              ACCEDER
-            </Link>
+          <div className="flex flex-col gap-2 pt-3 border-t border-[#2A2A2A]">
+            {currentUser ? (
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-xs font-heading font-bold uppercase text-[#39FF14]">
+                  👤 {currentUser}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    handleLogout();
+                  }}
+                  className="rounded-lg bg-[#2A2A2A] px-4 py-2 text-xs font-bold uppercase text-[#EF4444]"
+                >
+                  SALIR
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-center rounded-lg bg-[#2A2A2A] py-2.5 text-xs font-bold uppercase text-[#FFFFFF]"
+              >
+                ACCEDER
+              </Link>
+            )}
             <Link
               href="/carrito"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex-1 text-center rounded-lg bg-[#39FF14] py-2.5 text-xs font-extrabold uppercase text-[#121212]"
+              className="text-center rounded-lg bg-[#39FF14] py-2.5 text-xs font-extrabold uppercase text-[#121212]"
             >
               CARRITO ({cartCount})
             </Link>
