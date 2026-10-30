@@ -59,3 +59,25 @@ App Django con los **8 modelos del catálogo** (normalizados en 3FN) y su panel 
 **Datos de prueba (seed):** `fixtures/catalogo_velox.json` carga 5 marcas, 5 categorías, 3 proveedores, 7 talles, 5 colores, 7 calzados, 58 variantes con SKU y 21 imágenes.
 
 Panel de administración: `/admin/productos/` (los productos permiten cargar variantes e imágenes en la misma ficha; el stock de cada SKU se edita directamente desde el listado de variantes).
+
+
+## 🔐 Backend — Autenticación Dual, Docker y Endpoints de Usuarios (Card #17)
+
+### Ejecución con Docker y Docker Compose
+```bash
+docker compose up --build
+```
+
+### Endpoints Incorporados (`apps/usuarios` y Núcleo DRF)
+
+| Método | Endpoint | Descripción | Permiso |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/` | Vista HTML tradicional de bienvenida de **VELOX CORE API** | Público |
+| `GET` | `/api/docs/` | Documentación interactiva **Swagger UI** (`drf-spectacular`) | Público |
+| `GET` | `/api/redoc/` | Documentación técnica **ReDoc** (OpenAPI 3.0) | Público |
+| `POST` | `/api/token/` | Emisión de tokens JWT (`access` y `refresh`) con `SimpleJWT` | Público |
+| `POST` | `/api/token/refresh/` | Renovación de token de acceso JWT | Público |
+| `POST` | `/api/usuarios/` | Registro público de clientes (`rol="CLIENTE"` por defecto) | Público (`AllowAny`) |
+| `GET` | `/api/usuarios/` | Listado paginado de usuarios (filtros por `rol`, `ciudad`, `search`) | Autenticado (`ADMIN`/`EMPLEADO` ven todos; `CLIENTE` ve el propio) |
+| `GET / PATCH` | `/api/usuarios/perfil/` | Consulta o edición rápida del perfil del usuario autenticado | Autenticado (JWT / Sesión) |
+| `GET / PUT / PATCH / DELETE` | `/api/usuarios/{id}/` | Detalle, actualización y baja de cuenta de usuario | Propietario o `ADMIN` |
