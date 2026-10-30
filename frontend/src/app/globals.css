@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme {
+  --color-base: #121212;
+  --color-surface: #2A2A2A;
+  --color-accent: #39FF14;
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #D1D5DB;
+  --font-heading: var(--font-space-grotesk), "Space Grotesk", sans-serif;
+  --font-body: var(--font-inter), "Inter", sans-serif;
+}
+
+:root {
+  color-scheme: dark;
+  --bg-base: #121212;
+  --bg-surface: #2A2A2A;
+  --accent-neon: #39FF14;
+  --text-primary: #FFFFFF;
+  --text-secondary: #D1D5DB;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+.font-heading {
+  font-family: var(--font-heading);
+}
+
+/* Utilidad de resplandor (glow) verde neón oficial del Manual de Marca VELOX */
+.velox-glow {
+  box-shadow: 0 0 36px rgba(57, 255, 20, 0.22);
+}
+
+.velox-text-glow {
+  text-shadow: 0 0 24px rgba(57, 255, 20, 0.35);
+}
