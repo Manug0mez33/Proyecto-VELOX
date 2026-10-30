@@ -45,7 +45,7 @@ La aplicación estará disponible en `http://localhost:3000`.
   - `/productos` (`src/app/productos/page.jsx`): Catálogo general paginado con Server Component que procesa el sobre paginado de DRF (`{ count, next, previous, results }`), sincronización bidireccional con query params y fallback completo en memoria.
   - `/productos/[id]` (`src/app/productos/[id]/page.jsx`): Ficha técnica dinámica de calzado deportivo con Server Component para SEO y metadata, e hidratación de `ProductDetailClient.jsx` para galería interactiva de fotos (1:N), selector de talles AR y colores SKU con verificación de stock en tiempo real y módulo de reseñas de atletas.
   - `/dashboard` (`src/app/dashboard/layout.jsx` y `page.jsx`): Layout anidado y panel administrativo con KPIs en tiempo real del catálogo y variantes SKU.
-  - `/login` (`src/app/login/page.jsx`): Formulario interactivo con React Hook Form + Zod (`authSchema.js`) y manejo estructurado de errores DRF.
+  - `/login` (`src/app/login/page.jsx`): Formulario interactivo con React Hook Form + Zod (`loginSchema R5`) conectado a Server Action (`loginAction R4`) para almacenamiento de tokens en Cookies HTTP-Only y `localStorage`, auto-completado de credenciales y redirección dinámica.
   - `/carrito` (`src/app/carrito/page.jsx`): Carrito de compras interactivo conectado al estado global `CartContext` y al endpoint transaccional real `POST /api/pedidos/` de Django REST Framework con autenticación JWT (`Authorization: Bearer <token>`), selector de cantidades, botón rápido con variantes reales del catálogo (IDs 54, 49, 55, 44 del fixture), validación RHF + Zod (`checkoutFormSchema` y `orderSchema`), modal de orden confirmada con datos devueltos por DRF y captura de errores estructurados (stock insuficiente 400 y sesión expirada 401).
   - Estados globales App Router: `src/app/layout.jsx` (Layout raíz con `CartProvider`), `src/app/loading.jsx`, `src/app/error.jsx` y `src/app/not-found.jsx`.
 - **Componentes Reutilizables Base (R2):**
@@ -58,6 +58,11 @@ La aplicación estará disponible en `http://localhost:3000`.
   - `src/components/Badge.jsx` (`Server Component`)
   - `src/components/SkeletonCard.jsx` (`Server Component`)
   - `src/components/Modal.jsx` (`Client Component` — accesibilidad con tecla Escape, clic en backdrop y bloqueo de scroll)
+  - `src/components/LogoutButton.jsx` (`Client Component` — cierre de sesión conectado a Server Action `logoutAction()` y limpieza de sesión)
+- **Autenticación JWT y Server Actions (R4):**
+  - `src/app/actions.js` (`Server Actions` con `"use server"`: `loginAction`, `logoutAction`, `getAuthSessionAction` y `revalidateProductsAction` gestionando persistencia en Cookies HTTP-Only).
+  - `src/lib/auth.js` (`Módulo de autenticación`: helpers `parseJwt`, `isTokenExpired`, `getServerToken` y guard `requireAuth`).
+  - `src/middleware.js` (`Middleware`: protección perimetral de rutas `/dashboard` con redirección automática al login si no existe token en cookies).
 - **Estado Global con Context API (R6):**
   - `src/context/CartContext.jsx`: Proveedor `CartProvider` y hook `useCart()` con métodos `addToCart()`, `removeFromCart()`, `updateQuantity()`, `clearCart()`, preservación de `variante_id`, totales memorizados y persistencia bidireccional en `localStorage` (`velox_cart`) con soporte de sincronización multi-pestaña vía evento `storage`.
 - **Validaciones Zod en `snake_case` (R5):**
@@ -72,7 +77,7 @@ Ejecutar la suite completa de tests unitarios en Vitest con Testing Library y JS
 cd frontend
 npm run test
 ```
-*Cobertura: 7 suites de prueba y 54 tests unitarios verificando `CartContext` (incluyendo sincronización multi-pestaña y preservación de `variante_id`), esquemas de Zod (`authSchema`, `orderSchema` con opciones de pago oficiales y validación estricta de SKU/variante), normalización, métodos CRUD y formateo recursivo de errores anidados DRF en `api.js`, componente `Modal`, componente `ProductCard` (renderizado, selector dinámico de talles AR, stock y despacho al carrito) y flujo completo de checkout interactivo conectado a DRF con autenticación JWT, descuento de stock y manejo de errores 400/401.*
+*Cobertura: 9 suites de prueba y 66 tests unitarios verificando `CartContext` (incluyendo sincronización multi-pestaña y preservación de `variante_id`), esquemas de Zod (`authSchema`, `orderSchema` con opciones de pago oficiales y validación estricta de SKU/variante), normalización, métodos CRUD y formateo recursivo de errores anidados DRF en `api.js`, componente `Modal`, componente `ProductCard` (renderizado, selector dinámico de talles AR, stock y despacho al carrito), módulos de autenticación (`parseJwt`, `isTokenExpired` en `auth.js`), Server Actions (`loginAction`, `logoutAction`, `getAuthSessionAction` con Cookies HTTP-Only en `actions.js`) y flujo completo de checkout interactivo conectado a DRF con autenticación JWT, descuento de stock y manejo de errores 400/401.*
 ## 🚀 Backend — Puesta en marcha local (`uv`)
 
 Requisitos: Python 3.12+ y [`uv`](https://docs.astral.sh/uv/).
