@@ -37,7 +37,9 @@ Para que cualquier integrante del grupo pueda explicar el código en el coloquio
   - `develop`: Rama de integración continua del equipo.
   - `feature/<area>-<descripcion>`: Ramas de trabajo diario que nacen desde `develop` (ej. `feature/back-pedidos-viewset`, `feature/front-catalogo-filtros`).
   - `fix/<area>-<descripcion>`: Ramas para corregir bugs detectados en integración.
-- **Reglas de Integración y Tablero Kanban:**
+- **Reglas de Integración, Revisión Colectiva y Tablero Kanban:**
   - **Prohibido hacer push directo a `main` o `develop`.**
-  - Todo cambio se integra mediante **Pull Request (PR)** hacia `develop`, revisado por al menos un compañero y vinculado a su tarea correspondiente en el tablero Kanban (**GitHub Projects** o **Trello**).
+  - **Revisión obligatoria de todos los colaboradores:** Ningún Pull Request hacia `develop` o `main` puede mergearse sin la **revisión y aprobación (`Approve`) de los 3 colaboradores restantes** del equipo (4 integrantes en total: 1 autor + 3 reviews requeridos).
+  - Cada integrante debe revisar la pestaña *Files changed* del PR, dejar al menos una pregunta o comentario técnico y marcar `Approve`.
+  - Todo PR debe estar vinculado a su tarea correspondiente en el tablero de **Trello**.
   - Todos los commits siguen **Conventional Commits** (`feat(alcance): ...`, `fix(alcance): ...`, `docs(alcance): ...`, `test(alcance): ...`).

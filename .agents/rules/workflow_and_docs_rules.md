@@ -38,7 +38,9 @@ Cada archivo clave debe incluir justificación técnica concisa para que los 4 i
   - `develop`: Rama de integración continua donde convergen las entregas del equipo.
   - `feature/<area>-<descripcion>`: Ramas de nuevas funcionalidades creadas desde `develop` (ej. `feature/back-modelos-catalogo`, `feature/front-carrito-context`).
   - `fix/<area>-<descripcion>`: Ramas de corrección de errores puntuales creadas desde `develop`.
-- **Protección y Revisión:**
+- **Protección y Revisión Colectiva Obligatoria:**
   - **Prohibido hacer push directo a `main` o `develop`.**
-  - Todo cambio ingresa a `develop` mediante un **Pull Request (PR)** revisado por al menos otro integrante del grupo y vinculado a una tarjeta asignada en el tablero Kanban (**GitHub Projects** o **Trello**).
+  - **Regla de 100% de Aprobaciones:** Todo cambio ingresa a `develop` mediante un **Pull Request (PR)** que requiere obligatoriamente la **revisión y aprobación (`Approve`) de todos los colaboradores restantes del equipo (3 reviews obligatorios)** antes de ser mergeado. Esto garantiza que los 4 integrantes conozcan cada línea de código para el coloquio oral.
+  - Los colaboradores deben dejar comentarios técnicos o constancia de revisión en la pestaña *Files changed* del PR en GitHub.
+  - Todo PR debe estar vinculado a su tarjeta correspondiente en el tablero Kanban (**Trello**).
   - Uso obligatorio de **Conventional Commits** (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`).
