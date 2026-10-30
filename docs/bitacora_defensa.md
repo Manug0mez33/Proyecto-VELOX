@@ -177,6 +177,33 @@ Este archivo es la **memoria técnica viva y guía de estudio del equipo de 4 in
 
 ---
 
+### Etapa 2 / Card #24: Catálogo Paginado (/productos), Ficha Dinámica (/productos/[id]) y Componentes FilterBar y ProductCard (R1, R2, R3, R7)
+- **Rama:** `feature/front-catalogo-rutas` -> `develop`
+- **Responsable(s):** Juan Falco (Frontend 1)
+- **Archivos clave:**
+  - `frontend/src/components/ProductCard.jsx`
+  - `frontend/src/components/FilterBar.jsx`
+  - `frontend/src/components/ProductDetailClient.jsx`
+  - `frontend/src/app/productos/page.jsx`
+  - `frontend/src/app/productos/[id]/page.jsx`
+  - `frontend/src/app/__tests__/ProductCard.test.jsx`
+  - `README.md`, `docs/bitacora_defensa.md`
+- **Qué se implementó:**
+  - `src/components/ProductCard.jsx` (`Client Component`): Tarjeta de producto con estética Dark Mode (`#2A2A2A`, `rounded-lg` 8px), silueta técnica de calzado con glow neón, selector interactivo de talle en tarjeta con actualización en vivo de SKU/precio, badges de categoría y stock, y botón de compra directa que despacha a `CartContext` (`addToCart`).
+  - `src/components/FilterBar.jsx` (`Client Component`): Barra de filtrado con búsqueda por texto libre (nombre, descripción, SKU), filtros por marca, categoría, género, pills rápidas de talles AR, ordenamiento y sincronización declarativa con los query parameters de la URL (`useRouter` y `useSearchParams`).
+  - `src/app/productos/page.jsx` (`Server Component`): Página de catálogo que lee `searchParams` en el servidor, consume `api.getPaginated('/productos/')` procesando siempre el sobre paginado de DRF (`{ count, next, previous, results }`) con fallback exhaustivo en memoria de 12 productos con variantes y barra de paginación DRF (`Anterior`, páginas, `Siguiente`).
+  - `src/app/productos/[id]/page.jsx` (`Server Component`): Ruta dinámica de ficha técnica que obtiene el detalle en el servidor para optimizar SEO y metadata dinámica, e hidrata la isla interactiva `ProductDetailClient.jsx` para conmutar fotos de galería (ImagenProducto 1:N), selector de color (hex) y talle con stock verificado en tiempo real (`@action stock_por_talle`) y sección completa de reseñas de atletas (`ResenaViewSet`).
+  - `src/app/__tests__/ProductCard.test.jsx`: 3 pruebas unitarias exhaustivas con Vitest + Testing Library verificando renderizado de marca, precio y nombre, cambio de variante/SKU y agregado al carrito.
+- **Decisiones técnicas y problemas resueltos:**
+  - **Respeto estricto del sobre paginado DRF:** En cumplimiento de `api_contract_rules.md`, nunca se asume un array plano en listados; se extrae `.results` y se utilizan `.count`, `.next` y `.previous` para construir la barra de paginación preservando todos los filtros activos en la URL.
+  - **Desacople conceptual 3FN en UI:** Se visualiza explícitamente en el selector interactivo que el producto (`Producto`) es el contenedor y que la unidad física comprable con SKU único y stock real es la combinación de talle y color (`VarianteProducto`).
+  - **Arquitectura de islas de servidor/cliente:** Las páginas `/productos` y `/productos/[id]` son Server Components para mantener rápida la primera carga y optimizar SEO; la interactividad se delega a `FilterBar.jsx`, `ProductCard.jsx` y `ProductDetailClient.jsx` con `"use client"`.
+- **Guía para la defensa oral (Cómo explicarlo al docente):**
+  - **Para Facundo Lemo (Proceso / Backend):** "El catálogo y la ficha respetan exactamente los nombres de campo en `snake_case` del backend (`precio_base`, `sku_referencia`, `stock_total`, `codigo_hex`), consumiendo el sobre paginado de DRF y demostrando en la interfaz cómo el stock no está en el producto sino en la variante SKU."
+  - **Para Valentino Arballo (Componentes / Frontend):** "Implementamos la arquitectura recomendada por la cátedra: `/productos` y `/productos/[id]` son Server Components que resuelven los datos y metadatos en el servidor, mientras que `FilterBar` y `ProductCard` son Client Components con `"use client"` justificado en su primera línea para gestionar eventos de usuario, sincronizar searchParams con la URL y conectar con `CartContext`."
+
+---
+
 ### Etapa 2 / PR: ViewSets de Catálogo + NestedSerializer + Filtros + @action
 - **Rama:** `feature/back-api-productos` -> `develop`
 - **Responsable(s):** Valentino Cambria (Backend 2)
@@ -253,8 +280,9 @@ Esta tabla registra cada componente y módulo del frontend para justificar su ar
 | `src/app/loading.jsx` | **Server Component** | ✅ Implementado | Estado global de carga (R1) renderizado en el servidor con `SkeletonCard` y animación `animate-pulse`. |
 | `src/app/error.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Exigido por Next.js App Router para capturar errores en tiempo de ejecución y ejecutar el callback interactivo `reset()`. |
 | `src/app/not-found.jsx` | **Server Component** | ✅ Implementado | Vista estática HTTP 404 (R1) renderizada en el servidor cuando una ruta o SKU no existe. |
-| `src/app/productos/page.jsx` | **Server Component** | Planificado | Página de catálogo que lee `searchParams` en el servidor y consulta `GET /api/productos/` paginado, enviando menos JavaScript al navegador. |
-| `src/app/productos/[id]/page.jsx` | **Server Component** | Planificado | Ficha técnica dinámica que obtiene el detalle del calzado en el servidor e hidrata únicamente el subcomponente interactivo de selección de talle/variante. |
+| `src/app/productos/page.jsx` | **Server Component** | ✅ Implementado | Página de catálogo que lee `searchParams` en el servidor y consume `GET /api/productos/` paginado con sobre DRF (`count`, `next`, `previous`, `results`), enviando HTML optimizado y menos JavaScript al cliente. |
+| `src/app/productos/[id]/page.jsx` | **Server Component** | ✅ Implementado | Ficha técnica dinámica que obtiene el calzado en el servidor para SEO y metadata OpenGraph, hidratando la isla interactiva `ProductDetailClient.jsx`. |
+| `src/components/ProductDetailClient.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Isla interactiva de ficha técnica para navegación de fotos de galería (1:N), selección de talle/color SKU con stock dinámico y sección de reseñas. |
 | `src/app/dashboard/layout.jsx` | **Server Component** | ✅ Implementado | Layout anidado (R1) que estructura el shell administrativo y barra lateral sin forzar hidratación en toda la página. |
 | `src/app/dashboard/page.jsx` | **Server Component** | ✅ Implementado | Resumen ejecutivo del panel de control con métricas en tiempo real y mapa de operaciones CRUD. |
 | `src/app/login/page.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Formulario interactivo de autenticación con React Hook Form + Zod (`authSchema.js`) y captura de errores DRF. |
@@ -262,8 +290,8 @@ Esta tabla registra cada componente y módulo del frontend para justificar su ar
 | `src/context/CartContext.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Estado global con Context API (R6) para compartir carrito entre componentes cliente con persistencia en `localStorage`. |
 | `src/components/Navbar.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Consume `useCart()` de forma reactiva para mostrar el contador de productos en tiempo real y gestiona el menú móvil. |
 | `src/components/Footer.jsx` | **Server Component** | ✅ Implementado | Componente puramente presentacional y estático sin hooks ni eventos de navegador; cero costo de hidratación en el cliente. |
-| `src/components/ProductCard.jsx` | **Server / Client (según acción rápida)** | Planificado | Presenta imagen, marca, precio y enlace a `/productos/[id]` con estética Dark Mode (`#2A2A2A`). |
-| `src/components/FilterBar.jsx` | **Client Component (`"use client"`)** | Planificado | Requiere manejar inputs controlados/eventos `onChange` y actualizar los query params de la URL (`useRouter`, `useSearchParams`) para filtrar por categoría, talle y precio. |
+| `src/components/ProductCard.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Tarjeta interactiva con selector de talle AR en vivo, recálculo de SKU/precio, badges de categoría/stock y botón de compra directa a `CartContext`. |
+| `src/components/FilterBar.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Filtros controlados (texto, marca, categoría, género, talles AR) sincronizados declarativamente con la URL vía `useRouter` y `useSearchParams`. |
 | `src/components/Button.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Botón reutilizable con variante primaria verde neón (`#39FF14`) y soporte para estados `disabled`/`loading` y eventos `onClick`. |
 | `src/components/Badge.jsx` | **Server Component** | ✅ Implementado | Etiqueta visual sin estado para mostrar talles, categoría o disponibilidad de stock. |
 | `src/components/Modal.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Diálogo accesible (`role="dialog"`, `aria-modal="true"`) con cierre por tecla Escape, clic en backdrop y bloqueo de scroll en el body. |
@@ -277,4 +305,4 @@ Esta tabla registra cada componente y módulo del frontend para justificar su ar
 | **Cobertura de las 4 Operaciones CRUD (R3)** | `src/lib/api.js` y `src/app/actions.js` | Además de listar productos (`GET`) y crear/cancelar pedidos (`POST`), el frontend implementa las 4 operaciones completas (**Crear `POST`, Leer `GET`, Editar `PUT/PATCH` y Borrar `DELETE`**) sobre un recurso principal (gestión de productos/variantes en `/dashboard` o reseñas), revalidando la caché con `revalidatePath()`. |
 | **Formularios con React Hook Form + Zod (R5)** | `src/validations/authSchema.js` y `orderSchema.js` | Cumple el requisito de 2+ formularios validados con RHF + Zod en `snake_case`: `/login` con `loginSchema` y el checkout modal en `/carrito` con `checkoutFormSchema` y `orderSchema`. RHF evita re-renderizados innecesarios y Zod garantiza paridad estricta con Django REST Framework. |
 | **Estado Global con Context API (R6)** | `src/context/CartContext.jsx` | Provee `items`, `addToCart`, `removeFromCart`, `clearCart` y el cálculo de totales a toda la app mediante `useCart()`, sincronizando el carrito en `localStorage` con la bandera `isHydrated` (anti hydration mismatch) y el evento nativo `storage` para sincronización multi-pestaña. |
-| **Testing Unitario con Vitest (R7)** | `src/app/__tests__/` | 51 tests unitarios en 6 suites (`CartContext.test.jsx`, `authSchema.test.js`, `orderSchema.test.js`, `api.test.js`, `Modal.test.jsx`, `CarritoCheckout.test.jsx`) testeando de forma exhaustiva componentes interactivos, esquemas Zod, métodos CRUD, checkout conectado a DRF con JWT y manejo de errores. |
+| **Testing Unitario con Vitest (R7)** | `src/app/__tests__/` | 54 tests unitarios en 7 suites (`CartContext.test.jsx`, `authSchema.test.js`, `orderSchema.test.js`, `api.test.js`, `Modal.test.jsx`, `CarritoCheckout.test.jsx`, `ProductCard.test.jsx`) testeando de forma exhaustiva componentes interactivos, esquemas Zod, métodos CRUD, catálogo de productos con selector de variantes, checkout conectado a DRF con JWT y manejo de errores. |
