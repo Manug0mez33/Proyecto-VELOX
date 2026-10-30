@@ -1,0 +1,7 @@
+[project]
+name = "velox-backend"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "django>=6,<7",
+]
