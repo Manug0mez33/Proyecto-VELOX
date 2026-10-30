@@ -1,7 +1,39 @@
 import { describe, it, expect } from "vitest";
-import { orderSchema, orderItemSchema } from "../../validations/orderSchema";
+import { orderSchema, orderItemSchema, checkoutFormSchema } from "../../validations/orderSchema";
 
 describe("orderSchema (R5) - Validación Zod para Pedidos y Checkout", () => {
+  describe("checkoutFormSchema (datos de formulario)", () => {
+    it("acepta datos de contacto y entrega válidos", () => {
+      const validFormData = {
+        direccion_envio: "Alvear 550",
+        ciudad: "Río Cuarto",
+        codigo_postal: "5800",
+        telefono_contacto: "3584123456",
+        metodo_pago: "TRANSFERENCIA",
+        notas_adicionales: "Dejar en conserjería",
+      };
+
+      const result = checkoutFormSchema.safeParse(validFormData);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.ciudad).toBe("Río Cuarto");
+      }
+    });
+
+    it("falla si la dirección está vacía", () => {
+      const invalid = {
+        direccion_envio: "",
+        ciudad: "Córdoba",
+        codigo_postal: "5000",
+        telefono_contacto: "3514223344",
+        metodo_pago: "TARJETA",
+      };
+
+      const result = checkoutFormSchema.safeParse(invalid);
+      expect(result.success).toBe(false);
+      expect(result.error.issues[0].message).toContain("obligatoria");
+    });
+  });
   it("valida exitosamente un pedido completo con items y dirección en snake_case", () => {
     const validOrder = {
       direccion_envio: "Boulevard Roca 1234",

@@ -24,10 +24,10 @@ export const orderItemSchema = z.object({
 });
 
 /**
- * Esquema de validación para el checkout y creación de pedidos (/carrito/checkout o POST /api/pedidos/).
- * Asegura paridad snake_case estricta con los modelos y serializadores de Django REST Framework.
+ * Esquema de validación para los datos de contacto y entrega del formulario de checkout.
+ * Utilizado por React Hook Form para validar los inputs del cliente antes del envío.
  */
-export const checkoutSchema = z.object({
+export const checkoutFormSchema = z.object({
   direccion_envio: z
     .string()
     .min(1, "La dirección de envío es obligatoria.")
@@ -60,6 +60,13 @@ export const checkoutSchema = z.object({
     .max(500, "Las notas adicionales no pueden exceder 500 caracteres.")
     .optional()
     .or(z.literal("")),
+});
+
+/**
+ * Esquema de validación completo para el payload transaccional de pedidos (POST /api/pedidos/).
+ * Asegura paridad snake_case estricta con los modelos y serializadores de Django REST Framework.
+ */
+export const checkoutSchema = checkoutFormSchema.extend({
   items: z
     .array(orderItemSchema)
     .min(1, "El pedido debe contener al menos un producto en el carrito."),

@@ -156,4 +156,26 @@ describe("CartContext (R6) - Gestión de Estado Global del Carrito", () => {
     expect(result.current.totalItems).toBe(0);
     expect(result.current.subtotal).toBe(0);
   });
+
+  it("sincroniza el carrito automáticamente cuando otra pestaña dispara un evento de storage", () => {
+    const { result } = renderHook(() => useCart(), { wrapper });
+
+    const externalItems = [
+      { id: 99, sku: "EXT-SKU-99", nombre: "VELOX CARBON TAB 2", precio: 220000, cantidad: 3 },
+    ];
+
+    act(() => {
+      window.dispatchEvent(
+        new StorageEvent("storage", {
+          key: "velox_cart",
+          newValue: JSON.stringify(externalItems),
+        })
+      );
+    });
+
+    expect(result.current.items).toHaveLength(1);
+    expect(result.current.items[0].sku).toBe("EXT-SKU-99");
+    expect(result.current.totalItems).toBe(3);
+    expect(result.current.subtotal).toBe(660000);
+  });
 });

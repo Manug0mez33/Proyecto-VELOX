@@ -4,7 +4,7 @@
  * captura estructurada de errores 400 (diccionario de validación) y 401/403 (detail).
  */
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 export class ApiError extends Error {
   constructor(message, status, data = null) {
@@ -76,8 +76,8 @@ export async function fetchApi(endpoint, options = {}) {
     ...headers,
   };
 
-  // Solo agregar Content-Type: application/json si no es FormData y se envía body
-  if (!(customConfig.body instanceof FormData) && !defaultHeaders["Content-Type"]) {
+  // Solo agregar Content-Type: application/json si se envía body y no es FormData
+  if (customConfig.body && !(customConfig.body instanceof FormData) && !defaultHeaders["Content-Type"]) {
     defaultHeaders["Content-Type"] = "application/json";
   }
 

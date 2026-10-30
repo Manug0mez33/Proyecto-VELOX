@@ -26,6 +26,30 @@ export function CartProvider({ children }) {
     } finally {
       setIsHydrated(true);
     }
+
+    // Sincronización multi-pestaña: escuchar cambios en localStorage originados desde otras ventanas
+    const handleStorageChange = (e) => {
+      if (e.key === CART_STORAGE_KEY) {
+        try {
+          const parsed = e.newValue ? JSON.parse(e.newValue) : [];
+          if (Array.isArray(parsed)) {
+            setItems(parsed);
+          }
+        } catch (error) {
+          console.error("Error al sincronizar carrito desde otra pestaña:", error);
+        }
+      }
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("storage", handleStorageChange);
+    }
+
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("storage", handleStorageChange);
+      }
+    };
   }, []);
 
   // 2. Sincronizar cambios del carrito hacia localStorage tras la hidratación inicial
@@ -45,8 +69,8 @@ export function CartProvider({ children }) {
 
   // 3. Agregar producto o variante al carrito
   const addToCart = useCallback((producto, cantidad = 1) => {
-    const qty = Math.max(1, Number(cantidad) || 1);
-    const sku = producto.sku || producto.sku_referencia || `ITEM-${producto.id}`;
+    const qty = Math.max(1, Math.floor(Number(cantidad)) || 1);
+    const sku = producto.sku || producto.sku_referencia || `ITEM-${producto.id || Date.now()}`;
     const precio = Number(producto.precio_final ?? producto.precio_base ?? producto.precio) || 0;
 
     setItems((prevItems) => {
@@ -78,7 +102,12 @@ export function CartProvider({ children }) {
     });
   }, []);
 
-  // 4. Modificar cantidad de un ítem existente
+  // 4. Eliminar un ítem por su SKU
+  const removeFromCart = useCallback((sku) => {
+    setItems((prevItems) => prevItems.filter((item) => item.sku !== sku));
+  }, []);
+
+  // 5. Modificar cantidad de un ítem existente
   const updateQuantity = useCallback((sku, nuevaCantidad) => {
     const qty = Number(nuevaCantidad);
     if (isNaN(qty) || qty <= 0) {
@@ -88,15 +117,10 @@ export function CartProvider({ children }) {
 
     setItems((prevItems) =>
       prevItems.map((item) =>
-        item.sku === sku ? { ...item, cantidad: qty } : item
+        item.sku === sku ? { ...item, cantidad: Math.floor(qty) } : item
       )
     );
-  }, []);
-
-  // 5. Eliminar un ítem por su SKU
-  const removeFromCart = useCallback((sku) => {
-    setItems((prevItems) => prevItems.filter((item) => item.sku !== sku));
-  }, []);
+  }, [removeFromCart]);
 
   // 6. Vaciar todo el carrito
   const clearCart = useCallback(() => {

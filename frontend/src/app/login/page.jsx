@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema } from "../../validations/authSchema";
+import { api, ApiError } from "../../lib/api";
 import Button from "../../components/Button";
 import Badge from "../../components/Badge";
 
@@ -31,29 +32,17 @@ export default function LoginPage() {
     setServerError("");
 
     try {
-      // Simulación de envío a endpoint POST /api/token/ o Server Action
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-      const response = await fetch(`${apiUrl}/token/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        const detailMsg =
-          errorData?.detail ||
-          "Credenciales inválidas. Verifica tu usuario y contraseña.";
-        setServerError(detailMsg);
-        return;
-      }
-
+      // Envío de credenciales a endpoint POST /api/token/ mediante cliente HTTP unificado (R3)
+      await api.post("/token/", data);
       setLoginSuccess(true);
-    } catch {
-      // Modo offline o servidor backend no levantado aún durante desarrollo local
-      setServerError(
-        "Aviso de desarrollo: No se pudo conectar con el backend de Django en http://localhost:8000/api/token/. Verifica que el servicio esté corriendo con uv run python manage.py runserver."
-      );
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setServerError(err.message || "Credenciales inválidas. Verifica tu usuario y contraseña.");
+      } else {
+        setServerError(
+          "Aviso de desarrollo: No se pudo conectar con el backend de Django REST Framework. Verifica que el servicio esté corriendo en el servidor configurado."
+        );
+      }
     } finally {
       setIsSubmitting(false);
     }
