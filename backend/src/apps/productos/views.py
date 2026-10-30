@@ -3,9 +3,9 @@ ViewSets del catálogo VELOX (5 de los 8 obligatorios): Producto, Marca, Categor
 VarianteProducto y Proveedor. ProductoViewSet concentra el NestedSerializer #1,
 los filtros django-filter y las acciones @action destacados y stock_por_talle.
 """
-from django.db.models import Prefetch, Q, Sum
+from django.db.models import Prefetch, ProtectedError, Q, Sum
 from django.db.models.functions import Coalesce
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -129,6 +129,15 @@ class VarianteProductoViewSet(viewsets.ModelViewSet):
     filterset_fields = ["producto", "talle", "color", "activo"]
     search_fields = ["sku", "producto__nombre"]
     ordering_fields = ["sku", "stock"]
+
+    def destroy(self, request, *args, **kwargs):
+        try:
+            return super().destroy(request, *args, **kwargs)
+        except ProtectedError:
+            return Response(
+                {"detail": "No se puede eliminar la variante porque está asociada a pedidos existentes (integridad referencial protegida)."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 
 class ProveedorViewSet(viewsets.ModelViewSet):

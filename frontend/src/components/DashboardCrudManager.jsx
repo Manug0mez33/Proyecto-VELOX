@@ -153,14 +153,24 @@ export default function DashboardCrudManager() {
   // 6. Eliminación de Reseña (DELETE)
   const [deletingResena, setDeletingResena] = useState(null);
 
-  // Sincronizar token
+  // Sincronizar token reactivamente con localStorage y eventos de sesión
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("velox_access_token");
-      setToken(stored || null);
-    } catch {
-      setToken(null);
-    }
+    const syncToken = () => {
+      try {
+        const stored = localStorage.getItem("velox_access_token");
+        setToken(stored || null);
+      } catch {
+        setToken(null);
+      }
+    };
+
+    syncToken();
+    window.addEventListener("velox-auth-changed", syncToken);
+    window.addEventListener("storage", syncToken);
+    return () => {
+      window.removeEventListener("velox-auth-changed", syncToken);
+      window.removeEventListener("storage", syncToken);
+    };
   }, []);
 
   // 1. READ: Cargar Variantes desde DRF (GET /api/variantes/)
@@ -168,11 +178,13 @@ export default function DashboardCrudManager() {
     setLoading(true);
     try {
       const res = await api.getPaginated("/variantes/");
-      if (res && Array.isArray(res.results) && res.results.length > 0) {
+      if (res && Array.isArray(res.results)) {
         setVariantes(res.results);
       }
-    } catch {
-      // Mantiene datos de muestra si DRF no está disponible
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setFeedback({ type: "error", message: err.message });
+      }
     } finally {
       setLoading(false);
     }
@@ -183,11 +195,13 @@ export default function DashboardCrudManager() {
     setLoading(true);
     try {
       const res = await api.getPaginated("/resenas/");
-      if (res && Array.isArray(res.results) && res.results.length > 0) {
+      if (res && Array.isArray(res.results)) {
         setResenas(res.results);
       }
-    } catch {
-      // Mantiene datos de muestra si DRF no está disponible
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setFeedback({ type: "error", message: err.message });
+      }
     } finally {
       setLoading(false);
     }
@@ -239,21 +253,11 @@ export default function DashboardCrudManager() {
       const currentToken =
         token || (typeof window !== "undefined" ? localStorage.getItem("velox_access_token") : null);
 
-      let updatedData = null;
-      try {
-        updatedData = await api.patch(
-          `/variantes/${editingVariante.sku}/`,
-          payload,
-          { token: currentToken || undefined }
-        );
-      } catch (err) {
-        // En entorno mock o sin backend activo, simulamos respuesta exitosa
-        updatedData = {
-          ...editingVariante,
-          ...payload,
-          precio_final: payload.precio_ajustado || editingVariante.precio_final,
-        };
-      }
+      const updatedData = await api.patch(
+        `/variantes/${editingVariante.sku}/`,
+        payload,
+        { token: currentToken || undefined }
+      );
 
       setVariantes((prev) =>
         prev.map((v) =>
@@ -300,25 +304,9 @@ export default function DashboardCrudManager() {
       const currentToken =
         token || (typeof window !== "undefined" ? localStorage.getItem("velox_access_token") : null);
 
-      let createdData = null;
-      try {
-        createdData = await api.post("/variantes/", payload, {
-          token: currentToken || undefined,
-        });
-      } catch (err) {
-        // Fallback optimista local
-        const prod = PRODUCTOS_CATALOGO.find((p) => p.id === payload.producto);
-        const tal = TALLES_BASE.find((t) => t.id === payload.talle);
-        const col = COLORES_BASE.find((c) => c.id === payload.color);
-        createdData = {
-          id: Date.now(),
-          ...payload,
-          producto_nombre: prod?.nombre || "Producto VELOX",
-          talle_detalle: tal?.numero || "Talle AR",
-          color_nombre: col?.nombre || "Color",
-          precio_final: payload.precio_ajustado || "199999.00",
-        };
-      }
+      const createdData = await api.post("/variantes/", payload, {
+        token: currentToken || undefined,
+      });
 
       setVariantes((prev) => [createdData, ...prev]);
       setFeedback({
@@ -345,16 +333,9 @@ export default function DashboardCrudManager() {
       const currentToken =
         token || (typeof window !== "undefined" ? localStorage.getItem("velox_access_token") : null);
 
-      try {
-        await api.delete(`/variantes/${deletingVariante.sku}/`, {
-          token: currentToken || undefined,
-        });
-      } catch (err) {
-        // Si falla por protección de FK en Django o endpoint mock
-        if (err.message && err.message.includes("PROTECT")) {
-          throw err;
-        }
-      }
+      await api.delete(`/variantes/${deletingVariante.sku}/`, {
+        token: currentToken || undefined,
+      });
 
       setVariantes((prev) => prev.filter((v) => v.sku !== deletingVariante.sku));
       setFeedback({
@@ -393,21 +374,9 @@ export default function DashboardCrudManager() {
       const currentToken =
         token || (typeof window !== "undefined" ? localStorage.getItem("velox_access_token") : null);
 
-      let created = null;
-      try {
-        created = await api.post("/resenas/", payload, {
-          token: currentToken || undefined,
-        });
-      } catch (err) {
-        const prod = PRODUCTOS_CATALOGO.find((p) => p.id === payload.producto);
-        created = {
-          id: Date.now(),
-          ...payload,
-          usuario_nombre: "atleta_velox",
-          producto_nombre: prod?.nombre || "Calzado Deportivo",
-          creado_en: new Date().toISOString(),
-        };
-      }
+      const created = await api.post("/resenas/", payload, {
+        token: currentToken || undefined,
+      });
 
       setResenas((prev) => [created, ...prev]);
       setFeedback({
@@ -445,17 +414,9 @@ export default function DashboardCrudManager() {
       const currentToken =
         token || (typeof window !== "undefined" ? localStorage.getItem("velox_access_token") : null);
 
-      let updated = null;
-      try {
-        updated = await api.patch(`/resenas/${editingResena.id}/`, payload, {
-          token: currentToken || undefined,
-        });
-      } catch (err) {
-        updated = {
-          ...editingResena,
-          ...payload,
-        };
-      }
+      const updated = await api.patch(`/resenas/${editingResena.id}/`, payload, {
+        token: currentToken || undefined,
+      });
 
       setResenas((prev) =>
         prev.map((r) => (r.id === editingResena.id ? { ...r, ...updated } : r))
@@ -481,13 +442,9 @@ export default function DashboardCrudManager() {
       const currentToken =
         token || (typeof window !== "undefined" ? localStorage.getItem("velox_access_token") : null);
 
-      try {
-        await api.delete(`/resenas/${deletingResena.id}/`, {
-          token: currentToken || undefined,
-        });
-      } catch (err) {
-        // En caso de mock
-      }
+      await api.delete(`/resenas/${deletingResena.id}/`, {
+        token: currentToken || undefined,
+      });
 
       setResenas((prev) => prev.filter((r) => r.id !== deletingResena.id));
       setFeedback({
@@ -577,6 +534,19 @@ export default function DashboardCrudManager() {
           >
             ×
           </button>
+        </div>
+      )}
+
+      {/* Aviso de autenticación para mutaciones CRUD si no hay token */}
+      {!token && (
+        <div className="rounded-lg bg-[#2A1515]/60 border border-[#EF4444]/60 p-3 text-xs text-[#FCA5A5] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <span>
+            🔒 <strong>Modo lectura:</strong> Para crear, modificar o eliminar variantes y reseñas en DRF, debes{" "}
+            <a href="/login" className="text-[#39FF14] underline font-bold">iniciar sesión</a> con credenciales autorizadas (Staff / Admin para inventario).
+          </span>
+          <Button variant="secondary" href="/login" className="text-[11px] py-1 px-3 self-start sm:self-auto">
+            INICIAR SESIÓN →
+          </Button>
         </div>
       )}
 

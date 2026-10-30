@@ -41,14 +41,24 @@ export default function PedidoDetalleClient({ id }) {
   const [actionSuccess, setActionSuccess] = useState(null);
   const [actionError, setActionError] = useState(null);
 
-  // Sincronizar token JWT
+  // Sincronizar token JWT reactivamente con localStorage y eventos de sesión
   useEffect(() => {
-    try {
-      const storedToken = localStorage.getItem("velox_access_token");
-      setToken(storedToken || null);
-    } catch {
-      setToken(null);
-    }
+    const syncToken = () => {
+      try {
+        const storedToken = localStorage.getItem("velox_access_token");
+        setToken(storedToken || null);
+      } catch {
+        setToken(null);
+      }
+    };
+
+    syncToken();
+    window.addEventListener("velox-auth-changed", syncToken);
+    window.addEventListener("storage", syncToken);
+    return () => {
+      window.removeEventListener("velox-auth-changed", syncToken);
+      window.removeEventListener("storage", syncToken);
+    };
   }, []);
 
   const fetchPedido = useCallback(async () => {
@@ -64,11 +74,7 @@ export default function PedidoDetalleClient({ id }) {
       });
       setPedido(data);
     } catch (err) {
-      if (err instanceof ApiError) {
-        setError(err.message);
-      } else {
-        setError(`No se pudo obtener la orden #${id} de Django REST Framework.`);
-      }
+      setError(err.message || `No se pudo obtener la orden #${id} de Django REST Framework.`);
     } finally {
       setLoading(false);
     }
@@ -109,11 +115,9 @@ export default function PedidoDetalleClient({ id }) {
       );
       setIsCancelModalOpen(false);
     } catch (err) {
-      if (err instanceof ApiError) {
-        setActionError(err.message);
-      } else {
-        setActionError("Ocurrió un error al intentar cancelar el pedido con DRF.");
-      }
+      setActionError(
+        err.message || "Ocurrió un error al intentar cancelar el pedido con DRF."
+      );
     } finally {
       setIsCancelling(false);
     }
@@ -242,9 +246,15 @@ export default function PedidoDetalleClient({ id }) {
             <Button variant="secondary" href="/dashboard/pedidos" className="text-xs">
               VOLVER AL LISTADO
             </Button>
-            <Button variant="primary" onClick={fetchPedido} className="text-xs">
-              REINTENTAR
-            </Button>
+            {(!token || (error && error.toLowerCase().includes("autenticación"))) ? (
+              <Button variant="primary" href="/login" className="text-xs">
+                INICIAR SESIÓN
+              </Button>
+            ) : (
+              <Button variant="primary" onClick={fetchPedido} className="text-xs">
+                REINTENTAR
+              </Button>
+            )}
           </div>
         </div>
       )}
@@ -471,6 +481,11 @@ export default function PedidoDetalleClient({ id }) {
         }
       >
         <div className="space-y-4">
+          {actionError && (
+            <div className="rounded-lg bg-[#2A1515] border border-[#EF4444] p-3 text-xs text-[#FCA5A5] leading-relaxed">
+              ⚠️ <strong>Error al cancelar:</strong> {actionError}
+            </div>
+          )}
           <p className="text-sm text-[#D1D5DB] leading-relaxed">
             ¿Estás seguro de que deseas cancelar la orden de compra{" "}
             <strong className="text-white font-mono">#{id}</strong>?

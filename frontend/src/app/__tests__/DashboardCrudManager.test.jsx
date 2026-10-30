@@ -202,7 +202,12 @@ describe("DashboardCrudManager (4 Operaciones CRUD - R3) - GET, POST, PATCH, DEL
   });
 
   it("permite alternar entre la pestaña de Variantes y la de Reseñas", async () => {
-    vi.spyOn(api, "getPaginated").mockResolvedValueOnce(mockVariantesResponse);
+    vi.spyOn(api, "getPaginated").mockImplementation(async (endpoint) => {
+      if (endpoint === "/resenas/") {
+        return { count: 0, next: null, previous: null, results: [] };
+      }
+      return mockVariantesResponse;
+    });
 
     render(<DashboardCrudManager />);
 
@@ -214,8 +219,92 @@ describe("DashboardCrudManager (4 Operaciones CRUD - R3) - GET, POST, PATCH, DEL
     const tabResenas = screen.getByRole("button", { name: /RESEÑAS/i });
     fireEvent.click(tabResenas);
 
-    expect(
-      screen.getByRole("button", { name: /\+ NUEVA RESEÑA \(POST\)/i })
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: /\+ NUEVA RESEÑA \(POST\)/i })
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("muestra feedback de error cuando UPDATE (PATCH) falla en DRF", async () => {
+    vi.spyOn(api, "getPaginated").mockResolvedValueOnce(mockVariantesResponse);
+    vi.spyOn(api, "patch").mockRejectedValueOnce(
+      new Error("Las credenciales de autenticación no se proveyeron.")
+    );
+
+    render(<DashboardCrudManager />);
+
+    await waitFor(() => {
+      expect(screen.getByText("VX-VCX-39-NEG")).toBeInTheDocument();
+    });
+
+    const botonesAjustar = screen.getAllByRole("button", { name: /AJUSTAR \(PATCH\)/i });
+    fireEvent.click(botonesAjustar[0]);
+
+    const btnGuardar = screen.getByRole("button", { name: /GUARDAR CAMBIOS \(PATCH\)/i });
+    fireEvent.click(btnGuardar);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Las credenciales de autenticación no se proveyeron./i)
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("muestra feedback de error cuando CREATE (POST) falla en DRF por SKU duplicado", async () => {
+    vi.spyOn(api, "getPaginated").mockResolvedValueOnce(mockVariantesResponse);
+    vi.spyOn(api, "post").mockRejectedValueOnce(
+      new Error("sku: Ya existe un/a variante de producto con este/a sku.")
+    );
+
+    render(<DashboardCrudManager />);
+
+    await waitFor(() => {
+      expect(screen.getByText("VX-VCX-39-NEG")).toBeInTheDocument();
+    });
+
+    const btnNuevaVariante = screen.getByRole("button", {
+      name: /\+ NUEVA VARIANTE SKU \(POST\)/i,
+    });
+    fireEvent.click(btnNuevaVariante);
+
+    const inputSku = screen.getByPlaceholderText(/ej\. VX-VCX-41-NEO/i);
+    fireEvent.change(inputSku, { target: { value: "VX-VCX-39-NEG" } });
+
+    const btnCrear = screen.getByRole("button", { name: /CREAR VARIANTE EN DRF/i });
+    fireEvent.click(btnCrear);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Ya existe un\/a variante de producto con este\/a sku/i)
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("muestra feedback de error cuando DELETE falla en DRF por integridad referencial", async () => {
+    vi.spyOn(api, "getPaginated").mockResolvedValueOnce(mockVariantesResponse);
+    vi.spyOn(api, "delete").mockRejectedValueOnce(
+      new Error("No se puede eliminar la variante porque está asociada a pedidos existentes.")
+    );
+
+    render(<DashboardCrudManager />);
+
+    await waitFor(() => {
+      expect(screen.getByText("VX-VCX-39-NEG")).toBeInTheDocument();
+    });
+
+    const botonesEliminar = screen.getAllByRole("button", { name: /ELIMINAR \(DELETE\)/i });
+    fireEvent.click(botonesEliminar[0]);
+
+    const btnConfirmarDelete = screen.getByRole("button", {
+      name: /CONFIRMAR ELIMINACIÓN \(DELETE\)/i,
+    });
+    fireEvent.click(btnConfirmarDelete);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/No se puede eliminar la variante porque está asociada a pedidos existentes/i)
+      ).toBeInTheDocument();
+    });
   });
 });

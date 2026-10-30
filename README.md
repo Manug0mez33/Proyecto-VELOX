@@ -76,7 +76,7 @@ Ejecutar la suite completa de tests unitarios en Vitest con Testing Library y JS
 cd frontend
 npm run test
 ```
-*Cobertura: 10 suites de prueba y 69 tests unitarios verificando al 100%: `CartContext` (incluyendo sincronización multi-pestaña y preservación de `variante_id`), esquemas de Zod (`authSchema`, `orderSchema`), métodos CRUD y formateo recursivo de errores anidados DRF en `api.js`, componente `Modal`, componente `ProductCard` (renderizado, selector dinámico de talles AR, stock y despacho al carrito), checkout transaccional de `/carrito` conectado a DRF con JWT, listado reactivo de pedidos `/dashboard/pedidos` con filtros por estado y buscador, ficha técnica de la 2da ruta dinámica `/dashboard/pedidos/[id]` con ejecución de `@action` `cancelar_pedido` y módulo interactivo de 4 operaciones CRUD (`DashboardCrudManager`).*
+*Cobertura: 10 suites de prueba y 74 tests unitarios verificando al 100%: `CartContext` (incluyendo sincronización multi-pestaña y preservación de `variante_id`), esquemas de Zod (`authSchema`, `orderSchema`), métodos CRUD y formateo recursivo de errores anidados DRF en `api.js`, componente `Modal`, componente `ProductCard` (renderizado, selector dinámico de talles AR, stock y despacho al carrito), checkout transaccional de `/carrito` conectado a DRF con JWT, listado reactivo de pedidos `/dashboard/pedidos` con filtros por estado y buscador, ficha técnica de la 2da ruta dinámica `/dashboard/pedidos/[id]` con ejecución de `@action` `cancelar_pedido` y módulo interactivo de 4 operaciones CRUD (`DashboardCrudManager`).*
 ## 🚀 Backend — Puesta en marcha local (`uv`)
 
 Requisitos: Python 3.12+ y [`uv`](https://docs.astral.sh/uv/).

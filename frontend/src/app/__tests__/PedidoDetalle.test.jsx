@@ -140,4 +140,45 @@ describe("PedidoDetalleClient (2da Ruta Dinámica /dashboard/pedidos/[id] - R1) 
     ).not.toBeInTheDocument();
     expect(screen.getByText(/PEDIDO CANCELADO:/i)).toBeInTheDocument();
   });
+
+  it("muestra mensaje de error dentro del modal si @action cancelar_pedido falla", async () => {
+    localStorage.setItem("velox_access_token", "fake_token_jwt");
+    vi.spyOn(api, "get").mockResolvedValueOnce(mockPedidoPendiente);
+    vi.spyOn(api, "post").mockRejectedValueOnce(
+      new Error("El pedido ya se encuentra cancelado.")
+    );
+
+    render(<PedidoDetalleClient id={1} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("ORDEN DE COMPRA #1")).toBeInTheDocument();
+    });
+
+    const btnCancelar = screen.getByRole("button", { name: /CANCELAR PEDIDO \(@ACTION\)/i });
+    fireEvent.click(btnCancelar);
+
+    const btnConfirmar = screen.getByRole("button", { name: /SÍ, CANCELAR PEDIDO/i });
+    fireEvent.click(btnConfirmar);
+
+    await waitFor(() => {
+      expect(
+        screen.getAllByText(/El pedido ya se encuentra cancelado\./i).length
+      ).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  it("ofrece botón para iniciar sesión si la consulta falla por falta de autenticación", async () => {
+    vi.spyOn(api, "get").mockRejectedValueOnce(
+      new Error("Las credenciales de autenticación no se proveyeron.")
+    );
+
+    render(<PedidoDetalleClient id={1} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/NO SE PUDO CARGAR EL PEDIDO #1/i)).toBeInTheDocument();
+    });
+
+    const btnLogin = screen.getByRole("link", { name: /INICIAR SESIÓN/i });
+    expect(btnLogin).toHaveAttribute("href", "/login");
+  });
 });
