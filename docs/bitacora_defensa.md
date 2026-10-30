@@ -42,6 +42,25 @@ Este archivo es la **memoria técnica viva y guía de estudio del equipo de 4 in
 
 ---
 
+### Etapa 1 (Sprint 1 — Frontend Parte 1): Setup Next.js App Router, Tokens Dark Mode VELOX, Layout Raíz (R1), Componentes Base (R2) y Vistas `/` y `/tecnologia`
+- **Fecha:** 29 de Octubre de 2026
+- **Rama:** `feature/front-setup-identidad` -> `develop`
+- **Responsable(s):** Juan Falco (Frontend 1)
+- **Archivos clave:**
+  - `frontend/package.json`, `frontend/next.config.mjs`, `frontend/postcss.config.mjs`, `frontend/.env.example`
+  - `frontend/src/app/globals.css`, `frontend/src/app/layout.jsx`, `frontend/src/app/loading.jsx`, `frontend/src/app/error.jsx`, `frontend/src/app/not-found.jsx`
+  - `frontend/src/app/page.jsx`, `frontend/src/app/tecnologia/page.jsx`
+  - `frontend/src/components/Navbar.jsx`, `Footer.jsx`, `Button.jsx`, `Badge.jsx`, `SkeletonCard.jsx`
+- **Qué se implementó:**
+  - Se inicializó la aplicación Frontend en `frontend/` con Next.js 16 (App Router), React 19 y Tailwind CSS v4 puro (sin librerías de UI externas).
+  - Se configuraron los tokens cromáticos del Manual de Identidad Visual VELOX en `src/app/globals.css` (`#121212` Base, `#2A2A2A` Surface, `#39FF14` Accent, `#FFFFFF` y `#D1D5DB` Text) y las fuentes de Google Fonts `Space Grotesk` e `Inter` en `src/app/layout.jsx`.
+  - Se implementaron los archivos de estado del App Router exigidos por R1 (`loading.jsx`, `error.jsx`, `not-found.jsx`) y los primeros 5 componentes reutilizables de R2 (`Navbar`, `Footer`, `Button`, `Badge`, `SkeletonCard`), cada uno con su comentario superior de 1 línea justificando Server vs. Client Component.
+  - Se maquetaron las páginas `/` (Hero de la *VELOX Hyperion Carbon X* con glow neón y sección *Destacados de la Semana* conectada a `GET /api/productos/destacados/`) y `/tecnologia` (Manifiesto de ingeniería).
+- **Decisiones técnicas y problemas resueltos:**
+  - Para permitir el desarrollo paralelo sin bloqueo mientras el equipo de Backend finaliza los endpoints, `getProductosDestacados()` en `src/app/page.jsx` consume `process.env.NEXT_PUBLIC_API_URL` soportando tanto array directo como el sobre paginado DRF (`.results`) e incluye un fallback estructurado en `snake_case` (`precio_base`, `marca_detalle`, `categoria_detalle`, `stock_total`).
+- **Guía para la defensa oral (Cómo explicarlo al docente):**
+  - **Para Facundo Lemo (Proceso / Backend):** Se respetó desde el inicio el contrato `snake_case` y la separación conceptual entre `Producto` y `VarianteProducto` (SKU y talles AR) en las tarjetas de destacados.
+  - **Para Valentino Arballo (Componentes / Frontend):** `layout.jsx`, `page.jsx`, `tecnologia/page.jsx`, `Footer.jsx`, `Badge.jsx` y `SkeletonCard.jsx` son **Server Components** para optimizar SEO y enviar cero JS innecesario al cliente; solo `Navbar.jsx`, `Button.jsx` y `error.jsx` usan `"use client"` porque requieren hooks (`usePathname`, `useState`, `useEffect`) o eventos `onClick`/`reset()`.
 ### Etapa 1 / PR: Proyecto Django base + Modelos de Catálogo e Inventario + Admin
 - **Rama:** `feature/back-modelos-catalogo` -> `develop`
 - **Responsable(s):** Valentino Cambria (Backend 2)
@@ -135,18 +154,22 @@ Esta tabla registra cada componente y módulo del frontend para justificar su ar
 
 | Componente / Archivo | Tipo (`Server` / `Client`) | Estado | Justificación Técnica para la Defensa Oral |
 | :--- | :--- | :--- | :--- |
-| `src/app/layout.jsx` | **Server Component** | Planificado | Layout raíz que define fuentes (`Space Grotesk`, `Inter`), estructura HTML base y envuelve el árbol con `CartProvider` sin convertir toda la app en cliente. |
-| `src/app/page.jsx` | **Server Component** | Planificado | Landing page de VELOX; obtiene los calzados destacados directamente desde el servidor para optimizar SEO y tiempo de primera carga (FCP). |
+| `src/app/layout.jsx` | **Server Component** | ✅ Implementado | Layout raíz que define fuentes (`Space Grotesk`, `Inter`), estructura HTML base y envuelve el árbol con `Navbar` y `Footer` sin convertir toda la app en cliente. |
+| `src/app/page.jsx` | **Server Component** | ✅ Implementado | Landing page de VELOX; obtiene los calzados destacados directamente desde el servidor para optimizar SEO y tiempo de primera carga (FCP). |
+| `src/app/tecnologia/page.jsx` | **Server Component** | ✅ Implementado | Página estática del manifiesto técnico y tokens de diseño VELOX renderizada en el servidor sin costo de hidratación en el navegador. |
+| `src/app/loading.jsx` | **Server Component** | ✅ Implementado | Estado global de carga (R1) renderizado en el servidor con `SkeletonCard` y animación `animate-pulse`. |
+| `src/app/error.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Exigido por Next.js App Router para capturar errores en tiempo de ejecución y ejecutar el callback interactivo `reset()`. |
+| `src/app/not-found.jsx` | **Server Component** | ✅ Implementado | Vista estática HTTP 404 (R1) renderizada en el servidor cuando una ruta o SKU no existe. |
 | `src/app/productos/page.jsx` | **Server Component** | Planificado | Página de catálogo que lee `searchParams` en el servidor y consulta `GET /api/productos/` paginado, enviando menos JavaScript al navegador. |
 | `src/app/productos/[id]/page.jsx` | **Server Component** | Planificado | Ficha técnica dinámica que obtiene el detalle del calzado en el servidor e hidrata únicamente el subcomponente interactivo de selección de talle/variante. |
-| `src/components/Navbar.jsx` | **Client Component (`"use client"`)** | Planificado | Necesita consumir `useCart()` para mostrar en tiempo real el contador de productos del carrito y gestionar el menú móvil o botón de cierre de sesión. |
-| `src/components/Footer.jsx` | **Server Component** | Planificado | Componente puramente presentacional y estático sin hooks ni eventos de navegador; cero costo de hidratación en el cliente. |
+| `src/components/Navbar.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Necesita consumir `usePathname()`, `useState()` y sincronizar el contador de productos del carrito en tiempo real y gestionar el menú móvil. |
+| `src/components/Footer.jsx` | **Server Component** | ✅ Implementado | Componente puramente presentacional y estático sin hooks ni eventos de navegador; cero costo de hidratación en el cliente. |
 | `src/components/ProductCard.jsx` | **Server / Client (según acción rápida)** | Planificado | Presenta imagen, marca, precio y enlace a `/productos/[id]` con estética Dark Mode (`#2A2A2A`). |
 | `src/components/FilterBar.jsx` | **Client Component (`"use client"`)** | Planificado | Requiere manejar inputs controlados/eventos `onChange` y actualizar los query params de la URL (`useRouter`, `useSearchParams`) para filtrar por categoría, talle y precio. |
-| `src/components/Button.jsx` | **Client / Shared UI** | Planificado | Botón reutilizable con variante primaria verde neón (`#39FF14`) y soporte para estados `disabled`/`loading` y eventos `onClick`. |
-| `src/components/Badge.jsx` | **Server Component** | Planificado | Etiqueta visual sin estado para mostrar talles, categoría o disponibilidad de stock. |
+| `src/components/Button.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Botón reutilizable con variante primaria verde neón (`#39FF14`) y soporte para estados `disabled`/`loading` y eventos `onClick`. |
+| `src/components/Badge.jsx` | **Server Component** | ✅ Implementado | Etiqueta visual sin estado para mostrar talles, categoría o disponibilidad de stock. |
 | `src/components/Modal.jsx` | **Client Component (`"use client"`)** | Planificado | Requiere manejo de eventos de teclado/click (`onClose`) y control de visibilidad en el navegador para confirmar acciones CRUD o pedidos. |
-| `src/components/SkeletonCard.jsx` | **Server Component** | Planificado | Estado visual de carga utilizado por `loading.jsx` con animación `animate-pulse` en Tailwind CSS sin lógica de cliente. |
+| `src/components/SkeletonCard.jsx` | **Server Component** | ✅ Implementado | Estado visual de carga utilizado por `loading.jsx` con animación `animate-pulse` en Tailwind CSS sin lógica de cliente. |
 
 ### 3.2. Preguntas Clave de Arquitectura Frontend (R3 a R7)
 
