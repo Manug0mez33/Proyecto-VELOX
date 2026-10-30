@@ -1,3 +1,5 @@
+# Entorno de desarrollo local: recarga automática con runserver y código montado como volumen.
+# Producción (Render) usa el CMD del Dockerfile (start.sh con gunicorn).
 services:
   backend:
     build:
@@ -10,6 +12,9 @@ services:
       - ./.env.example
     volumes:
       - .:/app
+      # Evita que el .venv del host pise el del contenedor.
+      - /app/.venv
     command: >
-      sh -c "uv run python src/manage.py migrate &&
-             uv run python src/manage.py runserver 0.0.0.0:8000"
+      sh -c "python src/manage.py migrate &&
+             python src/manage.py cargar_catalogo &&
+             python src/manage.py runserver 0.0.0.0:8000"

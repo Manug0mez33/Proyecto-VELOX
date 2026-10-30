@@ -21,6 +21,24 @@ Este archivo es la **memoria técnica viva y guía de estudio del equipo de 4 in
 
 ## 1. Cronología del Proceso de Desarrollo
 
+### Índice de Pull Requests integrados
+
+| PR | Rama | Responsable | Entrada en esta bitácora |
+| :--- | :--- | :--- | :--- |
+| #1 | `feature/back-modelos-catalogo` | Valentino Cambria | Etapa 1 / PR: Proyecto Django base + Modelos de Catálogo |
+| #2 | `feature/back-core-usuarios` | Manuel Gómez | Etapa 1 / Card #17: DRF, Docker, Autenticación Dual y Usuarios |
+| #3 | `feature/front-setup-identidad` | Juan Falco | Etapa 1 (Sprint 1 — Frontend Parte 1) |
+| #4 | `feature/back-pedidos-resenas` | Manuel Gómez | Etapa 2 / Card #22: Pedidos, Stock Atómico y Reseñas |
+| #5 | `feature/front-context-schemas` | Tomás Benavidez | Etapa 2 (Sprint 2 — Frontend Parte 2) |
+| #6 | `feature/front-carrito-checkout` | Tomás Benavidez | Etapa 2 (Sprint 2 — Frontend Parte 3) |
+| #7 | `feature/front-catalogo-rutas` | Juan Falco | Etapa 2 / Card #24: Catálogo y Ficha Dinámica |
+| #10 | `feature/back-api-productos` | Valentino Cambria | Etapa 2 / PR: ViewSets de Catálogo |
+| — | `feature/back-docs-deploy` | Manuel Gómez y Valentino Cambria | Etapa 3 / PR: Documentación OpenAPI, Auditoría EFI y Deploy |
+
+> La PR #8 no figura porque se mergeó por error contra `main` y se deshizo (ver Etapa 3, "Decisiones técnicas y problemas resueltos"). La PR #9 (autenticación con Server Actions en el frontend) todavía no está integrada a `develop`.
+
+---
+
 ### Etapa 0: Planificación, Diseño de Dominio VELOX y Reglas de Ingeniería
 - **Fecha:** Octubre 2026
 - **Integrantes participantes:** Equipo completo (4 integrantes)
@@ -106,6 +124,24 @@ Este archivo es la **memoria técnica viva y guía de estudio del equipo de 4 in
   - Contenedorización con Docker (`Dockerfile` y `docker-compose.yml`).
   - Configuración de **Autenticación Dual** (`JWTAuthentication` + `SessionAuthentication`), paginación global (`PageNumberPagination`, `PAGE_SIZE = 10`), Swagger UI en `/api/docs/` y vista HTML de bienvenida en `/`.
   - Implementación de permisos por rol (`EsAdministrador`, `EsAdminOEmpleado`, `EsAdminOEmpleadoOSoloLectura`, `PermisoUsuarioViewSet`), serializadores en `snake_case` (`UsuarioSerializer`, `RegistroUsuarioSerializer`) y exposición del **ViewSet #1 (`UsuarioViewSet`)** con `@action perfil` y tests automatizados.
+
+---
+
+### Etapa 2 / Card #22: Pedidos, Descuento Atómico de Stock y Reseñas
+- **Rama:** `feature/back-pedidos-resenas` -> `develop` (PR #4)
+- **Responsable(s):** Manuel Gómez (Backend 1)
+- **Archivos clave:** `backend/src/apps/pedidos/models.py`, `serializers.py`, `views.py`, `permissions.py`, `admin.py`, `tests.py`
+- **Qué se implementó:**
+  - Modelos `Pedido`, `DetallePedido` y `Resena`, completando los **12 modelos** del dominio.
+  - `PedidoViewSet` con **NestedSerializer #2** (`PedidoListSerializer` anida el usuario comprador y los detalles con SKU, talle y color) y la acción `@action cancelar_pedido`.
+  - `ResenaViewSet` con lectura pública, escritura autenticada y una reseña por usuario y producto.
+- **Decisiones técnicas y problemas resueltos:**
+  - **Stock sin carreras:** el checkout descuenta stock dentro de `transaction.atomic()` usando `select_for_update()`, que bloquea la fila de la variante; dos compras simultáneas no pueden dejar stock negativo.
+  - **Precio congelado:** `DetallePedido.precio_unitario` guarda el precio al momento de la compra, así un cambio de precio posterior no altera pedidos ya hechos.
+  - **Cancelación con restitución:** `cancelar_pedido` devuelve el stock a cada variante y rechaza pedidos ya enviados o entregados.
+- **Guía para la defensa oral (Cómo explicarlo al docente):**
+  - **Para Facundo Lemo (Proceso / Backend):** "Toda la compra es una única transacción: o se crean el pedido, los detalles y el descuento de stock, o no se hace nada."
+  - **Para Valentino Arballo (Componentes / Frontend):** "El checkout del carrito envía `detalles` con `variante` y `cantidad` en `snake_case`, y los errores de stock vuelven como 400 con el mensaje por campo."
 
 ---
 
@@ -229,6 +265,36 @@ Este archivo es la **memoria técnica viva y guía de estudio del equipo de 4 in
 
 ---
 
+### Etapa 3 / PR: Documentación OpenAPI, Auditoría EFI, Deploy en Render y README con Capturas
+- **Rama:** `feature/back-docs-deploy` -> `develop` -> `main`
+- **Responsable(s):** Manuel Gómez y Valentino Cambria (Backend)
+- **Archivos clave:**
+  - `render.yaml` (Blueprint de Render: servicio web + PostgreSQL)
+  - `backend/Dockerfile`, `backend/start.sh`, `backend/.dockerignore`, `backend/docker-compose.yml`, `backend/.env.example`
+  - `backend/pyproject.toml`, `backend/uv.lock` (`gunicorn`, `whitenoise`, `psycopg`)
+  - `backend/src/nucleo/settings.py` (PostgreSQL por `DATABASE_URL`, estáticos, HTTPS/CSRF)
+  - `backend/src/apps/productos/management/commands/cargar_catalogo.py`
+  - `backend/src/apps/pedidos/views.py`, `backend/src/apps/productos/views.py` (ajustes de Swagger)
+  - `docs/capturas/*.png`, `README.md`, `docs/bitacora_defensa.md`
+- **Qué se implementó:**
+  - **Documentación OpenAPI:** Swagger UI (`/api/docs/`), ReDoc (`/api/redoc/`) y schema (`/api/schema/`) ya estaban servidos; se corrigieron los 6 warnings de generación del schema, que ahora valida con `--fail-on-warn`.
+  - **Auditoría EFI** con la skill `auditar-consigna-efi`: todos los requisitos del backend cumplen (tabla en el `README.md`); el único pendiente era el deploy.
+  - **Preparación para producción:** `gunicorn` como servidor, `whitenoise` para servir los estilos del admin y la API navegable, PostgreSQL vía `DATABASE_URL` (con SQLite como respaldo en desarrollo) y configuración HTTPS/CSRF para el dominio público.
+  - **Deploy como código:** `render.yaml` crea la base y el servicio en Render con un clic; cada push a `main` redespliega.
+  - **README** con diagrama ER, documentación de la API, pasos de deploy, variables de entorno, Docker y 5 capturas del sistema funcionando.
+- **Decisiones técnicas y problemas resueltos:**
+  - **Dependencias nuevas aprobadas por el equipo:** las reglas prohíben agregar paquetes sin aprobación; se aprobaron solo las 3 imprescindibles para producción. La URL de la base se interpreta con `urllib.parse` (librería estándar) para no sumar `dj-database-url`.
+  - **Render gratis no tiene consola:** por eso el arranque (`start.sh`) migra, carga el catálogo con `cargar_catalogo` (solo si la base está vacía, para no pisar el stock en cada reinicio) y crea el superusuario desde variables de entorno.
+  - **El `.venv` del host pisaba el del contenedor** en `docker-compose.yml` por el volumen `.:/app`; se agregó un volumen anónimo `/app/.venv`.
+  - **Estáticos:** con `DEBUG=False` Django no sirve archivos estáticos, y el admin se veía sin estilos; `collectstatic` en el build + `whitenoise` lo resuelven.
+  - **Verificación previa al deploy:** se ejecutó localmente el mismo arranque de producción (`DEBUG=False`, PostgreSQL 16, gunicorn): todos los endpoints, Swagger, JWT, estáticos y login del admin respondieron correctamente, y un reinicio no recargó el catálogo.
+  - **Incidente de GitFlow:** la PR de ViewSets de Catálogo se mergeó por error contra `main` (PR #8). Como el merge arrastraba todo `develop` a `main`, se descartó hacer un `revert` (al integrar `develop` más tarde, el revert habría borrado de `main` el trabajo de todo el equipo) y se volvió `main` a su commit anterior con `git push --force-with-lease`. Luego se rehízo la PR contra `develop` (PR #10), resolviendo un conflicto en esta bitácora con la entrada de la Card #24.
+- **Guía para la defensa oral (Cómo explicarlo al docente):**
+  - **Para Facundo Lemo (Proceso / Backend):** "En desarrollo usamos SQLite y `runserver`; en producción el mismo código usa PostgreSQL, gunicorn y whitenoise, y todo se decide por variables de entorno. El deploy está versionado en `render.yaml`."
+  - **Para Valentino Arballo (Componentes / Frontend):** "El frontend en producción apunta a la URL pública de Render mediante `NEXT_PUBLIC_API_URL`, y el backend solo acepta su origen gracias a `CORS_ALLOWED_ORIGINS`."
+
+---
+
 ### Plantilla para próximas entregas (Copiar por cada `Etapa / Feature PR`)
 - **Rama:** `feature/<area>-<descripcion>` -> `develop`
 - **Responsable(s):** <Nombre(s) de los integrantes>
@@ -263,6 +329,9 @@ Esta tabla resume las respuestas técnicas que los 4 integrantes deben dominar p
 | **12. ¿Cómo funcionan los filtros de productos?** | `backend/src/apps/productos/filters.py` | `ProductoFilter` (un `FilterSet` de `django-filter`) expone `marca`, `categoria`, `genero` y dos filtros propios: `precio_min` (`precio_base__gte`) y `precio_max` (`precio_base__lte`). `SearchFilter` agrega `?search=` y `OrderingFilter` agrega `?ordering=`; los tres están activos globalmente en `REST_FRAMEWORK`. |
 | **13. ¿Qué devuelven `destacados` y `stock_por_talle`?** | `backend/src/apps/productos/views.py` | `destacados` (`detail=False`, actúa sobre la colección) devuelve los 6 productos activos más recientes con stock. `stock_por_talle` (`detail=True`, actúa sobre un producto) agrupa sus variantes activas por talle con el stock total y el detalle por color/SKU. |
 | **14. ¿Quién puede modificar el catálogo?** | `backend/src/apps/usuarios/permissions.py` | Cualquiera puede leer productos, marcas, categorías y variantes (`SAFE_METHODS`), pero solo ADMIN o EMPLEADO pueden crear, editar o borrar. Proveedores es privado para el personal porque contiene CUIT y datos de contacto. |
+| **15. ¿Cómo se despliega el backend en producción?** | `render.yaml`, `backend/Dockerfile`, `backend/start.sh` | Render construye la imagen Docker (con `collectstatic`), crea una base PostgreSQL y al arrancar ejecuta `migrate`, carga el catálogo si la base está vacía y levanta `gunicorn`. Las diferencias con desarrollo se manejan solo con variables de entorno (`DATABASE_URL`, `DJANGO_DEBUG`, `ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS`). |
+| **16. ¿Por qué `gunicorn` y `whitenoise` en vez de `runserver`?** | `backend/start.sh`, `backend/src/nucleo/settings.py` | `runserver` es un servidor de desarrollo de un solo proceso y no sirve estáticos con `DEBUG=False`. `gunicorn` atiende peticiones con varios workers y `whitenoise` sirve los CSS/JS del admin y de la API navegable comprimidos y con caché, sin necesidad de Nginx. |
+| **17. ¿Dónde se documenta la API?** | `backend/src/nucleo/urls.py` | `drf-spectacular` genera el esquema OpenAPI 3 a partir de los ViewSets y serializers: Swagger UI en `/api/docs/` (permite probar endpoints con JWT), ReDoc en `/api/redoc/` y el YAML en `/api/schema/`. Donde la respuesta no es un modelo (`stock_por_talle`) se describe con `@extend_schema`. |
 
 ---
 
