@@ -119,6 +119,27 @@ App Django con los **8 modelos del catálogo** (normalizados en 3FN) y su panel 
 Panel de administración: `/admin/productos/` (los productos permiten cargar variantes e imágenes en la misma ficha; el stock de cada SKU se edita directamente desde el listado de variantes).
 
 
+### Endpoints del Catálogo (`apps/productos`)
+
+Todos los listados están paginados (`{ count, next, previous, results }`, 10 por página).
+
+| Método | Endpoint | Descripción | Permiso |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/productos/` | Listado con **NestedSerializer #1** (marca, categoría, imágenes, variantes, `imagen_portada` y `stock_total`) | Público |
+| `GET` | `/api/productos/{id}/` | Ficha completa del calzado (mismo serializador anidado) | Público |
+| `POST / PUT / PATCH / DELETE` | `/api/productos/`, `/api/productos/{id}/` | Alta, edición y baja; las relaciones se envían como IDs (`marca`, `categoria`, `proveedor`) | ADMIN o EMPLEADO |
+| `GET` | `/api/productos/destacados/` | **@action #1**: los 6 lanzamientos más recientes con stock | Público |
+| `GET` | `/api/productos/{id}/stock_por_talle/` | **@action #2**: stock agrupado por talle con detalle por color y SKU | Público |
+| `GET / POST / PUT / PATCH / DELETE` | `/api/marcas/`, `/api/categorias/` | CRUD de marcas y categorías | Lectura pública, escritura ADMIN o EMPLEADO |
+| `GET / POST / PUT / PATCH / DELETE` | `/api/variantes/`, `/api/variantes/{sku}/` | Inventario por SKU (se accede por SKU, no por ID) | Lectura pública, escritura ADMIN o EMPLEADO |
+| `GET / POST / PUT / PATCH / DELETE` | `/api/proveedores/` | CRUD de proveedores | Solo ADMIN o EMPLEADO |
+
+**Filtros de `/api/productos/`:** `?marca=`, `?categoria=`, `?genero=` (`HOMBRE`/`MUJER`/`UNISEX`), `?precio_min=`, `?precio_max=`, `?search=` (nombre, descripción, marca) y `?ordering=` (`precio_base`, `-creado_en`, `nombre`).
+
+```bash
+cd backend/src && uv run python manage.py test apps.productos   # 7 tests de la API de catálogo
+```
+
 ## 🔐 Backend — Autenticación Dual, Docker y Endpoints de Usuarios (Card #17)
 
 ### Ejecución con Docker y Docker Compose
