@@ -205,6 +205,13 @@ export default function CarritoPage() {
       });
 
       // 7. Almacenar datos reales devueltos por el backend (201 Created)
+      const fechaCreacionRaw = response.fecha_creacion;
+      const parsedDate = fechaCreacionRaw ? new Date(fechaCreacionRaw) : null;
+      const fechaStr =
+        parsedDate && !isNaN(parsedDate.getTime())
+          ? parsedDate.toLocaleDateString("es-AR")
+          : new Date().toLocaleDateString("es-AR");
+
       setOrderConfirmedData({
         id: response.id,
         numero_pedido: `VLX-PED-${response.id}`,
@@ -212,9 +219,7 @@ export default function CarritoPage() {
         estado: response.estado || "PENDIENTE",
         metodo_pago: response.metodo_pago || formData.metodo_pago,
         direccion_envio: response.direccion_envio || direccionCompleta,
-        fecha: response.fecha_creacion
-          ? new Date(response.fecha_creacion).toLocaleDateString("es-AR")
-          : new Date().toLocaleDateString("es-AR"),
+        fecha: fechaStr,
         items_comprados: [...items],
       });
 
@@ -447,6 +452,14 @@ export default function CarritoPage() {
             <Button
               variant="primary"
               onClick={() => {
+                try {
+                  const token = localStorage.getItem("velox_access_token");
+                  const user = localStorage.getItem("velox_username");
+                  setAuthToken(token || null);
+                  setAuthUsername(user || null);
+                } catch {
+                  // Entorno sin localStorage disponible
+                }
                 setCheckoutError("");
                 setIsCheckoutModalOpen(true);
               }}
@@ -576,6 +589,33 @@ export default function CarritoPage() {
               </div>
             </div>
 
+            {orderConfirmedData.items_comprados &&
+              orderConfirmedData.items_comprados.length > 0 && (
+                <div className="rounded-xl bg-[#141414] border border-[#2A2A2A] p-4 space-y-2">
+                  <p className="text-[#9CA3AF] uppercase text-[10px] font-bold tracking-wider">
+                    Artículos Confirmados:
+                  </p>
+                  <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                    {orderConfirmedData.items_comprados.map((item) => (
+                      <div
+                        key={item.sku}
+                        className="flex items-center justify-between text-xs text-[#D1D5DB]"
+                      >
+                        <span className="truncate pr-2">
+                          {item.nombre} (x{item.cantidad}) •{" "}
+                          <span className="font-mono text-[#39FF14] text-[11px]">
+                            {item.sku}
+                          </span>
+                        </span>
+                        <span className="font-mono text-white flex-shrink-0">
+                          {formatPrecioARS(item.precio * item.cantidad)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
             <div className="border-t border-[#2A2A2A] pt-3 flex justify-between items-center text-sm">
               <span className="font-bold text-[#FFFFFF]">TOTAL FACTURADO:</span>
               <span className="font-heading text-xl font-extrabold text-[#39FF14]">
@@ -633,9 +673,19 @@ export default function CarritoPage() {
             {checkoutError && (
               <div
                 data-testid="checkout-error-box"
-                className="rounded-lg bg-[#2A1515] border border-[#EF4444] p-3 text-xs text-[#F87171] leading-relaxed"
+                className="rounded-lg bg-[#2A1515] border border-[#EF4444] p-3 text-xs text-[#F87171] leading-relaxed space-y-2"
               >
-                {checkoutError}
+                <p>{checkoutError}</p>
+                {checkoutError.includes("inicia sesión") && (
+                  <div>
+                    <Link
+                      href="/login"
+                      className="inline-flex items-center gap-1 font-heading text-xs font-bold uppercase tracking-wider text-[#39FF14] hover:underline"
+                    >
+                      ACCEDER AL LOGIN AHORA →
+                    </Link>
+                  </div>
+                )}
               </div>
             )}
 

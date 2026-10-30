@@ -329,6 +329,7 @@ describe("Carrito & Checkout Form (R5 & R6) - Integración React Hook Form + Zod
     await waitFor(() => {
       expect(screen.getByTestId("checkout-error-box")).toBeInTheDocument();
       expect(screen.getByText(/Tu sesión ha expirado o las credenciales JWT no son válidas/i)).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: /ACCEDER AL LOGIN AHORA/i })).toHaveAttribute("href", "/login");
     });
   });
 });

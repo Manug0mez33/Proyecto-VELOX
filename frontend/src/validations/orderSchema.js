@@ -14,34 +14,46 @@ export const METODOS_PAGO = [
  * Esquema de validación para un ítem individual dentro de un pedido o carrito.
  * Respeta claves en snake_case para envío directo a PedidoViewSet de DRF.
  */
-export const orderItemSchema = z.object({
-  variante: z
-    .union([z.number(), z.string()])
-    .transform((val) => Number(val))
-    .refine((val) => Number.isInteger(val) && val > 0, "ID de variante inválido.")
-    .optional(),
-  variante_id: z
-    .union([z.number(), z.string()])
-    .optional(),
-  variante_sku: z
-    .string()
-    .min(1, "El SKU de la variante es obligatorio.")
-    .optional(),
-  sku: z
-    .string()
-    .optional(),
-  nombre_producto: z
-    .string()
-    .optional(),
-  cantidad: z
-    .number({ invalid_type_error: "La cantidad debe ser un número." })
-    .int("La cantidad debe ser un número entero.")
-    .min(1, "La cantidad mínima por producto es 1."),
-  precio_unitario: z
-    .number({ invalid_type_error: "El precio unitario debe ser numérico." })
-    .positive("El precio unitario debe ser mayor a 0.")
-    .optional(),
-});
+export const orderItemSchema = z
+  .object({
+    variante: z
+      .union([z.number(), z.string()])
+      .transform((val) => Number(val))
+      .refine((val) => Number.isInteger(val) && val > 0, "ID de variante inválido.")
+      .optional(),
+    variante_id: z
+      .union([z.number(), z.string()])
+      .optional(),
+    variante_sku: z
+      .string()
+      .min(1, "El SKU de la variante es obligatorio.")
+      .optional(),
+    sku: z
+      .string()
+      .optional(),
+    nombre_producto: z
+      .string()
+      .optional(),
+    cantidad: z
+      .number({ invalid_type_error: "La cantidad debe ser un número." })
+      .int("La cantidad debe ser un número entero.")
+      .min(1, "La cantidad mínima por producto es 1."),
+    precio_unitario: z
+      .number({ invalid_type_error: "El precio unitario debe ser numérico." })
+      .nonnegative("El precio unitario no puede ser negativo.")
+      .optional(),
+  })
+  .refine(
+    (item) =>
+      item.variante !== undefined ||
+      item.variante_id !== undefined ||
+      (typeof item.variante_sku === "string" && item.variante_sku.trim().length > 0) ||
+      (typeof item.sku === "string" && item.sku.trim().length > 0),
+    {
+      message: "El ítem debe especificar un identificador de variante o SKU.",
+      path: ["variante_sku"],
+    }
+  );
 
 /**
  * Esquema de validación para los datos de contacto y entrega del formulario de checkout.

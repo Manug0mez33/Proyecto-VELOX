@@ -215,6 +215,29 @@ describe("api helper (R3) - Normalización del sobre paginado DRF y Manejo de Er
       );
     });
 
+    it("formatea adecuadamente errores anidados de serializadores en listas/diccionarios sin devolver [object Object]", async () => {
+      const drfNestedErrors = {
+        detalles: [{ variante: ["Clave primaria 99999 inválida - objeto no existe."] }],
+      };
+
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 400,
+        statusText: "Bad Request",
+        headers: { get: () => "application/json" },
+        json: async () => drfNestedErrors,
+      });
+
+      try {
+        await api.post("/pedidos/", {});
+        expect.unreachable("Debería lanzar ApiError");
+      } catch (err) {
+        expect(err).toBeInstanceOf(ApiError);
+        expect(err.message).toBe("detalles: variante: Clave primaria 99999 inválida - objeto no existe.");
+        expect(err.message).not.toContain("[object Object]");
+      }
+    });
+
     it("maneja errores de red envolviéndolos en ApiError con status 0", async () => {
       global.fetch = vi.fn().mockRejectedValue(new Error("Failed to fetch"));
 

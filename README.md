@@ -67,7 +67,7 @@ Ejecutar la suite completa de tests unitarios en Vitest con Testing Library y JS
 cd frontend
 npm run test
 ```
-*Cobertura: 6 suites de prueba y 47 tests unitarios verificando `CartContext` (incluyendo sincronización multi-pestaña y `variante_id`), esquemas de Zod (`authSchema`, `orderSchema` con opciones de pago oficiales), normalización y métodos CRUD de `api.js`, componente `Modal` y flujo completo de checkout interactivo conectado a DRF con autenticación JWT, descuento de stock y manejo de errores 400/401.*
+*Cobertura: 6 suites de prueba y 51 tests unitarios verificando `CartContext` (incluyendo sincronización multi-pestaña y preservación de `variante_id`), esquemas de Zod (`authSchema`, `orderSchema` con opciones de pago oficiales y validación estricta de SKU/variante), normalización, métodos CRUD y formateo recursivo de errores anidados DRF en `api.js`, componente `Modal` y flujo completo de checkout interactivo conectado a DRF con autenticación JWT, descuento de stock y manejo de errores 400/401.*
 ## 🚀 Backend — Puesta en marcha local (`uv`)
 
 Requisitos: Python 3.12+ y [`uv`](https://docs.astral.sh/uv/).

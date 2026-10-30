@@ -175,4 +175,26 @@ describe("orderSchema (R5) - Validación Zod para Pedidos y Checkout", () => {
     expect(result.success).toBe(false);
     expect(result.error.issues[0].message).toContain("mínima por producto es 1");
   });
+
+  it("valida que orderItemSchema rechace ítems sin ningún identificador (sin variante, variante_id, variante_sku ni sku)", () => {
+    const missingIdentifier = {
+      cantidad: 2,
+      precio_unitario: 10000,
+    };
+
+    const result = orderItemSchema.safeParse(missingIdentifier);
+    expect(result.success).toBe(false);
+    expect(result.error.issues[0].message).toContain("identificador de variante o SKU");
+  });
+
+  it("acepta orderItemSchema con variante_id numérico válido", () => {
+    const validWithId = {
+      variante_id: 54,
+      cantidad: 1,
+      precio_unitario: 99999,
+    };
+
+    const result = orderItemSchema.safeParse(validWithId);
+    expect(result.success).toBe(true);
+  });
 });
