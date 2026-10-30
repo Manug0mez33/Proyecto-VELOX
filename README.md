@@ -49,3 +49,69 @@ La aplicación estará disponible en `http://localhost:3000`.
   - `src/components/Button.jsx` (`Client Component`)
   - `src/components/Badge.jsx` (`Server Component`)
   - `src/components/SkeletonCard.jsx` (`Server Component`)
+## 🚀 Backend — Puesta en marcha local (`uv`)
+
+Requisitos: Python 3.12+ y [`uv`](https://docs.astral.sh/uv/).
+
+```bash
+cd backend
+uv sync                                   # crea .venv e instala dependencias desde uv.lock
+cd src
+uv run python manage.py migrate           # crea la base SQLite (db.sqlite3) con todas las tablas
+uv run python manage.py loaddata catalogo_velox   # carga el catálogo de prueba
+uv run python manage.py createsuperuser   # usuario para entrar a /admin/
+uv run python manage.py runserver         # http://127.0.0.1:8000/admin/
+```
+
+**Estructura:** `backend/pyproject.toml` + `uv.lock`, proyecto Django en `backend/src/` (`manage.py`, configuración en `nucleo/`, apps en `apps/usuarios/` y `apps/productos/`).
+
+**Variables de entorno** (opcionales en desarrollo, obligatorias en producción):
+
+| Variable | Valor por defecto | Uso |
+| :--- | :--- | :--- |
+| `DJANGO_SECRET_KEY` | clave insegura de desarrollo | Clave criptográfica de Django |
+| `DJANGO_DEBUG` | `True` | Modo debug |
+| `DJANGO_ALLOWED_HOSTS` | `localhost,127.0.0.1` | Hosts permitidos (separados por coma) |
+
+**Usuario personalizado:** `apps.usuarios.Usuario` hereda de `AbstractUser` y agrega `rol` (`ADMIN`, `EMPLEADO`, `CLIENTE`), `telefono`, `direccion` y `ciudad`; `email` es único. Está configurado como `AUTH_USER_MODEL` desde la primera migración.
+
+## 🗂️ Backend — Catálogo e Inventario (`backend/src/apps/productos/`)
+
+App Django con los **8 modelos del catálogo** (normalizados en 3FN) y su panel de administración:
+
+| Modelo | Campos | Reglas de integridad |
+| :--- | :--- | :--- |
+| `Marca` | `nombre`, `origen`, `activo` | `nombre` único |
+| `Categoria` | `nombre`, `descripcion`, `activo` | `nombre` único |
+| `Proveedor` | `razon_social`, `cuit`, `email`, `telefono`, `activo` | `cuit` único con formato `XX-XXXXXXXX-X` |
+| `Producto` | `marca`, `categoria`, `proveedor`, `nombre`, `descripcion`, `precio_base`, `genero`, `activo`, `creado_en` | FKs con `PROTECT`; `genero` ∈ `HOMBRE`/`MUJER`/`UNISEX` |
+| `Talle` | `numero`, `sistema` | `(numero, sistema)` único; `sistema` ∈ `AR`/`US`/`EU`/`UK` |
+| `Color` | `nombre`, `codigo_hex` | `nombre` único; hex `#RRGGBB` |
+| `VarianteProducto` | `producto`, `talle`, `color`, `sku`, `stock`, `precio_ajustado`, `activo` | `sku` único; `(producto, talle, color)` único |
+| `ImagenProducto` | `producto`, `url`, `es_portada`, `orden` | Máximo una portada por producto |
+
+**Datos de prueba (seed):** `fixtures/catalogo_velox.json` carga 5 marcas, 5 categorías, 3 proveedores, 7 talles, 5 colores, 7 calzados, 58 variantes con SKU y 21 imágenes.
+
+Panel de administración: `/admin/productos/` (los productos permiten cargar variantes e imágenes en la misma ficha; el stock de cada SKU se edita directamente desde el listado de variantes).
+
+
+## 🔐 Backend — Autenticación Dual, Docker y Endpoints de Usuarios (Card #17)
+
+### Ejecución con Docker y Docker Compose
+```bash
+docker compose up --build
+```
+
+### Endpoints Incorporados (`apps/usuarios` y Núcleo DRF)
+
+| Método | Endpoint | Descripción | Permiso |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/` | Vista HTML tradicional de bienvenida de **VELOX CORE API** | Público |
+| `GET` | `/api/docs/` | Documentación interactiva **Swagger UI** (`drf-spectacular`) | Público |
+| `GET` | `/api/redoc/` | Documentación técnica **ReDoc** (OpenAPI 3.0) | Público |
+| `POST` | `/api/token/` | Emisión de tokens JWT (`access` y `refresh`) con `SimpleJWT` | Público |
+| `POST` | `/api/token/refresh/` | Renovación de token de acceso JWT | Público |
+| `POST` | `/api/usuarios/` | Registro público de clientes (`rol="CLIENTE"` por defecto) | Público (`AllowAny`) |
+| `GET` | `/api/usuarios/` | Listado paginado de usuarios (filtros por `rol`, `ciudad`, `search`) | Autenticado (`ADMIN`/`EMPLEADO` ven todos; `CLIENTE` ve el propio) |
+| `GET / PATCH` | `/api/usuarios/perfil/` | Consulta o edición rápida del perfil del usuario autenticado | Autenticado (JWT / Sesión) |
+| `GET / PUT / PATCH / DELETE` | `/api/usuarios/{id}/` | Detalle, actualización y baja de cuenta de usuario | Propietario o `ADMIN` |
