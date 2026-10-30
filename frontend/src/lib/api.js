@@ -48,6 +48,31 @@ export function normalizePaginatedResponse(data) {
 }
 
 /**
+ * Formatea recursivamente estructuras de error de Django REST Framework (strings, arrays
+ * y serializadores anidados), evitando la aparición de '[object Object]'.
+ */
+export function formatDrfError(data) {
+  if (!data) return "";
+  if (typeof data === "string") return data;
+  if (Array.isArray(data)) {
+    return data.map(formatDrfError).filter(Boolean).join(" ");
+  }
+  if (typeof data === "object") {
+    if (typeof data.detail === "string") return data.detail;
+    if (Array.isArray(data.non_field_errors)) return data.non_field_errors.join(" ");
+
+    return Object.entries(data)
+      .map(([key, val]) => {
+        const formatted = formatDrfError(val);
+        return isNaN(Number(key)) ? `${key}: ${formatted}` : formatted;
+      })
+      .filter(Boolean)
+      .join(" | ");
+  }
+  return String(data);
+}
+
+/**
  * Función base para peticiones HTTP con manejo estandarizado de encabezados y errores.
  */
 export async function fetchApi(endpoint, options = {}) {
@@ -106,17 +131,8 @@ export async function fetchApi(endpoint, options = {}) {
       let errorMessage = `Error HTTP ${response.status}: ${response.statusText}`;
 
       if (data && typeof data === "object") {
-        if (typeof data.detail === "string") {
-          errorMessage = data.detail;
-        } else if (Array.isArray(data.non_field_errors)) {
-          errorMessage = data.non_field_errors.join(" ");
-        } else {
-          // Errores por campo de validación en DRF (ej. { "sku": ["Ya existe..."] })
-          const fieldErrors = Object.entries(data)
-            .map(([field, errs]) => `${field}: ${Array.isArray(errs) ? errs.join(" ") : errs}`)
-            .join(" | ");
-          if (fieldErrors) errorMessage = fieldErrors;
-        }
+        const formatted = formatDrfError(data);
+        if (formatted) errorMessage = formatted;
       }
 
       throw new ApiError(errorMessage, response.status, data);

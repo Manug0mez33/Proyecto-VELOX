@@ -147,33 +147,37 @@ Este archivo es la **memoria técnica viva y guía de estudio del equipo de 4 in
 
 ---
 
-### Plantilla para próximas entregas (Copiar por cada `Etapa / Feature PR`)
-
-```markdown
-### Etapa 2 / Card #22: Módulo Transaccional de Pedidos, Control Atómico de Stock, @action cancelar_pedido y Reseñas
-- **Rama:** `feature/back-pedidos-resenas` -> `develop`
-- **Responsable(s):** Manuel Gómez (Backend 1)
+### Etapa 2 (Sprint 2 — Frontend Parte 3): Conexión de Checkout `/carrito` a `POST /api/pedidos/` con React Hook Form + Zod + JWT, Variantes Reales y Tests Vitest (R5, R6, R7)
+- **Fecha:** 30 de Octubre de 2026
+- **Rama:** `feature/front-carrito-checkout` -> `develop`
+- **Responsable(s):** Tomás Benavidez (Frontend 2)
 - **Archivos clave:**
-  - `backend/src/apps/pedidos/models.py` (modelos `Pedido`, `DetallePedido`, `Resena` completando los 12 modelos)
-  - `backend/src/apps/pedidos/serializers.py` (`PedidoCreateSerializer` transaccional, `PedidoListSerializer` con NestedSerializer #2, `ResenaSerializer`)
-  - `backend/src/apps/pedidos/permissions.py` (`EsPropietarioOStaff`)
-  - `backend/src/apps/pedidos/views.py` (`PedidoViewSet` con `@action cancelar_pedido` y `ResenaViewSet`)
-  - `backend/src/apps/pedidos/admin.py` (`PedidoAdmin` con inlines y `ResenaAdmin`)
-  - `backend/src/apps/pedidos/migrations/0001_initial.py`, `tests.py` (suite completa con 8 tests)
+  - `frontend/src/app/carrito/page.jsx` (Checkout conectado a DRF, guard JWT, modal con datos reales y captura de errores)
+  - `frontend/src/validations/orderSchema.js` (Alineación exacta con `Pedido.MetodoPago` y soporte de `detalles` para DRF)
+  - `frontend/src/context/CartContext.jsx` (Preservación de `variante_id` en los ítems de compra)
+  - `frontend/src/app/__tests__/CarritoCheckout.test.jsx`, `frontend/src/app/__tests__/orderSchema.test.js`, `frontend/src/app/__tests__/api.test.js`, `frontend/src/app/__tests__/CartContext.test.jsx` (51 tests unitarios en Vitest al 100%)
+  - `README.md`, `docs/bitacora_defensa.md`
 - **Qué se implementó:**
-  - Creación de los **Modelos 10, 11 y 12**: `Pedido`, `DetallePedido` y `Resena`, alcanzando la totalidad de los modelos exigidos por la cátedra de Ingeniería de Software.
-  - Implementación del **Checkout transaccional (`POST /api/pedidos/`)**: utiliza `transaction.atomic()` y bloqueo pesimista `select_for_update()` sobre cada `VarianteProducto` para validar que haya stock físico suficiente, descontarlo de inmediato y congelar el precio unitario del momento.
-  - Implementación del **NestedSerializer #2 (`PedidoListSerializer`)**: en listados y detalle, anida el objeto completo del comprador (`UsuarioSerializer`) y la lista de artículos comprados (`DetallePedidoSerializer`) exponiendo SKU, producto, talle y color.
-  - Implementación de la **Acción Personalizada @action #3 (`POST /api/pedidos/{id}/cancelar_pedido/`)**: valida el estado del pedido, lo marca como `CANCELADO` y **restituye automáticamente el stock** a cada `VarianteProducto` dentro de una transacción atómica.
-  - Módulo completo de reseñas con restricción de unicidad (`UniqueConstraint`) para que cada atleta solo pueda dejar una reseña por calzado.
-  - Panel administrativo configurado con `TabularInline` para ver los ítems de cada orden en su ficha de Django Admin.
-- **Defensa Oral ante el Prof. Facundo Lemo:**
-  - *"¿Por qué congelar el precio en `DetallePedido` en vez de leer siempre el precio de la variante?": Si la variante aumenta de precio la próxima semana, los pedidos históricos no deben alterar sus totales de facturación.*
-  - *"¿Cómo prevenimos condiciones de carrera (race conditions) en compras concurrentes?": En `PedidoCreateSerializer`, dentro de un bloque `transaction.atomic()`, bloqueamos las filas de las variantes involucradas con `select_for_update()`, asegurando que no se vendan pares sin stock.*
+  - Conexión del formulario interactivo de Checkout en `/carrito` con el endpoint transaccional de Django REST Framework `POST /api/pedidos/`.
+  - Validación de autenticación JWT mediante lectura de `localStorage.getItem("velox_access_token")`. Si el usuario no ha iniciado sesión, se despliega un banner de advertencia destacado con botón directo a `/login` y credenciales de prueba, bloqueando el envío si no existe token y sincronizando el token al pulsar el checkout.
+  - Sincronización del enum `metodo_pago` en `orderSchema.js` y el selector HTML de `/carrito` con `Pedido.MetodoPago`: `"TARJETA_CREDITO"`, `"TARJETA_DEBITO"`, `"TRANSFERENCIA"` y `"EFECTIVO"`.
+  - Empaquetado de la orden en el contrato estricto de `PedidoCreateSerializer`: concatenación de `direccion_envio` (`direccion`, `ciudad`, `codigo_postal`, `telefono_contacto` y `notas_adicionales` hasta 255 caracteres) y mapeo del array `detalles: [{ variante: id, cantidad }]`.
+  - Envío mediante `api.post("/pedidos/", drfPayload, { token })` pasando el token de autorización en el encabezado `Authorization: Bearer <token>`.
+  - Al recibir `201 Created` desde el backend, se captura el ID real del pedido (`id`), total y fecha devueltos por DRF, se vacía automáticamente el carrito (`clearCart()`) y se presenta el modal con los datos reales de la transacción y el desglose de artículos adquiridos.
+  - Captura estructurada de excepciones mediante `ApiError` y función `formatDrfError()` recursiva, procesando serializadores anidados de DRF sin devolver `[object Object]` y visualizando errores de stock insuficiente (`400 Bad Request`) o sesión expirada (`401 Unauthorized`) dentro del modal con enlace de recuperación directa al login.
+  - Actualización de los calzados de prueba rápida en `/carrito` (`handleAddSampleItem`) para inyectar variantes físicas reales existentes en la base de datos (IDs 54, 49, 55, 44 cargadas del fixture `catalogo_velox.json`).
+  - Ampliación de la suite de pruebas unitarias en Vitest de 41 a **51 tests** pasando al 100% en 6 suites.
+- **Decisiones técnicas y problemas resueltos:**
+  - **Integración transaccional sin desincronización de inventario:** Se evitó simular compras en el frontend. Cada compra descuenta stock físico real en `VarianteProducto` dentro de la transacción atómica de Django con bloqueo `select_for_update()`.
+  - **Guard de autenticación sin rebotes bruscos:** En lugar de expulsar al usuario del carrito con un redirect inesperado, se muestra un banner amigable dentro del flujo de compra invitándolo a iniciar sesión en `/login` para asociar su token JWT, permitiendo una experiencia de compra fluida.
+  - **Mapeo de errores legibles de DRF:** La función `formatDrfError()` descompone recursivamente estructuras complejas de error de DRF (objetos de validación anidada `{ detalles: [{ variante: [...] }] }`, listas y `detail`), impidiendo que el cliente reciba `[object Object]` y asegurando feedback transparente.
+- **Guía para la defensa oral (Cómo explicarlo al docente):**
+  - **Para Facundo Lemo (Proceso / Backend):** "El checkout del frontend cumple rigurosamente el contrato de `PedidoCreateSerializer`: envía `metodo_pago` alineado al enum `Pedido.MetodoPago`, la dirección física formateada para `direccion_envio` y la lista de `detalles` con `variante` (entero de `VarianteProducto`) y `cantidad`. Todo viaja bajo `Authorization: Bearer <token>` para que el ViewSet asocie el pedido a `request.user` y ejecute el descuento atómico de inventario."
+  - **Para Valentino Arballo (Componentes / Frontend):** "En `/carrito`, el formulario modal se valida en dos niveles: en el cliente con React Hook Form + Zod (`checkoutFormSchema` y `orderSchema`) y en el servidor contra la API de DRF. El token JWT se lee de `localStorage` y se propaga en las cabeceras HTTP de `api.post()`. El estado del carrito se limpia de inmediato ante la respuesta `201 Created` y los 51 tests unitarios de Vitest comprueban todos los caminos felices y de excepción (errores 400 por falta de stock, errores anidados formateados recursivamente y 401 por sesión inválida)."
 
 ---
 
-### Plantilla para próximas entregas
+### Plantilla para próximas entregas (Copiar por cada `Etapa / Feature PR`)
 - **Rama:** `feature/<area>-<descripcion>` -> `develop`
 - **Responsable(s):** <Nombre(s) de los integrantes>
 - **Archivos clave:** `<rutas de archivos creados o modificados>`
@@ -184,7 +188,6 @@ Este archivo es la **memoria técnica viva y guía de estudio del equipo de 4 in
 - **Guía para la defensa oral (Cómo explicarlo al docente):**
   - **Para Facundo Lemo (Proceso / Backend):** <Idea fuerza de negocio/arquitectura>
   - **Para Valentino Arballo (Componentes / Frontend):** <Idea fuerza de renderizado/estado/validación>
-```
 
 ---
 
@@ -226,7 +229,7 @@ Esta tabla registra cada componente y módulo del frontend para justificar su ar
 | `src/app/dashboard/layout.jsx` | **Server Component** | ✅ Implementado | Layout anidado (R1) que estructura el shell administrativo y barra lateral sin forzar hidratación en toda la página. |
 | `src/app/dashboard/page.jsx` | **Server Component** | ✅ Implementado | Resumen ejecutivo del panel de control con métricas en tiempo real y mapa de operaciones CRUD. |
 | `src/app/login/page.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Formulario interactivo de autenticación con React Hook Form + Zod (`authSchema.js`) y captura de errores DRF. |
-| `src/app/carrito/page.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Vista interactiva del carrito conectada a `CartContext`, con selector de cantidades y formulario modal de checkout interactivo validado con React Hook Form + Zod (`checkoutFormSchema`). |
+| `src/app/carrito/page.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Vista interactiva del carrito conectada a `CartContext` y al endpoint transaccional `POST /api/pedidos/` de DRF con autenticación JWT, selector de cantidades, formulario modal de checkout interactivo validado con React Hook Form + Zod (`checkoutFormSchema` y `orderSchema`), variantes reales del fixture y manejo de errores 400/401. |
 | `src/context/CartContext.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Estado global con Context API (R6) para compartir carrito entre componentes cliente con persistencia en `localStorage`. |
 | `src/components/Navbar.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Consume `useCart()` de forma reactiva para mostrar el contador de productos en tiempo real y gestiona el menú móvil. |
 | `src/components/Footer.jsx` | **Server Component** | ✅ Implementado | Componente puramente presentacional y estático sin hooks ni eventos de navegador; cero costo de hidratación en el cliente. |
@@ -245,4 +248,4 @@ Esta tabla registra cada componente y módulo del frontend para justificar su ar
 | **Cobertura de las 4 Operaciones CRUD (R3)** | `src/lib/api.js` y `src/app/actions.js` | Además de listar productos (`GET`) y crear/cancelar pedidos (`POST`), el frontend implementa las 4 operaciones completas (**Crear `POST`, Leer `GET`, Editar `PUT/PATCH` y Borrar `DELETE`**) sobre un recurso principal (gestión de productos/variantes en `/dashboard` o reseñas), revalidando la caché con `revalidatePath()`. |
 | **Formularios con React Hook Form + Zod (R5)** | `src/validations/authSchema.js` y `orderSchema.js` | Cumple el requisito de 2+ formularios validados con RHF + Zod en `snake_case`: `/login` con `loginSchema` y el checkout modal en `/carrito` con `checkoutFormSchema` y `orderSchema`. RHF evita re-renderizados innecesarios y Zod garantiza paridad estricta con Django REST Framework. |
 | **Estado Global con Context API (R6)** | `src/context/CartContext.jsx` | Provee `items`, `addToCart`, `removeFromCart`, `clearCart` y el cálculo de totales a toda la app mediante `useCart()`, sincronizando el carrito en `localStorage` con la bandera `isHydrated` (anti hydration mismatch) y el evento nativo `storage` para sincronización multi-pestaña. |
-| **Testing Unitario con Vitest (R7)** | `src/app/__tests__/` | 41 tests unitarios en 6 suites (`CartContext.test.jsx`, `authSchema.test.js`, `orderSchema.test.js`, `api.test.js`, `Modal.test.jsx`, `CarritoCheckout.test.jsx`) testeando de forma exhaustiva componentes interactivos, esquemas Zod, métodos CRUD y manejo de errores. |
+| **Testing Unitario con Vitest (R7)** | `src/app/__tests__/` | 51 tests unitarios en 6 suites (`CartContext.test.jsx`, `authSchema.test.js`, `orderSchema.test.js`, `api.test.js`, `Modal.test.jsx`, `CarritoCheckout.test.jsx`) testeando de forma exhaustiva componentes interactivos, esquemas Zod, métodos CRUD, checkout conectado a DRF con JWT y manejo de errores. |

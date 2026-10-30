@@ -43,9 +43,32 @@ describe("CartContext (R6) - Gestión de Estado Global del Carrito", () => {
 
     expect(result.current.items).toHaveLength(1);
     expect(result.current.items[0].sku).toBe("VLX-AER-41-NEO");
+    expect(result.current.items[0].variante_id).toBe(1);
     expect(result.current.items[0].cantidad).toBe(1);
     expect(result.current.totalItems).toBe(1);
     expect(result.current.subtotal).toBe(189500);
+  });
+
+  it("preserva explícitamente variante_id distinto de id para variantes físicas", () => {
+    const { result } = renderHook(() => useCart(), { wrapper });
+
+    act(() => {
+      result.current.addToCart(
+        {
+          id: 5,
+          variante_id: 54,
+          sku: "VX-VSR-38-BLA",
+          nombre: "Velox Street Run",
+          precio_final: 99999,
+        },
+        1
+      );
+    });
+
+    expect(result.current.items).toHaveLength(1);
+    expect(result.current.items[0].id).toBe(5);
+    expect(result.current.items[0].variante_id).toBe(54);
+    expect(result.current.items[0].sku).toBe("VX-VSR-38-BLA");
   });
 
   it("incrementa la cantidad si se agrega el mismo SKU repetidamente", () => {

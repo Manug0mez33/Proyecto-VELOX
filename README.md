@@ -44,7 +44,7 @@ La aplicación estará disponible en `http://localhost:3000`.
   - `/tecnologia` (`src/app/tecnologia/page.jsx`): Manifiesto técnico e ingeniería biomecánica VELOX.
   - `/dashboard` (`src/app/dashboard/layout.jsx` y `page.jsx`): Layout anidado y panel administrativo con KPIs en tiempo real del catálogo y variantes SKU.
   - `/login` (`src/app/login/page.jsx`): Formulario interactivo con React Hook Form + Zod (`authSchema.js`) y manejo estructurado de errores DRF.
-  - `/carrito` (`src/app/carrito/page.jsx`): Carrito de compras interactivo conectado al estado global `CartContext`, selector de cantidades y formulario modal de checkout interactivo validado con React Hook Form + Zod (`checkoutFormSchema` y `orderSchema` en `snake_case`).
+  - `/carrito` (`src/app/carrito/page.jsx`): Carrito de compras interactivo conectado al estado global `CartContext` y al endpoint transaccional real `POST /api/pedidos/` de Django REST Framework con autenticación JWT (`Authorization: Bearer <token>`), selector de cantidades, botón rápido con variantes reales del catálogo (IDs 54, 49, 55, 44 del fixture), validación RHF + Zod (`checkoutFormSchema` y `orderSchema`), modal de orden confirmada con datos devueltos por DRF y captura de errores estructurados (stock insuficiente 400 y sesión expirada 401).
   - Estados globales App Router: `src/app/layout.jsx` (Layout raíz con `CartProvider`), `src/app/loading.jsx`, `src/app/error.jsx` y `src/app/not-found.jsx`.
 - **Componentes Reutilizables Base (R2):**
   - `src/components/Navbar.jsx` (`Client Component` — sincronizado reactivamente con `useCart()`)
@@ -54,10 +54,10 @@ La aplicación estará disponible en `http://localhost:3000`.
   - `src/components/SkeletonCard.jsx` (`Server Component`)
   - `src/components/Modal.jsx` (`Client Component` — accesibilidad con tecla Escape, clic en backdrop y bloqueo de scroll)
 - **Estado Global con Context API (R6):**
-  - `src/context/CartContext.jsx`: Proveedor `CartProvider` y hook `useCart()` con métodos `addToCart()`, `removeFromCart()`, `updateQuantity()`, `clearCart()`, totales memorizados y persistencia bidireccional en `localStorage` (`velox_cart`) con soporte de sincronización multi-pestaña vía evento `storage`.
+  - `src/context/CartContext.jsx`: Proveedor `CartProvider` y hook `useCart()` con métodos `addToCart()`, `removeFromCart()`, `updateQuantity()`, `clearCart()`, preservación de `variante_id`, totales memorizados y persistencia bidireccional en `localStorage` (`velox_cart`) con soporte de sincronización multi-pestaña vía evento `storage`.
 - **Validaciones Zod en `snake_case` (R5):**
   - `src/validations/authSchema.js`: Esquemas `loginSchema` y `registerSchema` alineados a `RegistroUsuarioSerializer`.
-  - `src/validations/orderSchema.js`: Esquemas `checkoutFormSchema`, `checkoutSchema` y `orderItemSchema` alineados a `PedidoViewSet`.
+  - `src/validations/orderSchema.js`: Esquemas `checkoutFormSchema`, `checkoutSchema` y `orderItemSchema` alineados exactamente a `Pedido.MetodoPago` (`TARJETA_CREDITO`, `TARJETA_DEBITO`, `TRANSFERENCIA`, `EFECTIVO`) y `PedidoCreateSerializer`.
 - **Cliente API REST (R3):**
   - `src/lib/api.js`: Helper de peticiones HTTP con soporte para el sobre paginado de DRF `{ count, next, previous, results }`, clase `ApiError` y métodos CRUD completos (`get`, `getPaginated`, `post`, `put`, `patch`, `delete`).
 
@@ -67,7 +67,7 @@ Ejecutar la suite completa de tests unitarios en Vitest con Testing Library y JS
 cd frontend
 npm run test
 ```
-*Cobertura: 6 suites de prueba y 41 tests unitarios verificando `CartContext` (incluyendo sincronización multi-pestaña), esquemas de Zod (`authSchema`, `orderSchema`), normalización y métodos CRUD de `api.js`, componente `Modal` y flujo completo de checkout interactivo con React Hook Form.*
+*Cobertura: 6 suites de prueba y 51 tests unitarios verificando `CartContext` (incluyendo sincronización multi-pestaña y preservación de `variante_id`), esquemas de Zod (`authSchema`, `orderSchema` con opciones de pago oficiales y validación estricta de SKU/variante), normalización, métodos CRUD y formateo recursivo de errores anidados DRF en `api.js`, componente `Modal` y flujo completo de checkout interactivo conectado a DRF con autenticación JWT, descuento de stock y manejo de errores 400/401.*
 ## 🚀 Backend — Puesta en marcha local (`uv`)
 
 Requisitos: Python 3.12+ y [`uv`](https://docs.astral.sh/uv/).

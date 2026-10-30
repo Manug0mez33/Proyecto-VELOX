@@ -1,13 +1,13 @@
 "use client";
-// Client Component ("use client"): Vista interactiva del carrito de compras que consume useCart() de CartContext (R6) y procesa el checkout interactivo con React Hook Form + Zod (R5) en paridad snake_case.
+// Client Component ("use client"): Vista interactiva del carrito de compras que consume useCart() de CartContext (R6) y procesa el checkout transaccional conectado a POST /api/pedidos/ de DRF con React Hook Form + Zod (R5).
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCart } from "../../context/CartContext";
 import { checkoutFormSchema, orderSchema } from "../../validations/orderSchema";
-import { api } from "../../lib/api";
+import { api, ApiError } from "../../lib/api";
 import Button from "../../components/Button";
 import Badge from "../../components/Badge";
 import Modal from "../../components/Modal";
@@ -16,6 +16,54 @@ function formatPrecioARS(valor) {
   const numero = Number(valor) || 0;
   return `$${numero.toLocaleString("es-AR", { maximumFractionDigits: 0 })}`;
 }
+
+// Variantes reales sincronizadas con el fixture catalogo_velox.json de Django
+const SAMPLE_VARIANTS = [
+  {
+    id: 54,
+    variante_id: 54,
+    sku: "VX-VSR-38-BLA",
+    nombre: "Velox Street Run",
+    marca: "VELOX Performance",
+    categoria: "Urbano",
+    talle: "38",
+    color: "Blanco",
+    precio_final: 99999,
+  },
+  {
+    id: 49,
+    variante_id: 49,
+    sku: "VX-VSR-38-GRI",
+    nombre: "Velox Street Run",
+    marca: "VELOX Performance",
+    categoria: "Urbano",
+    talle: "38",
+    color: "Gris",
+    precio_final: 99999,
+  },
+  {
+    id: 55,
+    variante_id: 55,
+    sku: "VX-VSR-39-BLA",
+    nombre: "Velox Street Run",
+    marca: "VELOX Performance",
+    categoria: "Urbano",
+    talle: "39",
+    color: "Blanco",
+    precio_final: 99999,
+  },
+  {
+    id: 44,
+    variante_id: 44,
+    sku: "VX-VCX-39-NEG",
+    nombre: "Velox Carbon X",
+    marca: "VELOX Performance",
+    categoria: "Running",
+    talle: "39",
+    color: "Negro",
+    precio_final: 249999,
+  },
+];
 
 export default function CarritoPage() {
   const {
@@ -36,6 +84,33 @@ export default function CarritoPage() {
   const [checkoutError, setCheckoutError] = useState("");
   const [orderConfirmedData, setOrderConfirmedData] = useState(null);
 
+  // Estado de autenticación JWT (localStorage)
+  const [authToken, setAuthToken] = useState(null);
+  const [authUsername, setAuthUsername] = useState(null);
+
+  useEffect(() => {
+    const syncAuth = () => {
+      try {
+        const token = localStorage.getItem("velox_access_token");
+        const user = localStorage.getItem("velox_username");
+        setAuthToken(token || null);
+        setAuthUsername(user || null);
+      } catch {
+        setAuthToken(null);
+        setAuthUsername(null);
+      }
+    };
+
+    syncAuth();
+    window.addEventListener("velox-auth-changed", syncAuth);
+    window.addEventListener("storage", syncAuth);
+
+    return () => {
+      window.removeEventListener("velox-auth-changed", syncAuth);
+      window.removeEventListener("storage", syncAuth);
+    };
+  }, []);
+
   const {
     register,
     handleSubmit,
@@ -48,7 +123,7 @@ export default function CarritoPage() {
       ciudad: "",
       codigo_postal: "",
       telefono_contacto: "",
-      metodo_pago: "TARJETA",
+      metodo_pago: "TARJETA_CREDITO",
       notas_adicionales: "",
     },
   });
@@ -57,46 +132,115 @@ export default function CarritoPage() {
     setIsSubmittingOrder(true);
     setCheckoutError("");
 
+    // 1. Obtener y verificar el token JWT de acceso
+    const currentToken =
+      authToken ||
+      (typeof window !== "undefined"
+        ? localStorage.getItem("velox_access_token")
+        : null);
+
+    if (!currentToken) {
+      setCheckoutError(
+        "Debes iniciar sesión antes de confirmar la compra. Inicia sesión con tu cuenta de atleta para enviar el pedido a Django REST Framework."
+      );
+      setIsSubmittingOrder(false);
+      return;
+    }
+
     try {
-      const payload = {
+      // 2. Formatear dirección completa de despacho (max 255 chars para Pedido.direccion_envio)
+      const direccionCompleta = [
+        formData.direccion_envio.trim(),
+        formData.ciudad.trim(),
+        `CP: ${formData.codigo_postal.trim()}`,
+        `Tel: ${formData.telefono_contacto.trim()}`,
+        formData.notas_adicionales?.trim()
+          ? `[Obs: ${formData.notas_adicionales.trim()}]`
+          : null,
+      ]
+        .filter(Boolean)
+        .join(" - ")
+        .slice(0, 255);
+
+      // 3. Empaquetar detalles conforme al contrato de PedidoCreateSerializer de DRF
+      const detalles = items.map((it) => ({
+        variante: Number(it.variante_id || it.id),
+        cantidad: Number(it.cantidad),
+      }));
+
+      // 4. Validar payload con orderSchema en snake_case
+      const fullOrderData = {
         ...formData,
+        direccion_envio: formData.direccion_envio,
+        detalles,
         items: items.map((it) => ({
           variante_sku: it.sku,
-          variante_id: it.id,
+          variante_id: Number(it.variante_id || it.id),
           nombre_producto: it.nombre,
           cantidad: it.cantidad,
           precio_unitario: it.precio,
         })),
       };
 
-      // Validar payload completo con orderSchema en snake_case
-      const validation = orderSchema.safeParse(payload);
+      const validation = orderSchema.safeParse(fullOrderData);
       if (!validation.success) {
-        const errorMsg = validation.error.issues.map((i) => i.message).join(" | ");
+        const errorMsg = validation.error.issues
+          .map((i) => i.message)
+          .join(" | ");
         setCheckoutError(`Error de validación: ${errorMsg}`);
         setIsSubmittingOrder(false);
         return;
       }
 
-      // Consumo de API mediante cliente HTTP unificado (R3)
-      try {
-        await api.post("/pedidos/", payload);
-      } catch (apiErr) {
-        // Si el endpoint de pedidos aún no está levantado en el backend de desarrollo local,
-        // simulamos confirmación de orden para verificar el flujo completo de UI de compra
-        console.warn("Aviso de desarrollo en checkout:", apiErr.message);
-      }
+      // 5. Payload exacto exigido por POST /api/pedidos/ en Django REST Framework
+      const drfPayload = {
+        metodo_pago: formData.metodo_pago,
+        direccion_envio: direccionCompleta,
+        detalles,
+      };
+
+      // 6. Ejecución transaccional atómica con encabezado Authorization: Bearer <token>
+      const response = await api.post("/pedidos/", drfPayload, {
+        token: currentToken,
+      });
+
+      // 7. Almacenar datos reales devueltos por el backend (201 Created)
+      const fechaCreacionRaw = response.fecha_creacion;
+      const parsedDate = fechaCreacionRaw ? new Date(fechaCreacionRaw) : null;
+      const fechaStr =
+        parsedDate && !isNaN(parsedDate.getTime())
+          ? parsedDate.toLocaleDateString("es-AR")
+          : new Date().toLocaleDateString("es-AR");
 
       setOrderConfirmedData({
-        numero_pedido: `VLX-PED-${Math.floor(100000 + Math.random() * 900000)}`,
-        ...payload,
-        total_abonado: total,
-        fecha: new Date().toLocaleDateString("es-AR"),
+        id: response.id,
+        numero_pedido: `VLX-PED-${response.id}`,
+        total_abonado: Number(response.total ?? total),
+        estado: response.estado || "PENDIENTE",
+        metodo_pago: response.metodo_pago || formData.metodo_pago,
+        direccion_envio: response.direccion_envio || direccionCompleta,
+        fecha: fechaStr,
+        items_comprados: [...items],
       });
+
+      // 8. Limpiar carrito global y reiniciar formulario
       clearCart();
       resetCheckoutForm();
     } catch (err) {
-      setCheckoutError(err.message || "Error al procesar el pedido.");
+      if (err instanceof ApiError) {
+        if (err.status === 401) {
+          setCheckoutError(
+            "Tu sesión ha expirado o las credenciales JWT no son válidas. Por favor, inicia sesión nuevamente para completar tu compra."
+          );
+        } else {
+          setCheckoutError(
+            err.message ||
+              "Error al procesar el pedido con Django REST Framework."
+          );
+        }
+      } else {
+        setCheckoutError(err.message || "Error al procesar el pedido.");
+      }
     } finally {
       setIsSubmittingOrder(false);
     }
@@ -116,21 +260,13 @@ export default function CarritoPage() {
     );
   }
 
-  // Helper para pruebas rápidas durante la evaluación
+  // Helper para cargar variantes reales existentes en la base de datos (catalogo_velox.json)
   const handleAddSampleItem = () => {
-    addToCart(
-      {
-        id: 1,
-        sku: "VLX-AER-41-NEO",
-        nombre: "VELOX AERO NITRO ELITE",
-        marca: "VELOX LAB",
-        categoria: "COMPETICIÓN",
-        talle: "41",
-        color: "NEO GREEN",
-        precio_final: 189500,
-      },
-      1
-    );
+    const existingSkus = new Set(items.map((it) => it.sku));
+    const nextVariant =
+      SAMPLE_VARIANTS.find((v) => !existingSkus.has(v.sku)) ||
+      SAMPLE_VARIANTS[0];
+    addToCart(nextVariant, 1);
   };
 
   return (
@@ -139,9 +275,9 @@ export default function CarritoPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#2A2A2A] pb-6">
         <div>
           <div className="flex items-center gap-2.5">
-            <Badge variant="neon">ESTADO GLOBAL R6</Badge>
+            <Badge variant="neon">CHECKOUT TRANSACCIONAL R5 + R6</Badge>
             <span className="font-heading text-xs font-bold uppercase tracking-widest text-[#39FF14]">
-              CARTCONTEXT + LOCALSTORAGE
+              POST /api/pedidos/ • DRF
             </span>
           </div>
           <h1 className="mt-1 font-heading text-3xl sm:text-4xl font-extrabold uppercase text-[#FFFFFF]">
@@ -175,7 +311,9 @@ export default function CarritoPage() {
               TU CARRITO ESTÁ VACÍO
             </h2>
             <p className="text-xs text-[#9CA3AF] leading-relaxed">
-              No tienes ningún calzado deportivo agregado aún. Explora los modelos de alto rendimiento con placa de fibra de carbono en nuestro catálogo.
+              No tienes ningún calzado deportivo agregado aún. Agrega variantes
+              reales de nuestro catálogo o calzados de prueba vinculados al
+              inventario físico de la base de datos.
             </p>
           </div>
 
@@ -184,7 +322,7 @@ export default function CarritoPage() {
               ACELERAR AL CATÁLOGO →
             </Button>
             <Button variant="secondary" onClick={handleAddSampleItem}>
-              + AGREGAR CALZADO DE PRUEBA
+              + AGREGAR CALZADO DE PRUEBA (SKU REAL)
             </Button>
           </div>
         </div>
@@ -205,13 +343,13 @@ export default function CarritoPage() {
 
                   <div className="space-y-1">
                     <p className="text-[11px] font-bold uppercase tracking-wider text-[#9CA3AF]">
-                      {item.marca} • TALLE {item.talle} AR
+                      {item.marca} • TALLE {item.talle} AR • COLOR {item.color}
                     </p>
                     <h3 className="font-heading text-lg font-bold text-[#FFFFFF]">
                       {item.nombre}
                     </h3>
                     <p className="font-mono text-xs text-[#39FF14]">
-                      SKU: {item.sku}
+                      SKU: {item.sku} (ID #{item.variante_id || item.id})
                     </p>
                   </div>
                 </div>
@@ -266,8 +404,12 @@ export default function CarritoPage() {
             ))}
 
             <div className="pt-2 flex justify-between items-center">
-              <Button variant="secondary" onClick={handleAddSampleItem} className="text-xs">
-                + AGREGAR OTRA VARIANTE AL CARRITO
+              <Button
+                variant="secondary"
+                onClick={handleAddSampleItem}
+                className="text-xs"
+              >
+                + AGREGAR OTRA VARIANTE AL CARRITO (SKU REAL)
               </Button>
             </div>
           </div>
@@ -281,7 +423,9 @@ export default function CarritoPage() {
             <div className="space-y-3 text-xs text-[#D1D5DB]">
               <div className="flex justify-between">
                 <span>Subtotal ({totalItems} productos)</span>
-                <span className="font-mono text-[#FFFFFF]">{formatPrecioARS(subtotal)}</span>
+                <span className="font-mono text-[#FFFFFF]">
+                  {formatPrecioARS(subtotal)}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span>Envío express (Serie Carbon)</span>
@@ -295,9 +439,30 @@ export default function CarritoPage() {
               </div>
             </div>
 
+            {/* Aviso breve de autenticación si no ha iniciado sesión */}
+            {!authToken && (
+              <div className="rounded-lg bg-[#2A1E12] border border-[#F59E0B]/60 p-3 text-xs text-[#F59E0B] space-y-1">
+                <p className="font-bold">⚠️ Usuario no autenticado</p>
+                <p className="text-[#D1D5DB] text-[11px]">
+                  Para finalizar el pedido se requerirá inicio de sesión con token JWT.
+                </p>
+              </div>
+            )}
+
             <Button
               variant="primary"
-              onClick={() => setIsCheckoutModalOpen(true)}
+              onClick={() => {
+                try {
+                  const token = localStorage.getItem("velox_access_token");
+                  const user = localStorage.getItem("velox_username");
+                  setAuthToken(token || null);
+                  setAuthUsername(user || null);
+                } catch {
+                  // Entorno sin localStorage disponible
+                }
+                setCheckoutError("");
+                setIsCheckoutModalOpen(true);
+              }}
               className="w-full py-4 text-xs tracking-widest"
             >
               PROCEDER AL CHECKOUT →
@@ -339,7 +504,9 @@ export default function CarritoPage() {
         }
       >
         <p>
-          Esta acción removerá todos los pares de calzado seleccionados de tu carrito y sincronizará el estado en <code className="text-[#39FF14]">localStorage</code>.
+          Esta acción removerá todos los pares de calzado seleccionados de tu
+          carrito y sincronizará el estado en{" "}
+          <code className="text-[#39FF14]">localStorage</code>.
         </p>
       </Modal>
 
@@ -355,7 +522,7 @@ export default function CarritoPage() {
         size="lg"
         title={
           orderConfirmedData
-            ? "ORDEN CONFIRMADA • VELOX SPEED"
+            ? "ORDEN CONFIRMADA EN DRF • VELOX SPEED"
             : "FINALIZAR PEDIDO (CHECKOUT R5)"
         }
         footer={
@@ -381,44 +548,144 @@ export default function CarritoPage() {
                 ¡ORDEN REGISTRADA EXITOSAMENTE!
               </h4>
               <p className="font-mono text-sm text-[#FFFFFF]">
-                NÚMERO DE ORDEN: <strong className="text-[#39FF14]">{orderConfirmedData.numero_pedido}</strong>
+                NÚMERO DE ORDEN:{" "}
+                <strong className="text-[#39FF14]">
+                  {orderConfirmedData.numero_pedido}
+                </strong>{" "}
+                (ID #{orderConfirmedData.id})
               </p>
               <p className="text-xs text-[#D1D5DB]">
-                Se ha generado la transacción conforme al contrato <code className="text-[#39FF14]">snake_case</code> de DRF y se vació el carrito.
+                Se generó la transacción atómica con descuento de inventario en{" "}
+                <code className="text-[#39FF14]">POST /api/pedidos/</code> y se
+                limpió el carrito.
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-xl bg-[#181818] border border-[#2A2A2A] p-4 text-xs">
               <div>
-                <p className="text-[#9CA3AF] uppercase text-[10px] font-bold">Dirección de Entrega:</p>
-                <p className="text-[#FFFFFF] font-medium">{orderConfirmedData.direccion_envio}</p>
-                <p className="text-[#9CA3AF]">{orderConfirmedData.ciudad} (CP: {orderConfirmedData.codigo_postal})</p>
+                <p className="text-[#9CA3AF] uppercase text-[10px] font-bold">
+                  Dirección de Despacho (DRF):
+                </p>
+                <p className="text-[#FFFFFF] font-medium">
+                  {orderConfirmedData.direccion_envio}
+                </p>
+                <p className="text-[#9CA3AF] mt-1">
+                  Fecha de Transacción: {orderConfirmedData.fecha}
+                </p>
               </div>
               <div>
-                <p className="text-[#9CA3AF] uppercase text-[10px] font-bold">Contacto y Pago:</p>
-                <p className="text-[#FFFFFF] font-medium">Tel: {orderConfirmedData.telefono_contacto}</p>
-                <p className="text-[#39FF14] font-bold">Método: {orderConfirmedData.metodo_pago}</p>
+                <p className="text-[#9CA3AF] uppercase text-[10px] font-bold">
+                  Detalles de Pago y Estado:
+                </p>
+                <p className="text-[#39FF14] font-bold">
+                  Método: {orderConfirmedData.metodo_pago}
+                </p>
+                <p className="text-[#FFFFFF] font-medium mt-1">
+                  Estado:{" "}
+                  <span className="text-[#F59E0B] font-bold">
+                    {orderConfirmedData.estado}
+                  </span>
+                </p>
               </div>
             </div>
 
+            {orderConfirmedData.items_comprados &&
+              orderConfirmedData.items_comprados.length > 0 && (
+                <div className="rounded-xl bg-[#141414] border border-[#2A2A2A] p-4 space-y-2">
+                  <p className="text-[#9CA3AF] uppercase text-[10px] font-bold tracking-wider">
+                    Artículos Confirmados:
+                  </p>
+                  <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                    {orderConfirmedData.items_comprados.map((item) => (
+                      <div
+                        key={item.sku}
+                        className="flex items-center justify-between text-xs text-[#D1D5DB]"
+                      >
+                        <span className="truncate pr-2">
+                          {item.nombre} (x{item.cantidad}) •{" "}
+                          <span className="font-mono text-[#39FF14] text-[11px]">
+                            {item.sku}
+                          </span>
+                        </span>
+                        <span className="font-mono text-white flex-shrink-0">
+                          {formatPrecioARS(item.precio * item.cantidad)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
             <div className="border-t border-[#2A2A2A] pt-3 flex justify-between items-center text-sm">
-              <span className="font-bold text-[#FFFFFF]">TOTAL ARS ABONADO:</span>
+              <span className="font-bold text-[#FFFFFF]">TOTAL FACTURADO:</span>
               <span className="font-heading text-xl font-extrabold text-[#39FF14]">
                 {formatPrecioARS(orderConfirmedData.total_abonado)}
               </span>
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit(onCheckoutSubmit)} className="space-y-4" noValidate>
+          <form
+            onSubmit={handleSubmit(onCheckoutSubmit)}
+            className="space-y-4"
+            noValidate
+          >
+            {/* Aviso destacado si el usuario no ha iniciado sesión */}
+            {!authToken && (
+              <div
+                data-testid="auth-required-banner"
+                className="rounded-xl bg-[#2A1E12] border border-[#F59E0B] p-4 text-xs space-y-3"
+              >
+                <div className="flex items-center gap-2 text-[#F59E0B] font-bold uppercase tracking-wider">
+                  <span className="text-base">⚠️</span>
+                  <span>AUTENTICACIÓN REQUERIDA (JWT)</span>
+                </div>
+                <p className="text-[#D1D5DB] leading-relaxed">
+                  Para confirmar tu compra y registrar el pedido en Django REST
+                  Framework (<code className="text-[#39FF14]">POST /api/pedidos/</code>),
+                  debes iniciar sesión con tu cuenta de atleta.
+                </p>
+                <div className="pt-1 flex flex-wrap items-center gap-3">
+                  <Link
+                    href="/login"
+                    className="inline-flex items-center gap-2 rounded-lg bg-[#39FF14] px-4 py-2 font-heading text-xs font-bold uppercase tracking-wider text-[#121212] hover:bg-[#32e012] transition-colors"
+                  >
+                    INICIAR SESIÓN AHORA →
+                  </Link>
+                  <span className="text-[11px] text-[#9CA3AF]">
+                    O usa credenciales de prueba:{" "}
+                    <code className="text-white">cliente1</code> /{" "}
+                    <code className="text-white">cliente1234</code>
+                  </span>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-1">
               <p className="text-xs text-[#9CA3AF]">
-                Completa tus datos de envío y selección de pago validados bajo el esquema Zod <code className="text-[#39FF14]">checkoutSchema</code> en paridad <code className="text-[#39FF14]">snake_case</code>.
+                Completa tus datos de entrega y selección de método de pago
+                validados bajo el esquema Zod{" "}
+                <code className="text-[#39FF14]">checkoutFormSchema</code> en
+                paridad <code className="text-[#39FF14]">snake_case</code> con
+                DRF.
               </p>
             </div>
 
             {checkoutError && (
-              <div className="rounded-lg bg-[#2A1515] border border-[#EF4444] p-3 text-xs text-[#F87171]">
-                {checkoutError}
+              <div
+                data-testid="checkout-error-box"
+                className="rounded-lg bg-[#2A1515] border border-[#EF4444] p-3 text-xs text-[#F87171] leading-relaxed space-y-2"
+              >
+                <p>{checkoutError}</p>
+                {checkoutError.includes("inicia sesión") && (
+                  <div>
+                    <Link
+                      href="/login"
+                      className="inline-flex items-center gap-1 font-heading text-xs font-bold uppercase tracking-wider text-[#39FF14] hover:underline"
+                    >
+                      ACCEDER AL LOGIN AHORA →
+                    </Link>
+                  </div>
+                )}
               </div>
             )}
 
@@ -533,7 +800,7 @@ export default function CarritoPage() {
                   htmlFor="metodo_pago"
                   className="block font-heading text-xs font-bold uppercase tracking-wider text-[#D1D5DB] mb-1"
                 >
-                  Método de Pago (metodo_pago) *
+                  Método de Pago (metodo_pago - DRF) *
                 </label>
                 <select
                   id="metodo_pago"
@@ -544,9 +811,18 @@ export default function CarritoPage() {
                       : "border-[#2A2A2A] focus:border-[#39FF14] focus:ring-[#39FF14]"
                   }`}
                 >
-                  <option value="TARJETA">TARJETA (Débito / Crédito)</option>
-                  <option value="TRANSFERENCIA">TRANSFERENCIA BANCARIA (Alias/CBU)</option>
-                  <option value="EFECTIVO">EFECTIVO CONTRA ENTREGA</option>
+                  <option value="TARJETA_CREDITO">
+                    TARJETA DE CRÉDITO (Visa / Master)
+                  </option>
+                  <option value="TARJETA_DEBITO">
+                    TARJETA DE DÉBITO
+                  </option>
+                  <option value="TRANSFERENCIA">
+                    TRANSFERENCIA BANCARIA (Alias/CBU)
+                  </option>
+                  <option value="EFECTIVO">
+                    EFECTIVO CONTRA ENTREGA
+                  </option>
                 </select>
                 {checkoutErrors.metodo_pago && (
                   <p className="mt-1 text-xs text-[#EF4444]">
@@ -567,7 +843,7 @@ export default function CarritoPage() {
               <textarea
                 id="notas_adicionales"
                 rows={2}
-                placeholder="ej. Timbre departamento 2, entregar entre las 14 y 18 hs."
+                placeholder="ej. Timbre departamento 2, entregar por la tarde."
                 {...register("notas_adicionales")}
                 className="w-full rounded-lg bg-[#121212] border border-[#2A2A2A] px-3.5 py-2 text-sm text-[#FFFFFF] placeholder-[#6B7280] focus:border-[#39FF14] focus:outline-none focus:ring-1 focus:ring-[#39FF14]"
               />
@@ -600,7 +876,9 @@ export default function CarritoPage() {
                 disabled={isSubmittingOrder || items.length === 0}
                 className="px-5 py-2.5 text-xs font-bold"
               >
-                {isSubmittingOrder ? "PROCESANDO CON DRF..." : `CONFIRMAR COMPRA (${formatPrecioARS(total)}) →`}
+                {isSubmittingOrder
+                  ? "PROCESANDO CON DRF..."
+                  : `CONFIRMAR COMPRA (${formatPrecioARS(total)}) →`}
               </Button>
             </div>
           </form>
