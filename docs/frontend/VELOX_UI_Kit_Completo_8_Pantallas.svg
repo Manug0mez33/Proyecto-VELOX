@@ -1,0 +1,666 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3200" height="3900" viewBox="0 0 3200 3900" fill="none">
+  <defs>
+    <filter id="neonGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="40" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <filter id="subtleGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="10" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- ==================== CANVAS MASTER BACKGROUND ==================== -->
+  <rect id="Figma-Canvas-Background" width="3200" height="3900" fill="#080808" />
+
+  <!-- ==================== 00. HEADER & DESIGN SYSTEM TOKENS ==================== -->
+  <g id="00-Design-System-Header" transform="translate(80, 50)">
+    <rect width="3040" height="220" rx="12" fill="#121212" stroke="#39FF14" stroke-width="2" />
+    <text x="48" y="64" font-family="Space Grotesk, Arial Black, sans-serif" font-size="38" font-weight="800" letter-spacing="4" fill="#FFFFFF">VELO<tspan fill="#39FF14">X</tspan> — DESIGN SYSTEM &amp; UI KIT COMPLETO (8 PANTALLAS + MAPA DE ENDPOINTS DRF)</text>
+    <text x="48" y="102" font-family="Inter, sans-serif" font-size="16" fill="#D1D5DB">Plantilla maestra 100% alineada a Manual de Marca VELOX, Requisitos R1–R8 (Programación III) y los 8 ViewSets + 3 @action + Auth JWT (Ingeniería de Software).</text>
+
+    <!-- Swatches & Tokens -->
+    <g id="Tokens-Palette" transform="translate(48, 130)">
+      <rect x="0" y="0" width="210" height="58" rx="8" fill="#121212" stroke="#444444" stroke-width="1.5" />
+      <text x="18" y="26" font-family="Space Grotesk, monospace" font-size="13" font-weight="700" fill="#FFFFFF">BASE (Fondo Nativo)</text>
+      <text x="18" y="46" font-family="Space Grotesk, monospace" font-size="13" fill="#39FF14">#121212</text>
+
+      <rect x="228" y="0" width="210" height="58" rx="8" fill="#2A2A2A" stroke="#555555" stroke-width="1.5" />
+      <text x="246" y="26" font-family="Space Grotesk, monospace" font-size="13" font-weight="700" fill="#FFFFFF">SURFACE (Cards 8px)</text>
+      <text x="246" y="46" font-family="Space Grotesk, monospace" font-size="13" fill="#39FF14">#2A2A2A</text>
+
+      <rect x="456" y="0" width="210" height="58" rx="8" fill="#39FF14" />
+      <text x="474" y="26" font-family="Space Grotesk, monospace" font-size="13" font-weight="800" fill="#121212">ACCENT (Verde Neón)</text>
+      <text x="474" y="46" font-family="Space Grotesk, monospace" font-size="13" font-weight="800" fill="#121212">#39FF14</text>
+
+      <rect x="684" y="0" width="210" height="58" rx="8" fill="#FFFFFF" />
+      <text x="702" y="26" font-family="Space Grotesk, monospace" font-size="13" font-weight="800" fill="#121212">TEXT 1 (Primario)</text>
+      <text x="702" y="46" font-family="Space Grotesk, monospace" font-size="13" font-weight="700" fill="#121212">#FFFFFF</text>
+
+      <rect x="912" y="0" width="210" height="58" rx="8" fill="#D1D5DB" />
+      <text x="930" y="26" font-family="Space Grotesk, monospace" font-size="13" font-weight="800" fill="#121212">TEXT 2 (Secundario)</text>
+      <text x="930" y="46" font-family="Space Grotesk, monospace" font-size="13" font-weight="700" fill="#121212">#D1D5DB</text>
+
+      <rect x="1140" y="0" width="430" height="58" rx="8" fill="#1A1A1A" stroke="#333333" />
+      <text x="1160" y="26" font-family="Space Grotesk, sans-serif" font-size="13" font-weight="700" fill="#39FF14">TIPOGRAFÍAS OFICIALES:</text>
+      <text x="1160" y="46" font-family="Inter, sans-serif" font-size="13" fill="#FFFFFF">H1/H2: Space Grotesk Bold/SemiBold • Body/Inputs: Inter Regular</text>
+
+      <rect x="1588" y="0" width="540" height="58" rx="8" fill="#1A1A1A" stroke="#333333" />
+      <text x="1608" y="26" font-family="Space Grotesk, sans-serif" font-size="13" font-weight="700" fill="#39FF14">8 VIEWSETS DRF CONECTADOS:</text>
+      <text x="1608" y="46" font-family="Inter, sans-serif" font-size="13" fill="#FFFFFF">Producto • Marca • Categoria • VarianteProducto • Pedido • Usuario • Proveedor • Resena</text>
+
+      <rect x="2146" y="0" width="790" height="58" rx="8" fill="#182C15" stroke="#39FF14" />
+      <text x="2166" y="26" font-family="Space Grotesk, monospace" font-size="13" font-weight="700" fill="#39FF14">3 ACCIONES @action + AUTH DUAL:</text>
+      <text x="2166" y="46" font-family="Inter, monospace" font-size="12" fill="#FFFFFF">GET /productos/destacados/ • GET /productos/{id}/stock_por_talle/ • POST /pedidos/{id}/cancelar_pedido/ • POST /token/</text>
+    </g>
+  </g>
+
+  <!-- ======================================================================================== -->
+  <!-- FILA 1: PANTALLA 01 (HOME /)  &  PANTALLA 02 (CATÁLOGO /productos)                       -->
+  <!-- ======================================================================================== -->
+
+  <!-- ==================== FRAME 01: HOME / LANDING (/) ==================== -->
+  <g id="Frame-01-Home-Landing" transform="translate(80, 320)">
+    <!-- Frame Label -->
+    <text x="0" y="-14" font-family="Space Grotesk, monospace" font-size="16" font-weight="700" fill="#39FF14">FRAME 01 — RUTA: / (HOME &amp; HERO)  |  ENDPOINT: GET /api/productos/destacados/ (@action #1)</text>
+    <rect width="1440" height="820" rx="10" fill="#121212" stroke="#2A2A2A" stroke-width="2" />
+
+    <!-- Navbar -->
+    <rect width="1440" height="72" rx="10" fill="#121212" />
+    <line x1="0" y1="72" x2="1440" y2="72" stroke="#2A2A2A" />
+    <text x="60" y="46" font-family="Space Grotesk, Arial Black, sans-serif" font-size="26" font-weight="800" letter-spacing="3" fill="#FFFFFF">VELO<tspan fill="#39FF14">X</tspan></text>
+    <text x="380" y="42" font-family="Inter, sans-serif" font-size="13" font-weight="700" fill="#39FF14">INICIO (/)</text>
+    <text x="490" y="42" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="#D1D5DB">CATÁLOGO (/productos)</text>
+    <text x="690" y="42" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="#D1D5DB">TECNOLOGÍA (/tecnologia)</text>
+    <text x="900" y="42" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="#D1D5DB">DASHBOARD (/dashboard)</text>
+    <rect x="1150" y="18" width="100" height="36" rx="8" fill="#2A2A2A" />
+    <text x="1200" y="40" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" font-weight="700" fill="#FFFFFF">ACCEDER</text>
+    <rect x="1262" y="18" width="118" height="36" rx="8" fill="#39FF14" />
+    <text x="1321" y="40" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" font-weight="800" fill="#121212">CARRITO (2)</text>
+
+    <!-- Hero Content -->
+    <g transform="translate(60, 115)">
+      <rect width="280" height="28" rx="6" fill="#1B2A18" stroke="#39FF14" />
+      <text x="16" y="18" font-family="Space Grotesk, monospace" font-size="11" font-weight="700" fill="#39FF14">● @action: GET /api/productos/destacados/</text>
+      <text x="0" y="82" font-family="Space Grotesk, Arial Black, sans-serif" font-size="52" font-weight="800" fill="#FFFFFF">VELOCIDAD</text>
+      <text x="0" y="140" font-family="Space Grotesk, Arial Black, sans-serif" font-size="52" font-weight="800" fill="#39FF14">SIN FRICCIÓN.</text>
+      <text x="0" y="190" font-family="Space Grotesk, Arial Black, sans-serif" font-size="35" font-weight="800" fill="#FFFFFF">RENDIMIENTO EN CADA PASO.</text>
+      <text x="0" y="234" font-family="Inter, sans-serif" font-size="15" fill="#D1D5DB">Placa de carbono propulsiva y tracción reactiva. Modo Oscuro nativo.</text>
+
+      <!-- CTAs -->
+      <rect x="0" y="265" width="210" height="48" rx="8" fill="#39FF14" />
+      <text x="105" y="294" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" font-weight="800" fill="#121212">ACELERAR AHORA →</text>
+      <rect x="226" y="265" width="220" height="48" rx="8" fill="#2A2A2A" stroke="#444" />
+      <text x="336" y="294" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">ANALIZAR RENDIMIENTO</text>
+
+      <!-- Hero Right Card -->
+      <g transform="translate(680, 0)">
+        <rect width="640" height="340" rx="8" fill="#2A2A2A" stroke="#39FF14" stroke-width="1.5" />
+        <ellipse cx="320" cy="165" rx="180" ry="75" fill="#39FF14" fill-opacity="0.22" filter="url(#neonGlow)" />
+        <path d="M120 205 L165 115 L255 128 L345 92 L455 148 L485 198 L120 205 Z" fill="#1E1E1E" stroke="#39FF14" stroke-width="2.5" />
+        <rect x="115" y="200" width="375" height="18" rx="8" fill="#39FF14" />
+        <text x="28" y="40" font-family="Space Grotesk, monospace" font-size="12" font-weight="700" fill="#39FF14">SKU: VLX-HYP-42-NEO</text>
+        <text x="28" y="296" font-family="Space Grotesk, sans-serif" font-size="24" font-weight="700" fill="#FFFFFF">VELOX HYPERION CARBON X</text>
+        <text x="28" y="320" font-family="Inter, sans-serif" font-size="13" fill="#D1D5DB">Marca: VELOX Lab • Categoría: Competición</text>
+        <text x="612" y="310" text-anchor="end" font-family="Space Grotesk, sans-serif" font-size="28" font-weight="800" fill="#39FF14">$219.900</text>
+      </g>
+    </g>
+
+    <!-- Bottom Featured Strip -->
+    <g transform="translate(60, 490)">
+      <text x="0" y="22" font-family="Space Grotesk, sans-serif" font-size="20" font-weight="700" fill="#FFFFFF">DESTACADOS DE LA SEMANA (Server Component — SEO Optimizado)</text>
+      <g transform="translate(0, 42)">
+        <rect x="0" y="0" width="420" height="230" rx="8" fill="#2A2A2A" />
+        <text x="24" y="42" font-family="Space Grotesk, sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">VELOX AERO NITRO ELITE</text>
+        <text x="24" y="68" font-family="Inter, sans-serif" font-size="13" fill="#D1D5DB">SKU: VLX-AER-41 • Stock: 14 u.</text>
+        <text x="24" y="120" font-family="Space Grotesk, sans-serif" font-size="24" font-weight="800" fill="#39FF14">$189.500</text>
+        <rect x="24" y="155" width="372" height="44" rx="8" fill="#39FF14" />
+        <text x="210" y="182" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" font-weight="800" fill="#121212">ANALIZAR RENDIMIENTO</text>
+
+        <rect x="450" y="0" width="420" height="230" rx="8" fill="#2A2A2A" />
+        <text x="474" y="42" font-family="Space Grotesk, sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">VELOX VORTEX PRO X2</text>
+        <text x="474" y="68" font-family="Inter, sans-serif" font-size="13" fill="#D1D5DB">SKU: VLX-VOR-42 • Stock: 8 u.</text>
+        <text x="474" y="120" font-family="Space Grotesk, sans-serif" font-size="24" font-weight="800" fill="#39FF14">$214.000</text>
+        <rect x="474" y="155" width="372" height="44" rx="8" fill="#39FF14" />
+        <text x="660" y="182" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" font-weight="800" fill="#121212">ANALIZAR RENDIMIENTO</text>
+
+        <rect x="900" y="0" width="420" height="230" rx="8" fill="#2A2A2A" />
+        <text x="924" y="42" font-family="Space Grotesk, sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">VELOX TERRA GRIP GT</text>
+        <text x="924" y="68" font-family="Inter, sans-serif" font-size="13" fill="#D1D5DB">SKU: VLX-TER-43 • Stock: 3 u.</text>
+        <text x="924" y="120" font-family="Space Grotesk, sans-serif" font-size="24" font-weight="800" fill="#39FF14">$198.000</text>
+        <rect x="924" y="155" width="372" height="44" rx="8" fill="#39FF14" />
+        <text x="1110" y="182" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" font-weight="800" fill="#121212">ANALIZAR RENDIMIENTO</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ==================== FRAME 02: CATÁLOGO (/productos) ==================== -->
+  <g id="Frame-02-Catalogo-Productos" transform="translate(1680, 320)">
+    <text x="0" y="-14" font-family="Space Grotesk, monospace" font-size="16" font-weight="700" fill="#39FF14">FRAME 02 — RUTA: /productos  |  ENDPOINTS: GET /api/productos/ (NestedSerializer #1) + /marcas/ + /categorias/</text>
+    <rect width="1440" height="820" rx="10" fill="#121212" stroke="#2A2A2A" stroke-width="2" />
+
+    <!-- Navbar -->
+    <rect width="1440" height="72" rx="10" fill="#121212" />
+    <line x1="0" y1="72" x2="1440" y2="72" stroke="#2A2A2A" />
+    <text x="60" y="46" font-family="Space Grotesk, Arial Black, sans-serif" font-size="26" font-weight="800" letter-spacing="3" fill="#FFFFFF">VELO<tspan fill="#39FF14">X</tspan></text>
+    <text x="490" y="42" font-family="Inter, sans-serif" font-size="13" font-weight="700" fill="#39FF14">CATÁLOGO (/productos)</text>
+
+    <!-- FilterBar.jsx (Client Component) -->
+    <g transform="translate(60, 96)">
+      <rect width="1320" height="84" rx="8" fill="#2A2A2A" stroke="#39FF14" stroke-width="1" />
+      <text x="20" y="22" font-family="Space Grotesk, monospace" font-size="11" font-weight="700" fill="#39FF14">FilterBar.jsx ("use client") → GET /api/productos/?search=&amp;marca=&amp;categoria=&amp;genero=&amp;precio_min=&amp;precio_max=&amp;page=1</text>
+      <rect x="20" y="32" width="370" height="38" rx="6" fill="#121212" stroke="#444" />
+      <text x="36" y="56" font-family="Inter, sans-serif" font-size="12" fill="#9CA3AF">🔍 Buscar nombre o descripción...</text>
+
+      <rect x="406" y="32" width="210" height="38" rx="6" fill="#121212" stroke="#444" />
+      <text x="422" y="56" font-family="Inter, sans-serif" font-size="12" fill="#FFFFFF">Categoría: Running ▾</text>
+
+      <rect x="632" y="32" width="200" height="38" rx="6" fill="#121212" stroke="#444" />
+      <text x="648" y="56" font-family="Inter, sans-serif" font-size="12" fill="#FFFFFF">Marca: VELOX Lab ▾</text>
+
+      <rect x="848" y="32" width="180" height="38" rx="6" fill="#121212" stroke="#444" />
+      <text x="864" y="56" font-family="Inter, sans-serif" font-size="12" fill="#FFFFFF">Género: Unisex ▾</text>
+
+      <rect x="1044" y="32" width="256" height="38" rx="6" fill="#39FF14" />
+      <text x="1172" y="56" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" font-weight="800" fill="#121212">APLICAR FILTROS</text>
+    </g>
+
+    <!-- Product Grid (3 Cards + SkeletonCard reference) -->
+    <g transform="translate(60, 205)">
+      <!-- Card 1 -->
+      <rect x="0" y="0" width="420" height="490" rx="8" fill="#2A2A2A" />
+      <rect x="18" y="18" width="384" height="210" rx="6" fill="#181818" />
+      <text x="32" y="44" font-family="Space Grotesk, monospace" font-size="11" fill="#39FF14">es_portada: true (ImagenProducto)</text>
+      <text x="24" y="264" font-family="Inter, sans-serif" font-size="11" font-weight="700" fill="#9CA3AF">MARCA: VELOX LAB • CATEGORÍA: RUNNING</text>
+      <text x="24" y="294" font-family="Space Grotesk, sans-serif" font-size="22" font-weight="700" fill="#FFFFFF">VELOX AERO NITRO ELITE</text>
+      <text x="24" y="322" font-family="Inter, sans-serif" font-size="13" fill="#D1D5DB">Variantes anidadas: Talles 39, 40, 41, 42</text>
+      <text x="24" y="446" font-family="Space Grotesk, sans-serif" font-size="26" font-weight="800" fill="#FFFFFF">$189.500</text>
+      <rect x="210" y="416" width="186" height="46" rx="8" fill="#39FF14" />
+      <text x="303" y="444" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" font-weight="800" fill="#121212">AÑADIR AL CARRITO</text>
+
+      <!-- Card 2 -->
+      <rect x="450" y="0" width="420" height="490" rx="8" fill="#2A2A2A" stroke="#39FF14" stroke-width="1.5" />
+      <rect x="468" y="18" width="384" height="210" rx="6" fill="#181818" />
+      <text x="482" y="44" font-family="Space Grotesk, monospace" font-size="11" fill="#39FF14">NestedSerializer en action == 'list'</text>
+      <text x="474" y="264" font-family="Inter, sans-serif" font-size="11" font-weight="700" fill="#9CA3AF">MARCA: VELOX LAB • CATEGORÍA: MARATÓN</text>
+      <text x="474" y="294" font-family="Space Grotesk, sans-serif" font-size="22" font-weight="700" fill="#FFFFFF">VELOX VORTEX PRO X2</text>
+      <text x="474" y="322" font-family="Inter, sans-serif" font-size="13" fill="#D1D5DB">Variantes anidadas: Talles 40, 41, 42, 43</text>
+      <text x="474" y="446" font-family="Space Grotesk, sans-serif" font-size="26" font-weight="800" fill="#39FF14">$214.000</text>
+      <rect x="660" y="416" width="186" height="46" rx="8" fill="#39FF14" />
+      <text x="753" y="444" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" font-weight="800" fill="#121212">ANALIZAR RENDIMIENTO</text>
+
+      <!-- Card 3: SkeletonCard.jsx State (Requisito R1/R2 loading.jsx) -->
+      <rect x="900" y="0" width="420" height="490" rx="8" fill="#2A2A2A" stroke="#444" stroke-dasharray="6 4" />
+      <rect x="918" y="18" width="384" height="210" rx="6" fill="#1F1F1F" />
+      <text x="1110" y="128" text-anchor="middle" font-family="Space Grotesk, monospace" font-size="13" font-weight="700" fill="#39FF14">SkeletonCard.jsx (loading.jsx)</text>
+      <rect x="924" y="252" width="180" height="16" rx="4" fill="#383838" />
+      <rect x="924" y="282" width="290" height="26" rx="4" fill="#383838" />
+      <rect x="924" y="322" width="240" height="16" rx="4" fill="#383838" />
+      <rect x="924" y="416" width="140" height="46" rx="8" fill="#383838" />
+      <rect x="1110" y="416" width="186" height="46" rx="8" fill="#383838" />
+    </g>
+
+    <!-- Pagination Bar -->
+    <g transform="translate(460, 725)">
+      <rect x="0" y="0" width="520" height="48" rx="8" fill="#2A2A2A" />
+      <text x="260" y="29" text-anchor="middle" font-family="Space Grotesk, monospace" font-size="13" font-weight="700" fill="#39FF14">Paginación DRF: { count: 42, previous: null, next: "?page=2", results: [...] }</text>
+    </g>
+  </g>
+
+  <!-- ======================================================================================== -->
+  <!-- FILA 2: PANTALLA 03 (FICHA SKU + RESEÑAS) & PANTALLA 04 (LOGIN + REGISTER)               -->
+  <!-- ======================================================================================== -->
+
+  <!-- ==================== FRAME 03: FICHA TÉCNICA (/productos/[id]) + CRUD RESEÑAS ==================== -->
+  <g id="Frame-03-Detalle-SKU-Resenas" transform="translate(80, 1210)">
+    <text x="0" y="-14" font-family="Space Grotesk, monospace" font-size="16" font-weight="700" fill="#39FF14">FRAME 03 — RUTA DINÁMICA #1: /productos/[id]  |  ENDPOINTS: GET /productos/{id}/ + @action stock_por_talle + CRUD /api/resenas/</text>
+    <rect width="1440" height="820" rx="10" fill="#121212" stroke="#2A2A2A" stroke-width="2" />
+
+    <!-- Left: Gallery & Dynamic Variant SKU Selector -->
+    <g transform="translate(60, 50)">
+      <rect width="620" height="420" rx="8" fill="#2A2A2A" />
+      <rect x="20" y="20" width="580" height="290" rx="6" fill="#181818" />
+      <ellipse cx="310" cy="165" rx="170" ry="65" fill="#39FF14" fill-opacity="0.2" filter="url(#neonGlow)" />
+      <path d="M130 195 L175 105 L265 118 L355 82 L465 138 L495 188 L130 195 Z" fill="#242424" stroke="#39FF14" stroke-width="2.5" />
+      <rect x="125" y="190" width="375" height="16" rx="8" fill="#39FF14" />
+      <!-- Thumbnails 1:N ImagenProducto -->
+      <rect x="20" y="326" width="130" height="74" rx="6" fill="#181818" stroke="#39FF14" stroke-width="2" />
+      <text x="85" y="368" text-anchor="middle" font-family="Space Grotesk, monospace" font-size="11" fill="#39FF14">Foto 1 (Portada)</text>
+      <rect x="165" y="326" width="130" height="74" rx="6" fill="#181818" />
+      <text x="230" y="368" text-anchor="middle" font-family="Space Grotesk, monospace" font-size="11" fill="#9CA3AF">Foto 2 (Perfil)</text>
+      <rect x="310" y="326" width="130" height="74" rx="6" fill="#181818" />
+      <text x="375" y="368" text-anchor="middle" font-family="Space Grotesk, monospace" font-size="11" fill="#9CA3AF">Foto 3 (Suela)</text>
+    </g>
+
+    <!-- Right: Technical Specs + @action stock_por_talle -->
+    <g transform="translate(720, 50)">
+      <rect width="660" height="420" rx="8" fill="#2A2A2A" stroke="#383838" />
+      <text x="32" y="42" font-family="Space Grotesk, monospace" font-size="12" font-weight="700" fill="#39FF14">GET /api/productos/{id}/stock_por_talle/ (@action #2)</text>
+      <text x="32" y="80" font-family="Space Grotesk, sans-serif" font-size="30" font-weight="800" fill="#FFFFFF">VELOX VORTEX PRO X2</text>
+      <text x="32" y="112" font-family="Space Grotesk, sans-serif" font-size="28" font-weight="800" fill="#39FF14">$214.000</text>
+
+      <!-- Color Selector -->
+      <text x="32" y="156" font-family="Inter, sans-serif" font-size="12" font-weight="700" fill="#D1D5DB">1. SELECCIONAR COLOR (codigo_hex):</text>
+      <circle cx="52" cy="184" r="14" fill="#121212" stroke="#39FF14" stroke-width="2.5" />
+      <circle cx="94" cy="184" r="14" fill="#39FF14" />
+      <circle cx="136" cy="184" r="14" fill="#E5E7EB" />
+
+      <!-- Size Selector -->
+      <text x="32" y="232" font-family="Inter, sans-serif" font-size="12" font-weight="700" fill="#D1D5DB">2. SELECCIONAR TALLE (VarianteProducto):</text>
+      <g transform="translate(32, 244)">
+        <rect x="0" y="0" width="90" height="42" rx="6" fill="#121212" />
+        <text x="45" y="26" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="13" fill="#D1D5DB">40 (3 u.)</text>
+        <rect x="102" y="0" width="90" height="42" rx="6" fill="#39FF14" />
+        <text x="147" y="26" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="13" font-weight="800" fill="#121212">42 (8 u.)</text>
+        <rect x="204" y="0" width="90" height="42" rx="6" fill="#121212" />
+        <text x="249" y="26" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="13" fill="#D1D5DB">43 (2 u.)</text>
+        <rect x="306" y="0" width="110" height="42" rx="6" fill="#1A1A1A" />
+        <text x="361" y="26" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="13" fill="#6B7280">44 (Agotado)</text>
+      </g>
+
+      <!-- SKU Box & CTA -->
+      <rect x="32" y="304" width="596" height="40" rx="6" fill="#121212" />
+      <text x="48" y="329" font-family="Space Grotesk, monospace" font-size="13" fill="#39FF14">SKU Seleccionado: VLX-VOR-42-NEO  •  Stock verificado: 8 unidades</text>
+
+      <rect x="32" y="356" width="596" height="48" rx="8" fill="#39FF14" />
+      <text x="330" y="385" text-anchor="middle" font-family="Inter, sans-serif" font-size="14" font-weight="800" fill="#121212">AÑADIR VARIANTE AL CARRITO (CartContext.addToCart)</text>
+    </g>
+
+    <!-- Bottom: Reseñas Section (ResenaViewSet: GET, POST, PATCH, DELETE) -->
+    <g transform="translate(60, 495)">
+      <rect width="1320" height="280" rx="8" fill="#2A2A2A" />
+      <text x="28" y="38" font-family="Space Grotesk, sans-serif" font-size="20" font-weight="700" fill="#FFFFFF">RESEÑAS DE ATLETAS (ResenaViewSet: GET / POST / PATCH / DELETE /api/resenas/)</text>
+
+      <!-- Existing Review Card -->
+      <rect x="28" y="58" width="760" height="195" rx="8" fill="#181818" />
+      <text x="52" y="92" font-family="Space Grotesk, sans-serif" font-size="16" font-weight="700" fill="#39FF14">★★★★★ (calificacion: 5/5) — @manuelgomez</text>
+      <text x="52" y="124" font-family="Inter, sans-serif" font-size="14" fill="#D1D5DB">"Excelente retorno de energía en pasadas de 1000m. La placa de carbono responde al instante."</text>
+      <rect x="52" y="185" width="130" height="36" rx="6" fill="#2A2A2A" stroke="#38BDF8" />
+      <text x="117" y="208" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" font-weight="700" fill="#38BDF8">EDITAR (PATCH)</text>
+      <rect x="196" y="185" width="140" height="36" rx="6" fill="#2A2A2A" stroke="#F87171" />
+      <text x="266" y="208" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" font-weight="700" fill="#F87171">BORRAR (DELETE)</text>
+
+      <!-- New Review Form -->
+      <rect x="812" y="58" width="480" height="195" rx="8" fill="#181818" stroke="#39FF14" />
+      <text x="836" y="88" font-family="Space Grotesk, sans-serif" font-size="14" font-weight="700" fill="#FFFFFF">PUBLICAR RESEÑA (POST /api/resenas/)</text>
+      <rect x="836" y="102" width="432" height="80" rx="6" fill="#121212" stroke="#333" />
+      <text x="852" y="132" font-family="Inter, sans-serif" font-size="12" fill="#9CA3AF">comentario (snake_case)...</text>
+      <rect x="836" y="196" width="432" height="40" rx="6" fill="#39FF14" />
+      <text x="1052" y="221" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" font-weight="800" fill="#121212">ENVIAR CALIFICACIÓN</text>
+    </g>
+  </g>
+
+  <!-- ==================== FRAME 04 & 05: LOGIN (/login) Y REGISTER (/registro) ==================== -->
+  <g id="Frame-04-05-Login-and-Register" transform="translate(1680, 1210)">
+    <text x="0" y="-14" font-family="Space Grotesk, monospace" font-size="16" font-weight="700" fill="#39FF14">FRAMES 04 Y 05 — RUTAS: /login &amp; /registro  |  ENDPOINTS: POST /api/token/ (JWT HTTP-Only) + POST /api/usuarios/</text>
+    <rect width="1440" height="820" rx="10" fill="#121212" stroke="#2A2A2A" stroke-width="2" />
+
+    <!-- LEFT SUB-FRAME: LOGIN (/login) -->
+    <g id="Template-Login" transform="translate(60, 55)">
+      <rect width="580" height="710" rx="10" fill="#2A2A2A" stroke="#39FF14" stroke-width="1.5" />
+      <text x="44" y="54" font-family="Space Grotesk, Arial Black, sans-serif" font-size="26" font-weight="800" letter-spacing="3" fill="#FFFFFF">VELO<tspan fill="#39FF14">X</tspan></text>
+      <rect x="340" y="32" width="196" height="28" rx="6" fill="#182C15" />
+      <text x="438" y="50" text-anchor="middle" font-family="Space Grotesk, monospace" font-size="11" font-weight="700" fill="#39FF14">POST /api/token/ (R4)</text>
+
+      <text x="44" y="110" font-family="Space Grotesk, sans-serif" font-size="30" font-weight="800" fill="#FFFFFF">INICIAR SESIÓN</text>
+      <text x="44" y="138" font-family="Inter, sans-serif" font-size="13" fill="#D1D5DB">Server Action login() guarda el JWT access en Cookie HTTP-Only.</text>
+
+      <!-- Input username -->
+      <text x="44" y="190" font-family="Inter, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF">USUARIO (username — LoginSchema Zod)</text>
+      <rect x="44" y="202" width="492" height="50" rx="8" fill="#121212" stroke="#39FF14" stroke-width="1.5" />
+      <text x="64" y="232" font-family="Inter, sans-serif" font-size="14" fill="#FFFFFF">manuelgomez</text>
+
+      <!-- Input password -->
+      <text x="44" y="286" font-family="Inter, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF">CONTRASEÑA (password — LoginSchema Zod)</text>
+      <rect x="44" y="298" width="492" height="50" rx="8" fill="#121212" stroke="#F87171" stroke-width="1.5" />
+      <text x="64" y="328" font-family="Inter, sans-serif" font-size="14" fill="#FFFFFF">••••••••••••</text>
+      <text x="44" y="368" font-family="Inter, sans-serif" font-size="12" fill="#F87171">⚠ Error Zod / DRF 401: La contraseña debe tener al menos 8 caracteres.</text>
+
+      <!-- Submit CTA -->
+      <rect x="44" y="405" width="492" height="54" rx="8" fill="#39FF14" />
+      <text x="290" y="438" text-anchor="middle" font-family="Inter, sans-serif" font-size="14" font-weight="800" letter-spacing="1" fill="#121212">INGRESAR AL SISTEMA →</text>
+
+      <!-- Architecture Note Box -->
+      <rect x="44" y="490" width="492" height="125" rx="8" fill="#181818" />
+      <text x="64" y="520" font-family="Space Grotesk, monospace" font-size="12" font-weight="700" fill="#39FF14">FLUJO DE DEFENSA ORAL (Prof. Valentino Arballo):</text>
+      <text x="64" y="544" font-family="Inter, sans-serif" font-size="12" fill="#D1D5DB">1. React Hook Form + zodResolver valida sin re-renders.</text>
+      <text x="64" y="566" font-family="Inter, sans-serif" font-size="12" fill="#D1D5DB">2. Server Action envía credenciales a POST /api/token/.</text>
+      <text x="64" y="588" font-family="Inter, sans-serif" font-size="12" fill="#D1D5DB">3. (await cookies()).set('access', token, { httpOnly: true }).</text>
+
+      <text x="290" y="665" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" fill="#D1D5DB">¿No tenés cuenta de atleta? <tspan fill="#39FF14" font-weight="700">Registrate en /registro →</tspan></text>
+    </g>
+
+    <!-- RIGHT SUB-FRAME: REGISTER (/registro) -->
+    <g id="Template-Register" transform="translate(680, 55)">
+      <rect width="700" height="710" rx="10" fill="#2A2A2A" stroke="#38BDF8" stroke-width="1.5" />
+      <text x="44" y="54" font-family="Space Grotesk, Arial Black, sans-serif" font-size="26" font-weight="800" letter-spacing="3" fill="#FFFFFF">VELO<tspan fill="#39FF14">X</tspan></text>
+      <rect x="420" y="32" width="236" height="28" rx="6" fill="#112838" />
+      <text x="538" y="50" text-anchor="middle" font-family="Space Grotesk, monospace" font-size="11" font-weight="700" fill="#38BDF8">POST /api/usuarios/ (R5)</text>
+
+      <text x="44" y="106" font-family="Space Grotesk, sans-serif" font-size="30" font-weight="800" fill="#FFFFFF">CREAR CUENTA DE ATLETA</text>
+      <text x="44" y="132" font-family="Inter, sans-serif" font-size="13" fill="#D1D5DB">Crea registro en modelo Usuario (AbstractUser) con rol="CLIENTE" por defecto.</text>
+
+      <!-- Row 1: username & email -->
+      <text x="44" y="174" font-family="Inter, sans-serif" font-size="11" font-weight="700" fill="#D1D5DB">USUARIO (username *)</text>
+      <rect x="44" y="184" width="295" height="46" rx="8" fill="#121212" stroke="#444" />
+      <text x="62" y="212" font-family="Inter, sans-serif" font-size="13" fill="#FFFFFF">tomas_benavidez</text>
+
+      <text x="361" y="174" font-family="Inter, sans-serif" font-size="11" font-weight="700" fill="#D1D5DB">EMAIL (email *)</text>
+      <rect x="361" y="184" width="295" height="46" rx="8" fill="#121212" stroke="#444" />
+      <text x="379" y="212" font-family="Inter, sans-serif" font-size="13" fill="#FFFFFF">t.benavidez@itecriocuarto.org.ar</text>
+
+      <!-- Row 2: first_name & last_name -->
+      <text x="44" y="256" font-family="Inter, sans-serif" font-size="11" font-weight="700" fill="#D1D5DB">NOMBRE (first_name *)</text>
+      <rect x="44" y="266" width="295" height="46" rx="8" fill="#121212" stroke="#444" />
+      <text x="62" y="294" font-family="Inter, sans-serif" font-size="13" fill="#FFFFFF">Tomás</text>
+
+      <text x="361" y="256" font-family="Inter, sans-serif" font-size="11" font-weight="700" fill="#D1D5DB">APELLIDO (last_name *)</text>
+      <rect x="361" y="266" width="295" height="46" rx="8" fill="#121212" stroke="#444" />
+      <text x="379" y="294" font-family="Inter, sans-serif" font-size="13" fill="#FFFFFF">Benavidez</text>
+
+      <!-- Row 3: telefono & ciudad -->
+      <text x="44" y="338" font-family="Inter, sans-serif" font-size="11" font-weight="700" fill="#D1D5DB">TELÉFONO (telefono)</text>
+      <rect x="44" y="348" width="295" height="46" rx="8" fill="#121212" stroke="#444" />
+      <text x="62" y="376" font-family="Inter, sans-serif" font-size="13" fill="#FFFFFF">+54 358 4123456</text>
+
+      <text x="361" y="338" font-family="Inter, sans-serif" font-size="11" font-weight="700" fill="#D1D5DB">CIUDAD (ciudad)</text>
+      <rect x="361" y="348" width="295" height="46" rx="8" fill="#121212" stroke="#444" />
+      <text x="379" y="376" font-family="Inter, sans-serif" font-size="13" fill="#FFFFFF">Río Cuarto</text>
+
+      <!-- Row 4: direccion -->
+      <text x="44" y="420" font-family="Inter, sans-serif" font-size="11" font-weight="700" fill="#D1D5DB">DIRECCIÓN DE ENVÍO (direccion)</text>
+      <rect x="44" y="430" width="612" height="46" rx="8" fill="#121212" stroke="#444" />
+      <text x="62" y="458" font-family="Inter, sans-serif" font-size="13" fill="#FFFFFF">Bv. Roca 850</text>
+
+      <!-- Row 5: password -->
+      <text x="44" y="502" font-family="Inter, sans-serif" font-size="11" font-weight="700" fill="#D1D5DB">CONTRASEÑA (password * — RegisterSchema Zod)</text>
+      <rect x="44" y="512" width="612" height="46" rx="8" fill="#121212" stroke="#39FF14" />
+      <text x="62" y="540" font-family="Inter, sans-serif" font-size="13" fill="#FFFFFF">••••••••••••</text>
+
+      <!-- Submit Button -->
+      <rect x="44" y="584" width="612" height="54" rx="8" fill="#39FF14" />
+      <text x="350" y="617" text-anchor="middle" font-family="Inter, sans-serif" font-size="14" font-weight="800" letter-spacing="1" fill="#121212">REGISTRARME Y ACELERAR (POST /api/usuarios/)</text>
+
+      <text x="350" y="672" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" fill="#D1D5DB">¿Ya tenés cuenta? <tspan fill="#39FF14" font-weight="700">Iniciá sesión en /login</tspan></text>
+    </g>
+  </g>
+
+  <!-- ======================================================================================== -->
+  <!-- FILA 3: PANTALLA 06 (CARRITO /carrito) & PANTALLA 07 (DASHBOARD ADMIN CRUD 4 OPS)        -->
+  <!-- ======================================================================================== -->
+
+  <!-- ==================== FRAME 06: CARRITO & CHECKOUT (/carrito) ==================== -->
+  <g id="Frame-06-Carrito-Checkout" transform="translate(80, 2100)">
+    <text x="0" y="-14" font-family="Space Grotesk, monospace" font-size="16" font-weight="700" fill="#39FF14">FRAME 06 — RUTA: /carrito (CartContext R6 + OrderSchema R5)  |  ENDPOINT: POST /api/pedidos/</text>
+    <rect width="1440" height="820" rx="10" fill="#121212" stroke="#2A2A2A" stroke-width="2" />
+
+    <!-- Left: Items in CartContext -->
+    <g transform="translate(60, 60)">
+      <text x="0" y="30" font-family="Space Grotesk, sans-serif" font-size="30" font-weight="800" fill="#FFFFFF">TU CARRITO DE RENDIMIENTO (CartContext)</text>
+      <text x="0" y="56" font-family="Inter, sans-serif" font-size="13" fill="#D1D5DB">Estado global persistido en localStorage • Métodos: addToCart(), removeFromCart(), clearCart()</text>
+
+      <!-- Item 1 -->
+      <rect x="0" y="86" width="760" height="130" rx="8" fill="#2A2A2A" />
+      <rect x="20" y="104" width="110" height="94" rx="6" fill="#181818" />
+      <text x="150" y="132" font-family="Space Grotesk, sans-serif" font-size="20" font-weight="700" fill="#FFFFFF">VELOX AERO NITRO ELITE</text>
+      <text x="150" y="156" font-family="Inter, sans-serif" font-size="13" fill="#D1D5DB">variante_id: #14 • Talle: 41 AR • Color: Negro/Neón • SKU: VLX-AER-41</text>
+      <text x="150" y="186" font-family="Space Grotesk, monospace" font-size="13" fill="#39FF14">cantidad: 1  ×  precio_unitario: $189.500</text>
+      <text x="730" y="152" text-anchor="end" font-family="Space Grotesk, sans-serif" font-size="22" font-weight="800" fill="#FFFFFF">$189.500</text>
+      <text x="730" y="186" text-anchor="end" font-family="Inter, sans-serif" font-size="12" font-weight="700" fill="#F87171">Eliminar ✕</text>
+
+      <!-- Item 2 -->
+      <rect x="0" y="236" width="760" height="130" rx="8" fill="#2A2A2A" />
+      <rect x="20" y="254" width="110" height="94" rx="6" fill="#181818" />
+      <text x="150" y="282" font-family="Space Grotesk, sans-serif" font-size="20" font-weight="700" fill="#FFFFFF">VELOX VORTEX PRO X2</text>
+      <text x="150" y="306" font-family="Inter, sans-serif" font-size="13" fill="#D1D5DB">variante_id: #22 • Talle: 42 AR • Color: Titanio/Neón • SKU: VLX-VOR-42</text>
+      <text x="150" y="336" font-family="Space Grotesk, monospace" font-size="13" fill="#39FF14">cantidad: 1  ×  precio_unitario: $214.000</text>
+      <text x="730" y="302" text-anchor="end" font-family="Space Grotesk, sans-serif" font-size="22" font-weight="800" fill="#FFFFFF">$214.000</text>
+      <text x="730" y="336" text-anchor="end" font-family="Inter, sans-serif" font-size="12" font-weight="700" fill="#F87171">Eliminar ✕</text>
+
+      <!-- Clear Cart Button -->
+      <rect x="0" y="390" width="220" height="44" rx="8" fill="#2A2A2A" stroke="#444" />
+      <text x="110" y="417" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" font-weight="700" fill="#D1D5DB">VACIAR CARRITO (clearCart)</text>
+    </g>
+
+    <!-- Right: OrderSchema Form (POST /api/pedidos/) -->
+    <g transform="translate(860, 60)">
+      <rect width="520" height="700" rx="10" fill="#2A2A2A" stroke="#39FF14" stroke-width="2" />
+      <text x="36" y="48" font-family="Space Grotesk, sans-serif" font-size="24" font-weight="800" fill="#FFFFFF">FINALIZAR COMPRA</text>
+      <text x="36" y="72" font-family="Space Grotesk, monospace" font-size="11" font-weight="700" fill="#39FF14">POST /api/pedidos/ • Validado con OrderSchema (Zod)</text>
+
+      <text x="36" y="122" font-family="Inter, sans-serif" font-size="12" font-weight="700" fill="#D1D5DB">DIRECCIÓN DE ENTREGA (direccion_envio *)</text>
+      <rect x="36" y="134" width="448" height="48" rx="8" fill="#121212" stroke="#444" />
+      <text x="54" y="163" font-family="Inter, sans-serif" font-size="13" fill="#FFFFFF">Av. España 450, Río Cuarto, Córdoba</text>
+
+      <text x="36" y="212" font-family="Inter, sans-serif" font-size="12" font-weight="700" fill="#D1D5DB">MÉTODO DE PAGO (metodo_pago *)</text>
+      <rect x="36" y="224" width="448" height="48" rx="8" fill="#121212" stroke="#39FF14" />
+      <text x="54" y="253" font-family="Inter, sans-serif" font-size="13" fill="#FFFFFF">TARJETA_CREDITO (Hasta 6 cuotas sin interés) ▾</text>
+
+      <!-- Payload Preview -->
+      <rect x="36" y="300" width="448" height="170" rx="8" fill="#161616" />
+      <text x="54" y="328" font-family="Space Grotesk, monospace" font-size="11" font-weight="700" fill="#39FF14">// Payload JSON enviado a PedidoViewSet:</text>
+      <text x="54" y="352" font-family="Consolas, monospace" font-size="12" fill="#D1D5DB">{</text>
+      <text x="70" y="372" font-family="Consolas, monospace" font-size="12" fill="#D1D5DB">"metodo_pago": "TARJETA_CREDITO",</text>
+      <text x="70" y="392" font-family="Consolas, monospace" font-size="12" fill="#D1D5DB">"direccion_envio": "Av. España 450",</text>
+      <text x="70" y="412" font-family="Consolas, monospace" font-size="12" fill="#D1D5DB">"detalles": [</text>
+      <text x="86" y="432" font-family="Consolas, monospace" font-size="12" fill="#39FF14">{ "variante": 14, "cantidad": 1 }, { "variante": 22, "cantidad": 1 }</text>
+      <text x="70" y="452" font-family="Consolas, monospace" font-size="12" fill="#D1D5DB">]}</text>
+
+      <line x1="36" y1="505" x2="484" y2="505" stroke="#444" />
+      <text x="36" y="545" font-family="Inter, sans-serif" font-size="15" font-weight="700" fill="#D1D5DB">TOTAL A PAGAR:</text>
+      <text x="484" y="550" text-anchor="end" font-family="Space Grotesk, sans-serif" font-size="34" font-weight="800" fill="#39FF14">$403.500</text>
+
+      <rect x="36" y="585" width="448" height="58" rx="8" fill="#39FF14" />
+      <text x="260" y="620" text-anchor="middle" font-family="Inter, sans-serif" font-size="14" font-weight="800" fill="#121212">ADQUIRIR Y CONFIRMAR PEDIDO →</text>
+    </g>
+  </g>
+
+  <!-- ==================== FRAME 07: DASHBOARD ADMIN & CRUD 4 OPERACIONES (/dashboard) ==================== -->
+  <g id="Frame-07-Dashboard-CRUD" transform="translate(1680, 2100)">
+    <text x="0" y="-14" font-family="Space Grotesk, monospace" font-size="16" font-weight="700" fill="#39FF14">FRAME 07 — RUTA: /dashboard (Layout Anidado R1 + 4 Operaciones CRUD R3: GET, POST, PUT/PATCH, DELETE)</text>
+    <rect width="1440" height="820" rx="10" fill="#121212" stroke="#2A2A2A" stroke-width="2" />
+
+    <!-- Nested Sidebar (src/app/dashboard/layout.jsx) -->
+    <g transform="translate(0, 0)">
+      <rect width="290" height="820" rx="10" fill="#1A1A1A" />
+      <line x1="290" y1="0" x2="290" y2="820" stroke="#2A2A2A" stroke-width="2" />
+      <text x="32" y="52" font-family="Space Grotesk, Arial Black, sans-serif" font-size="24" font-weight="800" fill="#FFFFFF">VELO<tspan fill="#39FF14">X</tspan> <tspan font-size="13" fill="#39FF14">PANEL</tspan></text>
+      <text x="32" y="80" font-family="Space Grotesk, monospace" font-size="11" fill="#9CA3AF">dashboard/layout.jsx (R1)</text>
+
+      <!-- Sidebar Menu Links -->
+      <rect x="20" y="115" width="250" height="46" rx="8" fill="#39FF14" />
+      <text x="40" y="143" font-family="Inter, sans-serif" font-size="13" font-weight="800" fill="#121212">📦 Inventario &amp; SKU (CRUD)</text>
+
+      <rect x="20" y="172" width="250" height="46" rx="8" fill="#2A2A2A" />
+      <text x="40" y="200" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="#FFFFFF">🛒 Mis Pedidos (/pedidos)</text>
+
+      <rect x="20" y="229" width="250" height="46" rx="8" fill="#2A2A2A" />
+      <text x="40" y="257" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="#FFFFFF">🏭 Proveedores (/api/proveedores)</text>
+
+      <rect x="20" y="286" width="250" height="46" rx="8" fill="#2A2A2A" />
+      <text x="40" y="314" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="#FFFFFF">🏷️ Marcas &amp; Categorías</text>
+
+      <rect x="20" y="740" width="250" height="46" rx="8" fill="#3B1D1D" />
+      <text x="145" y="768" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" font-weight="700" fill="#F87171">CERRAR SESIÓN (logout)</text>
+    </g>
+
+    <!-- Main Dashboard Content: 4 CRUD Operations Table + Form -->
+    <g transform="translate(330, 40)">
+      <text x="0" y="30" font-family="Space Grotesk, sans-serif" font-size="22" font-weight="800" fill="#FFFFFF">GESTIÓN DE PRODUCTOS Y VARIANTES SKU (REQUISITO R3 — 4 OPS CRUD)</text>
+      <text x="0" y="56" font-family="Space Grotesk, monospace" font-size="12" fill="#39FF14">Endpoints: GET / POST / PUT / PATCH / DELETE sobre /api/productos/ y /api/variantes/</text>
+
+      <!-- Create / Edit Form (POST / PUT) -->
+      <rect x="0" y="80" width="1060" height="190" rx="8" fill="#2A2A2A" stroke="#39FF14" />
+      <text x="24" y="110" font-family="Space Grotesk, sans-serif" font-size="15" font-weight="700" fill="#39FF14">➕ ALTA / EDICIÓN DE VARIANTE (POST / PUT /api/variantes/ — React Hook Form + Zod)</text>
+
+      <rect x="24" y="128" width="230" height="44" rx="6" fill="#121212" stroke="#444" />
+      <text x="40" y="155" font-family="Inter, sans-serif" font-size="12" fill="#FFFFFF">producto: Velox Carbon X ▾</text>
+
+      <rect x="270" y="128" width="180" height="44" rx="6" fill="#121212" stroke="#444" />
+      <text x="286" y="155" font-family="Inter, sans-serif" font-size="12" fill="#FFFFFF">sku: VLX-HYP-43-NEO</text>
+
+      <rect x="466" y="128" width="140" height="44" rx="6" fill="#121212" stroke="#444" />
+      <text x="482" y="155" font-family="Inter, sans-serif" font-size="12" fill="#FFFFFF">talle: 43 AR ▾</text>
+
+      <rect x="622" y="128" width="160" height="44" rx="6" fill="#121212" stroke="#444" />
+      <text x="638" y="155" font-family="Inter, sans-serif" font-size="12" fill="#FFFFFF">stock: 15 u.</text>
+
+      <rect x="798" y="128" width="238" height="44" rx="6" fill="#39FF14" />
+      <text x="917" y="155" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" font-weight="800" fill="#121212">GUARDAR (POST / PUT)</text>
+
+      <text x="24" y="210" font-family="Inter, sans-serif" font-size="12" fill="#D1D5DB">Proveedor asociado (`GET /api/proveedores/`): CarbonTech S.A. (CUIT 30-71548963-9) • Precio Ajustado: $219.900</text>
+
+      <!-- Inventory Table (GET, PATCH, DELETE) -->
+      <rect x="0" y="295" width="1060" height="440" rx="8" fill="#2A2A2A" />
+      <rect x="0" y="295" width="1060" height="48" rx="8" fill="#1E1E1E" />
+      <text x="24" y="325" font-family="Space Grotesk, sans-serif" font-size="12" font-weight="700" fill="#39FF14">SKU ÚNICO</text>
+      <text x="210" y="325" font-family="Space Grotesk, sans-serif" font-size="12" font-weight="700" fill="#39FF14">CALZADO (PRODUCTO)</text>
+      <text x="510" y="325" font-family="Space Grotesk, sans-serif" font-size="12" font-weight="700" fill="#39FF14">TALLE / COLOR</text>
+      <text x="680" y="325" font-family="Space Grotesk, sans-serif" font-size="12" font-weight="700" fill="#39FF14">STOCK</text>
+      <text x="800" y="325" font-family="Space Grotesk, sans-serif" font-size="12" font-weight="700" fill="#39FF14">OPERACIONES CRUD (R3)</text>
+
+      <!-- Row 1 -->
+      <text x="24" y="385" font-family="Space Grotesk, monospace" font-size="13" fill="#FFFFFF">VLX-AER-41-NEO</text>
+      <text x="210" y="385" font-family="Inter, sans-serif" font-size="13" fill="#FFFFFF">Velox Aero Nitro Elite</text>
+      <text x="510" y="385" font-family="Inter, sans-serif" font-size="13" fill="#D1D5DB">41 AR • Negro/Neón</text>
+      <text x="680" y="385" font-family="Space Grotesk, sans-serif" font-size="14" font-weight="700" fill="#39FF14">14 u.</text>
+      <rect x="800" y="362" width="110" height="34" rx="6" fill="#121212" stroke="#38BDF8" />
+      <text x="855" y="384" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" font-weight="700" fill="#38BDF8">EDITAR (PATCH)</text>
+      <rect x="922" y="362" width="115" height="34" rx="6" fill="#121212" stroke="#F87171" />
+      <text x="979" y="384" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" font-weight="700" fill="#F87171">BORRAR (DELETE)</text>
+
+      <!-- Modal.jsx Confirmation Overlay Preview -->
+      <g transform="translate(260, 440)">
+        <rect width="540" height="240" rx="10" fill="#121212" stroke="#F87171" stroke-width="2" />
+        <text x="28" y="42" font-family="Space Grotesk, monospace" font-size="11" font-weight="700" fill="#F87171">Modal.jsx ("use client" — Componente Reutilizable #7)</text>
+        <text x="28" y="78" font-family="Space Grotesk, sans-serif" font-size="20" font-weight="800" fill="#FFFFFF">¿CONFIRMAR BAJA DE VARIANTE SKU?</text>
+        <text x="28" y="110" font-family="Inter, sans-serif" font-size="13" fill="#D1D5DB">Se ejecutará DELETE /api/variantes/14/ y se revalidará la caché</text>
+        <text x="28" y="130" font-family="Inter, sans-serif" font-size="13" fill="#D1D5DB">de Next.js mediante revalidatePath('/dashboard').</text>
+        <rect x="28" y="168" width="220" height="44" rx="8" fill="#2A2A2A" />
+        <text x="138" y="195" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF">CANCELAR</text>
+        <rect x="268" y="168" width="244" height="44" rx="8" fill="#F87171" />
+        <text x="390" y="195" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" font-weight="800" fill="#121212">CONFIRMAR DELETE</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ======================================================================================== -->
+  <!-- FILA 4: PANTALLA 08 (DETALLE DE PEDIDO /dashboard/pedidos/[id]) + TABLA MAESTRA API      -->
+  <!-- ======================================================================================== -->
+
+  <!-- ==================== FRAME 08: DETALLE DE PEDIDO (/dashboard/pedidos/[id]) ==================== -->
+  <g id="Frame-08-Detalle-Pedido-Cancelacion" transform="translate(80, 2990)">
+    <text x="0" y="-14" font-family="Space Grotesk, monospace" font-size="16" font-weight="700" fill="#39FF14">FRAME 08 — RUTA DINÁMICA #2: /dashboard/pedidos/[id]  |  ENDPOINTS: GET /api/pedidos/{id}/ (NestedSerializer #2) + POST cancelar_pedido (@action #3)</text>
+    <rect width="1440" height="820" rx="10" fill="#121212" stroke="#2A2A2A" stroke-width="2" />
+
+    <g transform="translate(60, 55)">
+      <rect width="1320" height="710" rx="10" fill="#2A2A2A" />
+      <text x="40" y="54" font-family="Space Grotesk, monospace" font-size="13" font-weight="700" fill="#39FF14">RUTA ANIDADA: /dashboard/pedidos  →  RUTA DINÁMICA #2: /dashboard/pedidos/104</text>
+      <text x="40" y="96" font-family="Space Grotesk, sans-serif" font-size="32" font-weight="800" fill="#FFFFFF">ORDEN DE COMPRA #104 — ESTADO: PENDIENTE</text>
+
+      <!-- Buyer Nested Data (Usuario) -->
+      <rect x="40" y="125" width="1240" height="110" rx="8" fill="#181818" />
+      <text x="64" y="158" font-family="Space Grotesk, sans-serif" font-size="15" font-weight="700" fill="#39FF14">DATOS DEL COMPRADOR ANIDADOS (PedidoNestedSerializer → Usuario):</text>
+      <text x="64" y="188" font-family="Inter, sans-serif" font-size="14" fill="#FFFFFF">Cliente: Tomás Benavidez (t.benavidez@itecriocuarto.org.ar) • Rol: CLIENTE • Ciudad: Río Cuarto</text>
+      <text x="64" y="212" font-family="Inter, sans-serif" font-size="13" fill="#D1D5DB">Fecha: 29/10/2026 21:30 hs • Método de Pago: TARJETA_CREDITO</text>
+
+      <!-- Order Items Nested Data (DetallePedido) -->
+      <rect x="40" y="255" width="1240" height="260" rx="8" fill="#181818" />
+      <text x="64" y="292" font-family="Space Grotesk, sans-serif" font-size="15" font-weight="700" fill="#39FF14">ITEMS DEL PEDIDO (DetallePedido anidado con VarianteProducto SKU):</text>
+
+      <text x="64" y="340" font-family="Space Grotesk, monospace" font-size="14" fill="#FFFFFF">1. [SKU: VLX-AER-41-NEO] Velox Aero Nitro Elite (Talle 41)  —  Cant: 1  ×  $189.500  =  $189.500</text>
+      <line x1="64" y1="362" x2="1250" y2="362" stroke="#2A2A2A" />
+      <text x="64" y="400" font-family="Space Grotesk, monospace" font-size="14" fill="#FFFFFF">2. [SKU: VLX-VOR-42-NEO] Velox Vortex Pro X2 (Talle 42)     —  Cant: 1  ×  $214.000  =  $214.000</text>
+      <line x1="64" y1="422" x2="1250" y2="422" stroke="#2A2A2A" />
+      <text x="1250" y="475" text-anchor="end" font-family="Space Grotesk, sans-serif" font-size="28" font-weight="800" fill="#39FF14">TOTAL PAGADO: $403.500</text>
+
+      <!-- @action cancelar_pedido Button -->
+      <rect x="40" y="545" width="1240" height="125" rx="8" fill="#1F1414" stroke="#F87171" stroke-width="1.5" />
+      <text x="64" y="585" font-family="Space Grotesk, sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">ACCIÓN PERSONALIZADA DRF (@action #3): CANCELACIÓN CON RESTITUCIÓN DE STOCK</text>
+      <text x="64" y="615" font-family="Inter, sans-serif" font-size="13" fill="#D1D5DB">Al ejecutar POST /api/pedidos/104/cancelar_pedido/, el Backend cambia el estado a CANCELADO y suma +1 al stock de cada VarianteProducto.</text>
+      <rect x="890" y="575" width="360" height="58" rx="8" fill="#F87171" />
+      <text x="1070" y="609" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" font-weight="800" fill="#121212">CANCELAR PEDIDO (@action POST)</text>
+    </g>
+  </g>
+
+  <!-- ==================== FRAME 09: MAPA ARQUITECTÓNICO ENDPOINTS ↔ PANTALLAS ==================== -->
+  <g id="Frame-09-Architecture-Endpoint-Map" transform="translate(1680, 2990)">
+    <text x="0" y="-14" font-family="Space Grotesk, monospace" font-size="16" font-weight="700" fill="#39FF14">MAPA MAESTRO DE INTEGRACIÓN — LOS 8 VIEWSETS + 3 @ACTION + AUTH JWT CONECTADOS A CADA PANTALLA</text>
+    <rect width="1440" height="820" rx="10" fill="#121212" stroke="#39FF14" stroke-width="2" />
+
+    <g transform="translate(48, 48)" font-family="Inter, sans-serif" font-size="13">
+      <text x="0" y="28" font-family="Space Grotesk, sans-serif" font-size="26" font-weight="800" fill="#FFFFFF">MATRIZ DE TRAZABILIDAD: BACKEND (DRF) ↔ FRONTEND (NEXT.JS / FIGMA)</text>
+
+      <!-- Table Header -->
+      <rect x="0" y="52" width="1344" height="44" rx="6" fill="#2A2A2A" />
+      <text x="20" y="79" font-family="Space Grotesk, sans-serif" font-size="12" font-weight="700" fill="#39FF14"># VIEWSET / AUTH</text>
+      <text x="250" y="79" font-family="Space Grotesk, sans-serif" font-size="12" font-weight="700" fill="#39FF14">ENDPOINT EXACTO EN DJANGO REST</text>
+      <text x="670" y="79" font-family="Space Grotesk, sans-serif" font-size="12" font-weight="700" fill="#39FF14">MÉTODOS HTTP / REQUISITO</text>
+      <text x="980" y="79" font-family="Space Grotesk, sans-serif" font-size="12" font-weight="700" fill="#39FF14">PANTALLA EN FIGMA / RUTA NEXT.JS</text>
+
+      <!-- Rows -->
+      <g transform="translate(0, 110)" fill="#D1D5DB">
+        <text x="20" y="24" font-weight="700" fill="#FFFFFF">1. SimpleJWT Auth</text>
+        <text x="250" y="24" font-family="Consolas, monospace" fill="#39FF14">/api/token/ &amp; /api/token/refresh/</text>
+        <text x="670" y="24">POST (Guarda Cookie HTTP-Only — R4)</text>
+        <text x="980" y="24" fill="#FFFFFF">Frame 04: /login (LoginSchema Zod)</text>
+
+        <text x="20" y="74" font-weight="700" fill="#FFFFFF">2. UsuarioViewSet</text>
+        <text x="250" y="74" font-family="Consolas, monospace" fill="#39FF14">/api/usuarios/</text>
+        <text x="670" y="74">POST (Registro), GET (Perfil/Admin)</text>
+        <text x="980" y="74" fill="#FFFFFF">Frame 05: /registro (RegisterSchema Zod)</text>
+
+        <text x="20" y="124" font-weight="700" fill="#FFFFFF">3. ProductoViewSet</text>
+        <text x="250" y="124" font-family="Consolas, monospace" fill="#39FF14">/api/productos/ (+ NestedSerializer #1)</text>
+        <text x="670" y="124">GET (Paginado + Filtros), POST, PUT, DELETE</text>
+        <text x="980" y="124" fill="#FFFFFF">Frame 02 (/productos), Frame 03 (/productos/[id])</text>
+
+        <text x="20" y="174" font-weight="700" fill="#39FF14">   ↳ @action #1 y #2</text>
+        <text x="250" y="174" font-family="Consolas, monospace" fill="#39FF14">/destacados/ y /{id}/stock_por_talle/</text>
+        <text x="670" y="174">GET (Colección) y GET (Detalle por Talle)</text>
+        <text x="980" y="174" fill="#FFFFFF">Frame 01 (Hero /) y Frame 03 (Selector SKU)</text>
+
+        <text x="20" y="224" font-weight="700" fill="#FFFFFF">4. MarcaViewSet</text>
+        <text x="250" y="224" font-family="Consolas, monospace" fill="#39FF14">/api/marcas/</text>
+        <text x="670" y="224">GET ( Poblar selectores ), POST/PUT</text>
+        <text x="980" y="224" fill="#FFFFFF">Frame 02 (FilterBar.jsx) y Frame 07 (/dashboard)</text>
+
+        <text x="20" y="274" font-weight="700" fill="#FFFFFF">5. CategoriaViewSet</text>
+        <text x="250" y="274" font-family="Consolas, monospace" fill="#39FF14">/api/categorias/</text>
+        <text x="670" y="274">GET ( Poblar selectores ), POST/PUT</text>
+        <text x="980" y="274" fill="#FFFFFF">Frame 02 (FilterBar.jsx) y Frame 07 (/dashboard)</text>
+
+        <text x="20" y="324" font-weight="700" fill="#FFFFFF">6. VarianteProductoViewSet</text>
+        <text x="250" y="324" font-family="Consolas, monospace" fill="#39FF14">/api/variantes/</text>
+        <text x="670" y="324">GET, POST, PUT/PATCH, DELETE (CRUD R3)</text>
+        <text x="980" y="324" fill="#FFFFFF">Frame 07: /dashboard (Tabla CRUD + Modal.jsx)</text>
+
+        <text x="20" y="374" font-weight="700" fill="#FFFFFF">7. ProveedorViewSet</text>
+        <text x="250" y="374" font-family="Consolas, monospace" fill="#39FF14">/api/proveedores/</text>
+        <text x="670" y="374">GET, POST, PUT, DELETE (Solo ADMIN/EMPLEADO)</text>
+        <text x="980" y="374" fill="#FFFFFF">Frame 07: /dashboard (Selector de Proveedor)</text>
+
+        <text x="20" y="424" font-weight="700" fill="#FFFFFF">8. PedidoViewSet</text>
+        <text x="250" y="424" font-family="Consolas, monospace" fill="#39FF14">/api/pedidos/ (+ NestedSerializer #2)</text>
+        <text x="670" y="424">POST (Checkout), GET (Historial)</text>
+        <text x="980" y="424" fill="#FFFFFF">Frame 06 (/carrito) y Frame 08 (/pedidos/[id])</text>
+
+        <text x="20" y="474" font-weight="700" fill="#39FF14">   ↳ @action #3</text>
+        <text x="250" y="474" font-family="Consolas, monospace" fill="#39FF14">/api/pedidos/{id}/cancelar_pedido/</text>
+        <text x="670" y="474">POST (Cambia estado y restituye stock SKU)</text>
+        <text x="980" y="474" fill="#FFFFFF">Frame 08: /dashboard/pedidos/[id]</text>
+
+        <text x="20" y="524" font-weight="700" fill="#FFFFFF">9. ResenaViewSet</text>
+        <text x="250" y="524" font-family="Consolas, monospace" fill="#39FF14">/api/resenas/</text>
+        <text x="670" y="524">GET, POST, PATCH, DELETE (CRUD Reseñas)</text>
+        <text x="980" y="524" fill="#FFFFFF">Frame 03: /productos/[id] (Sección Reseñas)</text>
+      </g>
+    </g>
+  </g>
+</svg>
