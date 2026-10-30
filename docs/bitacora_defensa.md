@@ -75,6 +75,21 @@ Este archivo es la **memoria técnica viva y guía de estudio del equipo de 4 in
 
 ---
 
+### Etapa 1 / Card #17: Configuración DRF, Docker, Autenticación Dual (JWT + Sesión), Permisos y UsuarioViewSet
+- **Rama:** `feature/back-core-usuarios` -> `develop`
+- **Responsable(s):** Manuel Gómez (Backend 1)
+- **Archivos clave:**
+  - `backend/pyproject.toml`, `backend/uv.lock`, `backend/Dockerfile`, `docker-compose.yml`, `backend/.env.example`
+  - `backend/src/nucleo/settings.py`, `urls.py`, `routers.py`, `views.py`, `templates/inicio.html`
+  - `backend/src/apps/usuarios/permissions.py`, `serializers.py`, `views.py`, `tests.py`
+- **Qué se implementó:**
+  - Integración del stack oficial de la API REST en `pyproject.toml` y `settings.py`: `djangorestframework`, `djangorestframework-simplejwt`, `drf-spectacular`, `django-filter` y `django-cors-headers`.
+  - Contenedorización con Docker (`Dockerfile` y `docker-compose.yml`).
+  - Configuración de **Autenticación Dual** (`JWTAuthentication` + `SessionAuthentication`), paginación global (`PageNumberPagination`, `PAGE_SIZE = 10`), Swagger UI en `/api/docs/` y vista HTML de bienvenida en `/`.
+  - Implementación de permisos por rol (`EsAdministrador`, `EsAdminOEmpleado`, `EsAdminOEmpleadoOSoloLectura`, `PermisoUsuarioViewSet`), serializadores en `snake_case` (`UsuarioSerializer`, `RegistroUsuarioSerializer`) y exposición del **ViewSet #1 (`UsuarioViewSet`)** con `@action perfil` y tests automatizados.
+
+---
+
 ### Plantilla para próximas entregas (Copiar por cada `Etapa / Feature PR`)
 
 ```markdown

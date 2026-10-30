@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VELOX API — Backend Django 6 + DRF</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #121212;
+            --bg-surface: #2A2A2A;
+            --accent-neon: #39FF14;
+            --text-primary: #FFFFFF;
+            --text-secondary: #D1D5DB;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 920px;
+            width: 100%;
+            background-color: var(--bg-surface);
+            border: 1px solid rgba(57, 255, 20, 0.35);
+            border-radius: 12px;
+            padding: 3rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+        }
+        .badge {
+            display: inline-block;
+            background: rgba(57, 255, 20, 0.12);
+            color: var(--accent-neon);
+            border: 1px solid var(--accent-neon);
+            font-family: 'Space Grotesk', monospace;
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 0.35rem 0.85rem;
+            border-radius: 6px;
+            margin-bottom: 1.25rem;
+            letter-spacing: 0.06em;
+        }
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.75rem;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            margin-bottom: 0.75rem;
+        }
+        h1 span { color: var(--accent-neon); }
+        p.subtitle {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin-bottom: 2.25rem;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+        .card {
+            background-color: var(--bg-base);
+            border: 1px solid #3A3A3A;
+            border-radius: 8px;
+            padding: 1.35rem;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: transform 0.15s ease, border-color 0.15s ease;
+        }
+        .card:hover {
+            transform: translateY(-3px);
+            border-color: var(--accent-neon);
+        }
+        .card h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.15rem;
+            color: var(--accent-neon);
+            margin-bottom: 0.45rem;
+        }
+        .card p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.45;
+        }
+        .footer {
+            border-top: 1px solid #3A3A3A;
+            padding-top: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <span class="badge">● ONLINE — DJANGO REST FRAMEWORK + SIMPLEJWT</span>
+        <h1>VELO<span>X</span> CORE API</h1>
+        <p class="subtitle">
+            Plataforma Backend de comercio electrónico para calzado deportivo de alto rendimiento.
+            Arquitectura relacional normalizada, control de inventario por variante SKU y autenticación dual.
+        </p>
+
+        <section class="grid">
+            <a href="/api/docs/" class="card">
+                <h3>📘 Swagger UI (/api/docs/)</h3>
+                <p>Documentación interactiva OpenAPI 3.0 generada con drf-spectacular para probar todos los endpoints.</p>
+            </a>
+            <a href="/api/" class="card">
+                <h3>🔗 Browsable API (/api/)</h3>
+                <p>Raíz navegable del DefaultRouter de Django REST Framework con los ViewSets registrados.</p>
+            </a>
+            <a href="/admin/" class="card">
+                <h3>⚙️ Panel Admin (/admin/)</h3>
+                <p>Administración de usuarios, catálogo, variantes con SKU, proveedores, pedidos y reseñas.</p>
+            </a>
+            <a href="/api/redoc/" class="card">
+                <h3>📄 ReDoc (/api/redoc/)</h3>
+                <p>Especificación técnica detallada de contratos JSON, esquemas y códigos de respuesta HTTP.</p>
+            </a>
+        </section>
+
+        <footer class="footer">
+            <span><strong>{{ materia }}</strong></span>
+            <span>Equipo VELOX: Gómez • Cambria • Falco • Benavidez</span>
+        </footer>
+    </main>
+</body>
+</html>

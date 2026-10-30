@@ -1,0 +1,15 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: velox_backend_api
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./.env.example
+    volumes:
+      - .:/app
+    command: >
+      sh -c "uv run python src/manage.py migrate &&
+             uv run python src/manage.py runserver 0.0.0.0:8000"
