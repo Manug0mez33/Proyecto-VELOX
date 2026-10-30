@@ -87,6 +87,7 @@ export function CartProvider({ children }) {
 
       const newItem = {
         id: producto.id,
+        variante_id: producto.variante_id || producto.id,
         sku,
         nombre: producto.nombre || "Calzado VELOX",
         marca: producto.marca_detalle?.nombre || producto.marca?.nombre || producto.marca || "VELOX LAB",

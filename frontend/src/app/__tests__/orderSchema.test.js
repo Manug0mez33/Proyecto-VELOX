@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { orderSchema, orderItemSchema, checkoutFormSchema } from "../../validations/orderSchema";
+import { orderSchema, orderItemSchema, checkoutFormSchema, METODOS_PAGO } from "../../validations/orderSchema";
 
 describe("orderSchema (R5) - Validación Zod para Pedidos y Checkout", () => {
   describe("checkoutFormSchema (datos de formulario)", () => {
-    it("acepta datos de contacto y entrega válidos", () => {
+    it("acepta datos de contacto y entrega válidos con TRANSFERENCIA", () => {
       const validFormData = {
         direccion_envio: "Alvear 550",
         ciudad: "Río Cuarto",
@@ -17,6 +17,28 @@ describe("orderSchema (R5) - Validación Zod para Pedidos y Checkout", () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.data.ciudad).toBe("Río Cuarto");
+        expect(result.data.metodo_pago).toBe("TRANSFERENCIA");
+      }
+    });
+
+    it("acepta todos los métodos de pago oficiales de DRF Pedido.MetodoPago", () => {
+      expect(METODOS_PAGO).toEqual([
+        "TARJETA_CREDITO",
+        "TARJETA_DEBITO",
+        "TRANSFERENCIA",
+        "EFECTIVO",
+      ]);
+
+      for (const metodo of METODOS_PAGO) {
+        const formData = {
+          direccion_envio: "Alvear 550",
+          ciudad: "Río Cuarto",
+          codigo_postal: "5800",
+          telefono_contacto: "3584123456",
+          metodo_pago: metodo,
+        };
+        const result = checkoutFormSchema.safeParse(formData);
+        expect(result.success).toBe(true);
       }
     });
 
@@ -26,7 +48,7 @@ describe("orderSchema (R5) - Validación Zod para Pedidos y Checkout", () => {
         ciudad: "Córdoba",
         codigo_postal: "5000",
         telefono_contacto: "3514223344",
-        metodo_pago: "TARJETA",
+        metodo_pago: "TARJETA_CREDITO",
       };
 
       const result = checkoutFormSchema.safeParse(invalid);
@@ -34,13 +56,14 @@ describe("orderSchema (R5) - Validación Zod para Pedidos y Checkout", () => {
       expect(result.error.issues[0].message).toContain("obligatoria");
     });
   });
+
   it("valida exitosamente un pedido completo con items y dirección en snake_case", () => {
     const validOrder = {
       direccion_envio: "Boulevard Roca 1234",
       ciudad: "Río Cuarto",
       codigo_postal: "5800",
       telefono_contacto: "3584998877",
-      metodo_pago: "TARJETA",
+      metodo_pago: "TARJETA_CREDITO",
       notas_adicionales: "Entregar en portería por la mañana.",
       items: [
         {
@@ -57,7 +80,30 @@ describe("orderSchema (R5) - Validación Zod para Pedidos y Checkout", () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.items).toHaveLength(1);
-      expect(result.data.metodo_pago).toBe("TARJETA");
+      expect(result.data.metodo_pago).toBe("TARJETA_CREDITO");
+    }
+  });
+
+  it("valida exitosamente un pedido transaccional con array detalles para DRF", () => {
+    const validDrfOrder = {
+      direccion_envio: "Boulevard Roca 1234",
+      ciudad: "Río Cuarto",
+      codigo_postal: "5800",
+      telefono_contacto: "3584998877",
+      metodo_pago: "TARJETA_DEBITO",
+      detalles: [
+        {
+          variante: 54,
+          cantidad: 1,
+        },
+      ],
+    };
+
+    const result = orderSchema.safeParse(validDrfOrder);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.detalles).toHaveLength(1);
+      expect(result.data.metodo_pago).toBe("TARJETA_DEBITO");
     }
   });
 
@@ -103,7 +149,7 @@ describe("orderSchema (R5) - Validación Zod para Pedidos y Checkout", () => {
     expect(result.error.issues[0].message).toContain("método de pago válido");
   });
 
-  it("falla si el pedido no contiene ningún producto en items", () => {
+  it("falla si el pedido no contiene ningún producto en items ni detalles", () => {
     const emptyItemsOrder = {
       direccion_envio: "San Lorenzo 789",
       ciudad: "Córdoba",
