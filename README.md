@@ -38,17 +38,36 @@ npm run dev
 ```
 La aplicación estará disponible en `http://localhost:3000`.
 
-### 3. Rutas y Componentes Implementados (Sprint 1 — `feature/front-setup-identidad`)
-- **Rutas (R1):**
+### 3. Rutas y Componentes Implementados (Sprint 1 & Sprint 2)
+- **Rutas y Layouts (R1):**
   - `/` (`src/app/page.jsx`): Landing Page y Hero Section con resplandor verde neón (`#39FF14`) y consumo de `GET /api/productos/destacados/` con fallback seguro.
   - `/tecnologia` (`src/app/tecnologia/page.jsx`): Manifiesto técnico e ingeniería biomecánica VELOX.
-  - Estados globales App Router: `src/app/layout.jsx` (Layout raíz), `src/app/loading.jsx`, `src/app/error.jsx` y `src/app/not-found.jsx`.
+  - `/dashboard` (`src/app/dashboard/layout.jsx` y `page.jsx`): Layout anidado y panel administrativo con KPIs en tiempo real del catálogo y variantes SKU.
+  - `/login` (`src/app/login/page.jsx`): Formulario interactivo con React Hook Form + Zod (`authSchema.js`) y manejo estructurado de errores DRF.
+  - `/carrito` (`src/app/carrito/page.jsx`): Carrito de compras interactivo conectado al estado global `CartContext`, selector de cantidades y formulario modal de checkout interactivo validado con React Hook Form + Zod (`checkoutFormSchema` y `orderSchema` en `snake_case`).
+  - Estados globales App Router: `src/app/layout.jsx` (Layout raíz con `CartProvider`), `src/app/loading.jsx`, `src/app/error.jsx` y `src/app/not-found.jsx`.
 - **Componentes Reutilizables Base (R2):**
-  - `src/components/Navbar.jsx` (`Client Component`)
+  - `src/components/Navbar.jsx` (`Client Component` — sincronizado reactivamente con `useCart()`)
   - `src/components/Footer.jsx` (`Server Component`)
   - `src/components/Button.jsx` (`Client Component`)
   - `src/components/Badge.jsx` (`Server Component`)
   - `src/components/SkeletonCard.jsx` (`Server Component`)
+  - `src/components/Modal.jsx` (`Client Component` — accesibilidad con tecla Escape, clic en backdrop y bloqueo de scroll)
+- **Estado Global con Context API (R6):**
+  - `src/context/CartContext.jsx`: Proveedor `CartProvider` y hook `useCart()` con métodos `addToCart()`, `removeFromCart()`, `updateQuantity()`, `clearCart()`, totales memorizados y persistencia bidireccional en `localStorage` (`velox_cart`) con soporte de sincronización multi-pestaña vía evento `storage`.
+- **Validaciones Zod en `snake_case` (R5):**
+  - `src/validations/authSchema.js`: Esquemas `loginSchema` y `registerSchema` alineados a `RegistroUsuarioSerializer`.
+  - `src/validations/orderSchema.js`: Esquemas `checkoutFormSchema`, `checkoutSchema` y `orderItemSchema` alineados a `PedidoViewSet`.
+- **Cliente API REST (R3):**
+  - `src/lib/api.js`: Helper de peticiones HTTP con soporte para el sobre paginado de DRF `{ count, next, previous, results }`, clase `ApiError` y métodos CRUD completos (`get`, `getPaginated`, `post`, `put`, `patch`, `delete`).
+
+### 4. Ejecución de Tests Unitarios (R7)
+Ejecutar la suite completa de tests unitarios en Vitest con Testing Library y JSDOM:
+```bash
+cd frontend
+npm run test
+```
+*Cobertura: 6 suites de prueba y 41 tests unitarios verificando `CartContext` (incluyendo sincronización multi-pestaña), esquemas de Zod (`authSchema`, `orderSchema`), normalización y métodos CRUD de `api.js`, componente `Modal` y flujo completo de checkout interactivo con React Hook Form.*
 ## 🚀 Backend — Puesta en marcha local (`uv`)
 
 Requisitos: Python 3.12+ y [`uv`](https://docs.astral.sh/uv/).

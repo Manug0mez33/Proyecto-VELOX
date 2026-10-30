@@ -109,6 +109,44 @@ Este archivo es la **memoria técnica viva y guía de estudio del equipo de 4 in
 
 ---
 
+### Etapa 2 (Sprint 2 — Frontend Parte 2): Estado Global CartContext (R6) + Esquemas Zod en snake_case (R5) + Layout Anidado /dashboard (R1), Helpers API (R3), Componente Modal (R2) y Tests Vitest (R7)
+- **Fecha:** 30 de Octubre de 2026
+- **Rama:** `feature/front-context-schemas` -> `develop`
+- **Responsable(s):** Tomás Benavidez (Frontend 2)
+- **Archivos clave:**
+  - `frontend/src/context/CartContext.jsx` (Context API + hook `useCart()`)
+  - `frontend/src/validations/authSchema.js`, `frontend/src/validations/orderSchema.js` (Validaciones Zod)
+  - `frontend/src/components/Modal.jsx` (Componente reutilizable de diálogo accesible)
+  - `frontend/src/lib/api.js` (Helper HTTP, `ApiError` y normalización de sobre paginado DRF)
+  - `frontend/src/app/dashboard/layout.jsx`, `frontend/src/app/dashboard/page.jsx` (Layout anidado R1 y vista administrativa)
+  - `frontend/src/app/login/page.jsx` (Formulario interactivo RHF + Zod)
+  - `frontend/src/app/carrito/page.jsx` (Vista del carrito reactivo conectado a `CartContext`)
+  - `frontend/src/app/layout.jsx`, `frontend/src/components/Navbar.jsx` (Integración de `CartProvider` y contador reactivo)
+  - `frontend/vitest.config.mjs`, `frontend/src/app/__tests__/` (Configuración de Vitest y 26 tests unitarios)
+  - `README.md`, `docs/bitacora_defensa.md`
+- **Qué se implementó:**
+  - Se construyó el estado global del carrito en `src/context/CartContext.jsx` mediante `createContext` y `useContext`. Expone `items`, `totalItems`, `subtotal`, `total`, `isHydrated`, `addToCart()`, `updateQuantity()`, `removeFromCart()` y `clearCart()`. Sincroniza bidireccionalmente con `localStorage` (`velox_cart`) y despacha eventos de storage para reactividad multi-pestaña.
+  - Se conectó `CartProvider` en el Layout raíz (`src/app/layout.jsx`) manteniendo la naturaleza Server Component del layout, y se refactorizó `src/components/Navbar.jsx` para consumir reactivamente `const { totalItems: cartCount } = useCart()`, eliminando escuchadores manuales redundantes.
+  - Se crearon los esquemas de validación Zod en `src/validations/` con claves exactas en `snake_case`:
+    - `authSchema.js`: `loginSchema` (username, password) y `registerSchema` (username, email, password, confirm_password con validación de coincidencia vía `.refine()`, first_name, last_name, telefono, direccion, ciudad).
+    - `orderSchema.js`: `checkoutSchema` y `orderItemSchema` para creación de pedidos con dirección de envío, ciudad, código postal, teléfono, método de pago (`TARJETA`, `TRANSFERENCIA`, `EFECTIVO`) e items requeridos.
+  - Se implementó el componente reutilizable `Modal.jsx` (`Client Component`), diseñado con la estética Dark Mode de VELOX (`#1E1E1E`, `#2A2A2A`, `#39FF14`), manejo de accesibilidad (`role="dialog"`, `aria-modal="true"`, tecla `Escape`), cierre por clic en el backdrop con `stopPropagation` en la tarjeta y bloqueo de scroll en el `body`.
+  - Se desarrolló el cliente HTTP unificado en `src/lib/api.js`, capaz de consumir `process.env.NEXT_PUBLIC_API_URL`, procesar de forma segura el sobre paginado de DRF (`{ count, next, previous, results }`) mediante `normalizePaginatedResponse()`, capturar errores de validación 400 y 401/403 mediante la clase `ApiError`, y proveer métodos CRUD (`get`, `getPaginated`, `post`, `put`, `patch`, `delete`).
+  - Se creó el Layout anidado `src/app/dashboard/layout.jsx` (R1) y la vista principal `/dashboard` con KPIs de negocio (modelos, variantes SKU, stock en depósito) y matriz de estado de operaciones CRUD.
+  - Se maquetaron las vistas interactivas `/login` (formulario RHF + Zod con mensajes de error por campo y credenciales demo de examen) y `/carrito` (listado interactivo de calzado, selector de cantidades, cálculo dinámico de subtotal, formulario interactivo de checkout con React Hook Form + Zod en paridad `snake_case` y modals de confirmación). Esto cumple estrictamente el requisito de contar con **2 o más formularios validados con RHF + Zod** en el frontend.
+  - Se configuró Vitest (`vitest.config.mjs`, `@vitejs/plugin-react`, `jsdom`, `@testing-library/react`) y se implementaron **41 tests unitarios** organizados en 6 suites bajo `src/app/__tests__/`, cubriendo `CartContext` (incluyendo sincronización multi-pestaña por evento `storage`), `authSchema`, `orderSchema` (`checkoutFormSchema`), `api.js` (todos los métodos CRUD y errores DRF), `Modal.jsx` y el componente de checkout en `/carrito`.
+- **Decisiones técnicas y problemas resueltos:**
+  - **Prevención de Hydration Mismatch y sincronización multi-pestaña en `CartContext`:** Como `localStorage` solo existe en el cliente (navegador), leerlo directamente en el estado inicial causaba discrepancia entre el HTML generado por el servidor y el cliente. Se resolvió inicializando `items = []` e introduciendo una bandera `isHydrated` activada en el primer `useEffect`. Además, se agregó un listener del evento nativo `storage` de `window` para que si el usuario opera en múltiples pestañas o ventanas en simultáneo, el carrito se actualice automáticamente sin recargar la página.
+  - **Paridad estricta `snake_case` y 2+ Formularios con RHF:** Evita errores de deserialización al conectar Next.js con Django REST Framework. Tanto en `authSchema` como en `orderSchema` (`checkoutFormSchema`), los nombres coinciden letra por letra con los campos de `Usuario`, `RegistroUsuarioSerializer`, `Producto` y `VarianteProducto`. El formulario de checkout en `/carrito` permite ingresar `direccion_envio`, `ciudad`, `codigo_postal`, `telefono_contacto`, `metodo_pago` y `notas_adicionales`, empaquetando los items del carrito y validando la orden completa antes del envío.
+  - **Cliente HTTP unificado y sin URLs hardcodeadas:** En lugar de realizar peticiones `fetch` dispersas con URLs hardcodeadas, toda la aplicación consume `src/lib/api.js` respetando la variable de entorno `process.env.NEXT_PUBLIC_API_URL` (con `.env.local`), capturando errores de campo devueltos por DRF.
+  - **Robustez en normalización paginada:** `normalizePaginatedResponse` en `src/lib/api.js` inspecciona si los datos vienen envueltos en `{ results: [...] }` (paginación estándar de DRF) o como un array plano, retornando siempre un contrato uniforme para la capa visual.
+  - **Aislamiento en Layout Anidado:** `src/app/dashboard/layout.jsx` es un Server Component que no contamina el resto de la aplicación con estados pesados, cumpliendo R1 de forma eficiente.
+- **Guía para la defensa oral (Cómo explicarlo al docente):**
+  - **Para Facundo Lemo (Proceso / Backend):** "Frontend y Backend comparten exactamente el mismo diccionario de datos: los esquemas de Zod en Next.js usan `snake_case` estricto (`direccion_envio`, `metodo_pago`, `variante_sku`), garantizando que al enviar una petición `POST` al ViewSet de DRF no haya discrepancia de nombres ni necesidad de middlewares de transformación."
+  - **Para Valentino Arballo (Componentes / Frontend):** "Se implementó el estado global del carrito con React Context API nativa (`CartContext`), sin gestores externos no vistos en clase. Se evitó el parpadeo de hidratación con la bandera `isHydrated` y se sincronizan pestañas en tiempo real con el evento `storage`. Contamos con 2 formularios completos validados con React Hook Form + Zod (`/login` y el checkout de `/carrito`). El modal es un Client Component accesible con listener de teclado para la tecla Escape y bloqueo de scroll, y la suite de Vitest valida 41 casos de prueba unitarios en 6 suites pasando al 100%."
+
+---
+
 ### Plantilla para próximas entregas (Copiar por cada `Etapa / Feature PR`)
 
 ```markdown
@@ -185,13 +223,18 @@ Esta tabla registra cada componente y módulo del frontend para justificar su ar
 | `src/app/not-found.jsx` | **Server Component** | ✅ Implementado | Vista estática HTTP 404 (R1) renderizada en el servidor cuando una ruta o SKU no existe. |
 | `src/app/productos/page.jsx` | **Server Component** | Planificado | Página de catálogo que lee `searchParams` en el servidor y consulta `GET /api/productos/` paginado, enviando menos JavaScript al navegador. |
 | `src/app/productos/[id]/page.jsx` | **Server Component** | Planificado | Ficha técnica dinámica que obtiene el detalle del calzado en el servidor e hidrata únicamente el subcomponente interactivo de selección de talle/variante. |
-| `src/components/Navbar.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Necesita consumir `usePathname()`, `useState()` y sincronizar el contador de productos del carrito en tiempo real y gestionar el menú móvil. |
+| `src/app/dashboard/layout.jsx` | **Server Component** | ✅ Implementado | Layout anidado (R1) que estructura el shell administrativo y barra lateral sin forzar hidratación en toda la página. |
+| `src/app/dashboard/page.jsx` | **Server Component** | ✅ Implementado | Resumen ejecutivo del panel de control con métricas en tiempo real y mapa de operaciones CRUD. |
+| `src/app/login/page.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Formulario interactivo de autenticación con React Hook Form + Zod (`authSchema.js`) y captura de errores DRF. |
+| `src/app/carrito/page.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Vista interactiva del carrito conectada a `CartContext`, con selector de cantidades y formulario modal de checkout interactivo validado con React Hook Form + Zod (`checkoutFormSchema`). |
+| `src/context/CartContext.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Estado global con Context API (R6) para compartir carrito entre componentes cliente con persistencia en `localStorage`. |
+| `src/components/Navbar.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Consume `useCart()` de forma reactiva para mostrar el contador de productos en tiempo real y gestiona el menú móvil. |
 | `src/components/Footer.jsx` | **Server Component** | ✅ Implementado | Componente puramente presentacional y estático sin hooks ni eventos de navegador; cero costo de hidratación en el cliente. |
 | `src/components/ProductCard.jsx` | **Server / Client (según acción rápida)** | Planificado | Presenta imagen, marca, precio y enlace a `/productos/[id]` con estética Dark Mode (`#2A2A2A`). |
 | `src/components/FilterBar.jsx` | **Client Component (`"use client"`)** | Planificado | Requiere manejar inputs controlados/eventos `onChange` y actualizar los query params de la URL (`useRouter`, `useSearchParams`) para filtrar por categoría, talle y precio. |
 | `src/components/Button.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Botón reutilizable con variante primaria verde neón (`#39FF14`) y soporte para estados `disabled`/`loading` y eventos `onClick`. |
 | `src/components/Badge.jsx` | **Server Component** | ✅ Implementado | Etiqueta visual sin estado para mostrar talles, categoría o disponibilidad de stock. |
-| `src/components/Modal.jsx` | **Client Component (`"use client"`)** | Planificado | Requiere manejo de eventos de teclado/click (`onClose`) y control de visibilidad en el navegador para confirmar acciones CRUD o pedidos. |
+| `src/components/Modal.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Diálogo accesible (`role="dialog"`, `aria-modal="true"`) con cierre por tecla Escape, clic en backdrop y bloqueo de scroll en el body. |
 | `src/components/SkeletonCard.jsx` | **Server Component** | ✅ Implementado | Estado visual de carga utilizado por `loading.jsx` con animación `animate-pulse` en Tailwind CSS sin lógica de cliente. |
 
 ### 3.2. Preguntas Clave de Arquitectura Frontend (R3 a R7)
@@ -200,6 +243,6 @@ Esta tabla registra cada componente y módulo del frontend para justificar su ar
 | :--- | :--- | :--- |
 | **Autenticación con Server Actions y Cookies HTTP-Only (R4)** | `src/app/actions.js` y `src/lib/auth.js` | El formulario de `/login` invoca una Server Action (`"use server"`) que hace `POST /api/token/` a Django. El token JWT `access` recibido se guarda con `(await cookies()).set('access', token, { httpOnly: true })`. Así el token nunca queda expuesto a ataques XSS en `localStorage`. |
 | **Cobertura de las 4 Operaciones CRUD (R3)** | `src/lib/api.js` y `src/app/actions.js` | Además de listar productos (`GET`) y crear/cancelar pedidos (`POST`), el frontend implementa las 4 operaciones completas (**Crear `POST`, Leer `GET`, Editar `PUT/PATCH` y Borrar `DELETE`**) sobre un recurso principal (gestión de productos/variantes en `/dashboard` o reseñas), revalidando la caché con `revalidatePath()`. |
-| **Formularios con React Hook Form + Zod (R5)** | `src/validations/authSchema.js` y `orderSchema.js` | `React Hook Form` evita re-renderizados en cada tecla usando referencias no controladas, y `zodResolver` aplica validaciones declarativas cuyos nombres de campo están en `snake_case` exacto al `Serializer` de DRF. |
-| **Estado Global con Context API (R6)** | `src/context/CartContext.jsx` | Provee `items`, `addToCart`, `removeFromCart`, `clearCart` y el cálculo de totales a toda la app mediante `useCart()`, sincronizando el carrito en `localStorage` mediante `useEffect` para no perder la compra al recargar. |
-| **Testing Unitario con Vitest (R7)** | `src/app/__tests__/` | Se testean de forma aislada los esquemas de Zod (`authSchema`, `orderSchema`), el renderizado de `ProductCard` y las operaciones de `CartContext` usando `vitest` + `jsdom` + `@testing-library/react`. |
+| **Formularios con React Hook Form + Zod (R5)** | `src/validations/authSchema.js` y `orderSchema.js` | Cumple el requisito de 2+ formularios validados con RHF + Zod en `snake_case`: `/login` con `loginSchema` y el checkout modal en `/carrito` con `checkoutFormSchema` y `orderSchema`. RHF evita re-renderizados innecesarios y Zod garantiza paridad estricta con Django REST Framework. |
+| **Estado Global con Context API (R6)** | `src/context/CartContext.jsx` | Provee `items`, `addToCart`, `removeFromCart`, `clearCart` y el cálculo de totales a toda la app mediante `useCart()`, sincronizando el carrito en `localStorage` con la bandera `isHydrated` (anti hydration mismatch) y el evento nativo `storage` para sincronización multi-pestaña. |
+| **Testing Unitario con Vitest (R7)** | `src/app/__tests__/` | 41 tests unitarios en 6 suites (`CartContext.test.jsx`, `authSchema.test.js`, `orderSchema.test.js`, `api.test.js`, `Modal.test.jsx`, `CarritoCheckout.test.jsx`) testeando de forma exhaustiva componentes interactivos, esquemas Zod, métodos CRUD y manejo de errores. |
