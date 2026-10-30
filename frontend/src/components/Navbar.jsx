@@ -1,9 +1,10 @@
 "use client";
 // Client Component ("use client"): Utiliza usePathname, useState y lectura reactiva del carrito para resaltar la ruta activa, abrir el menú móvil y mostrar el contador de items en tiempo real.
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useCart } from "../context/CartContext";
 
 const NAV_LINKS = [
   { href: "/", label: "INICIO" },
@@ -15,37 +16,9 @@ const NAV_LINKS = [
 export default function Navbar() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
+  const { totalItems: cartCount } = useCart();
 
-  useEffect(() => {
-    const syncCartCount = () => {
-      try {
-        const stored = localStorage.getItem("velox_cart");
-        if (stored) {
-          const items = JSON.parse(stored);
-          if (Array.isArray(items)) {
-            const total = items.reduce(
-              (acc, item) => acc + (Number(item.cantidad) || 1),
-              0
-            );
-            setCartCount(total);
-            return;
-          }
-        }
-        setCartCount(0);
-      } catch {
-        setCartCount(0);
-      }
-    };
 
-    syncCartCount();
-    window.addEventListener("storage", syncCartCount);
-    window.addEventListener("velox-cart-updated", syncCartCount);
-    return () => {
-      window.removeEventListener("storage", syncCartCount);
-      window.removeEventListener("velox-cart-updated", syncCartCount);
-    };
-  }, []);
 
   return (
     <header className="sticky top-0 z-50 w-full bg-[#121212]/95 backdrop-blur border-b border-[#2A2A2A]">

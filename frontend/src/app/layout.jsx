@@ -3,6 +3,7 @@
 import { Space_Grotesk, Inter } from "next/font/google";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { CartProvider } from "../context/CartContext";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -32,9 +33,11 @@ export default function RootLayout({ children }) {
       className={`${spaceGrotesk.variable} ${inter.variable} dark`}
     >
       <body className="flex min-h-screen flex-col bg-[#121212] text-[#FFFFFF] antialiased selection:bg-[#39FF14] selection:text-[#121212]">
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        <CartProvider>
+          <Navbar />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </CartProvider>
       </body>
     </html>
   );
