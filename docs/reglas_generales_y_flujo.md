@@ -43,3 +43,14 @@ Para que cualquier integrante del grupo pueda explicar el código en el coloquio
   - Cada integrante debe revisar la pestaña *Files changed* del PR, dejar al menos una pregunta o comentario técnico y marcar `Approve`.
   - Todo PR debe estar vinculado a su tarea correspondiente en el tablero de **Trello**.
   - Todos los commits siguen **Conventional Commits** (`feat(alcance): ...`, `fix(alcance): ...`, `docs(alcance): ...`, `test(alcance): ...`).
+---
+
+## 4. Gestión del Tablero Kanban (Trello) y Cierre de Tareas
+
+- **Al mover cualquier tarjeta a la columna ✅ Done:**
+  1. **Marcar fecha límite como completada (dueComplete: true):** El checkbox de vencimiento debe quedar verde y marcado.
+  2. **Comentario obligatorio de resumen:** Dejar siempre un comentario en la tarjeta con el resumen estructurado de todo lo construido:
+     - Pull Request asociado y estado de fusión en develop.
+     - Modelos, ViewSets, rutas o componentes creados.
+     - Pruebas automatizadas ejecutadas y validadas.
+     - Documentación actualizada.

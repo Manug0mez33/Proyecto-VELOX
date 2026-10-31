@@ -44,3 +44,14 @@ Cada archivo clave debe incluir justificación técnica concisa para que los 4 i
   - Los colaboradores deben dejar comentarios técnicos o constancia de revisión en la pestaña *Files changed* del PR en GitHub.
   - Todo PR debe estar vinculado a su tarjeta correspondiente en el tablero Kanban (**Trello**).
   - Uso obligatorio de **Conventional Commits** (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`).
+---
+
+## 4. Gestión del Tablero Kanban (Trello) y Cierre de Tareas
+
+- **Al mover cualquier tarjeta a la columna ✅ Done:**
+  1. **Marcar fecha límite como completada (dueComplete: true):** El checkbox de vencimiento debe quedar verde y marcado.
+  2. **Comentario obligatorio de resumen:** Dejar siempre un comentario en la tarjeta con el resumen estructurado de todo lo construido:
+     - Pull Request asociado y estado de fusión en develop.
+     - Modelos, ViewSets, rutas o componentes creados.
+     - Pruebas automatizadas ejecutadas y validadas.
+     - Documentación actualizada.
