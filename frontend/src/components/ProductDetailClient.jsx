@@ -601,7 +601,12 @@ export default function ProductDetailClient({ producto }) {
               </div>
             )}
 
-            {!token ? (
+            {parseJwt(token)?.rol === "EMPLEADO" ? (
+              // El personal modera las reseñas desde el dashboard, pero no publica opiniones propias.
+              <p className="text-xs text-[#D1D5DB]">
+                Las opiniones son de los clientes. Como empleado podés moderarlas desde el dashboard.
+              </p>
+            ) : !token ? (
               <p className="text-xs text-[#D1D5DB]">
                 <Link href={`/login?redirect=/productos/${producto.id}`} className="font-bold text-[#39FF14] hover:underline">
                   Iniciá sesión

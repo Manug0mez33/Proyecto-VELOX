@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { api, ApiError } from "../lib/api";
+import { parseJwt } from "../lib/jwt";
 import Badge from "./Badge";
 import Button from "./Button";
 import Modal from "./Modal";
@@ -114,7 +115,9 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
 
   // Estados de datos
   const [variantes, setVariantes] = useState(SAMPLE_VARIANTES);
-  const [resenas, setResenas] = useState(SAMPLE_RESENAS);
+  // Arranca vacío: las reseñas reales se piden al montar (antes la solapa mostraba las 2 de ejemplo).
+  const [resenas, setResenas] = useState([]);
+  const [resenasCargadas, setResenasCargadas] = useState(false);
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState(null);
   const [filtroTexto, setFiltroTexto] = useState("");
@@ -209,7 +212,10 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
       }
     } catch (err) {
       console.warn("No se pudieron cargar reseñas del servidor:", err);
+      // Solo si la API no responde se muestran las reseñas de ejemplo.
+      setResenas(SAMPLE_RESENAS);
     } finally {
+      setResenasCargadas(true);
       setLoading(false);
     }
   }, []);
@@ -221,6 +227,14 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
       loadResenas();
     }
   }, [tabActiva, loadVariantes, loadResenas]);
+
+  // Las reseñas también se cargan al abrir el panel, para que el contador de la solapa sea real desde el inicio.
+  useEffect(() => {
+    loadResenas();
+  }, [loadResenas]);
+
+  // El EMPLEADO modera reseñas (editar/eliminar) pero no publica nuevas (el backend también lo bloquea).
+  const puedePublicarResenas = parseJwt(token)?.rol !== "EMPLEADO";
 
   // Limpiar feedback tras 5 segundos
   useEffect(() => {
@@ -538,7 +552,7 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
                 : "text-[#9CA3AF] hover:text-white"
             }`}
           >
-            ★ RESEÑAS ({resenas.length})
+            ★ RESEÑAS ({resenasCargadas ? resenas.length : "…"})
           </button>
         </div>
       </div>
@@ -689,13 +703,15 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
               >
                 {loading ? "CARGANDO..." : "↻ ACTUALIZAR"}
               </Button>
-              <Button
-                variant="primary"
-                onClick={() => setIsCreateResenaOpen(true)}
-                className="text-xs py-2 px-3"
-              >
-                + NUEVA RESEÑA
-              </Button>
+              {puedePublicarResenas && (
+                <Button
+                  variant="primary"
+                  onClick={() => setIsCreateResenaOpen(true)}
+                  className="text-xs py-2 px-3"
+                >
+                  + NUEVA RESEÑA
+                </Button>
+              )}
             </div>
           </div>
 

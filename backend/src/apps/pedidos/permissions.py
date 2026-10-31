@@ -31,3 +31,17 @@ class EsAutorOStaffOSoloLectura(BasePermission):
         if getattr(request.user, 'es_personal_tienda', False):
             return True
         return obj.usuario_id == request.user.id
+
+
+class EmpleadoNoPublicaResenas(BasePermission):
+    """
+    Las reseñas son opiniones de clientes: un EMPLEADO puede moderarlas (editar o eliminar)
+    pero no publicar reseñas nuevas.
+    """
+
+    message = "El personal de la tienda no puede publicar reseñas; solo editarlas o eliminarlas."
+
+    def has_permission(self, request, view):
+        if getattr(view, 'action', None) != 'create':
+            return True
+        return getattr(request.user, 'rol', None) != 'EMPLEADO'

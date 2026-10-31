@@ -193,3 +193,13 @@ class PermisosResenaTests(TestCase):
         self.assertEqual(self.client.patch(self.url, {'comentario': 'Editado'}).status_code, status.HTTP_200_OK)
         self.client.force_authenticate(self.empleado)
         self.assertEqual(self.client.delete(self.url).status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_empleado_no_puede_publicar_resenas(self):
+        self.client.force_authenticate(self.empleado)
+        response = self.client.post('/api/resenas/', {'producto': self.resena.producto_id, 'calificacion': 4, 'comentario': 'x'})
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_empleado_si_puede_editar_resenas(self):
+        self.client.force_authenticate(self.empleado)
+        self.assertEqual(self.client.patch(self.url, {'comentario': 'Moderado'}).status_code, status.HTTP_200_OK)
+
