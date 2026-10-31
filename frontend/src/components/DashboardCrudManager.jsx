@@ -1,5 +1,4 @@
 "use client";
-// Client Component ("use client"): Módulo interactivo del Dashboard para las 4 operaciones CRUD completas (R3) sobre inventario de variantes SKU y reseñas con validación y confirmación modal.
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { api, ApiError } from "../lib/api";
@@ -9,10 +8,10 @@ import Modal from "./Modal";
 
 // Productos base para selectores en formularios
 const PRODUCTOS_CATALOGO = [
-  { id: 1, nombre: "VELOX Aero Nitro Elite" },
-  { id: 2, nombre: "VELOX Vortex Pro X2" },
-  { id: 3, nombre: "VELOX Terra Grip GT" },
-  { id: 4, nombre: "VELOX Carbon Alpha" },
+  { id: 1, nombre: "Air Zoom Pegasus 40" },
+  { id: 2, nombre: "Ultraboost Light" },
+  { id: 3, nombre: "Gel-Trabuco 12" },
+  { id: 4, nombre: "Fuse 3.0" },
   { id: 5, nombre: "LeBron XXI" },
   { id: 6, nombre: "Velox Carbon X" },
   { id: 7, nombre: "Velox Street Run" },
@@ -35,7 +34,7 @@ const COLORES_BASE = [
   { id: 5, nombre: "Azul", hex: "#2563EB" },
 ];
 
-// Datos iniciales de demostración para pruebas sin servidor o inicialización
+// Datos iniciales de demostración para el inventario
 export const SAMPLE_VARIANTES = [
   {
     id: 44,
@@ -97,7 +96,7 @@ const SAMPLE_RESENAS = [
     usuario: 2,
     usuario_nombre: "corredor_trail",
     producto: 3,
-    producto_nombre: "VELOX Terra Grip GT",
+    producto_nombre: "Gel-Trabuco 12",
     calificacion: 4,
     comentario: "Gran tracción en senderos de barro y piedra suelta.",
     creado_en: "2026-10-29T18:00:00Z",
@@ -113,21 +112,21 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
   const [tabActiva, setTabActiva] = useState("variantes"); // "variantes" | "resenas"
   const [token, setToken] = useState(null);
 
-  // Estados de datos CRUD
+  // Estados de datos
   const [variantes, setVariantes] = useState(SAMPLE_VARIANTES);
   const [resenas, setResenas] = useState(SAMPLE_RESENAS);
   const [loading, setLoading] = useState(false);
-  const [feedback, setFeedback] = useState(null); // { type: "success" | "error", message: string }
+  const [feedback, setFeedback] = useState(null);
   const [filtroTexto, setFiltroTexto] = useState("");
 
   // Modales
-  // 1. Edición de Variante (PATCH)
+  // 1. Edición de Variante
   const [editingVariante, setEditingVariante] = useState(null);
   const [editVarianteStock, setEditVarianteStock] = useState("");
   const [editVariantePrecio, setEditVariantePrecio] = useState("");
   const [editVarianteActivo, setEditVarianteActivo] = useState(true);
 
-  // 2. Creación de Variante (POST)
+  // 2. Creación de Variante
   const [isCreateVarianteOpen, setIsCreateVarianteOpen] = useState(false);
   const [createVarianteError, setCreateVarianteError] = useState(null);
   const [isSubmittingVariante, setIsSubmittingVariante] = useState(false);
@@ -138,26 +137,26 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
   const [newVarStock, setNewVarStock] = useState("10");
   const [newVarPrecio, setNewVarPrecio] = useState("");
 
-  // 3. Eliminación de Variante (DELETE)
+  // 3. Eliminación de Variante
   const [deletingVariante, setDeletingVariante] = useState(null);
   const [deleteVarianteError, setDeleteVarianteError] = useState(null);
   const [isDeletingVariante, setIsDeletingVariante] = useState(false);
 
-  // 4. Creación de Reseña (POST)
+  // 4. Creación de Reseña
   const [isCreateResenaOpen, setIsCreateResenaOpen] = useState(false);
   const [newResenaProducto, setNewResenaProducto] = useState(6);
   const [newResenaCalificacion, setNewResenaCalificacion] = useState(5);
   const [newResenaComentario, setNewResenaComentario] = useState("");
 
-  // 5. Edición de Reseña (PATCH)
+  // 5. Edición de Reseña
   const [editingResena, setEditingResena] = useState(null);
   const [editResenaCalificacion, setEditResenaCalificacion] = useState(5);
   const [editResenaComentario, setEditResenaComentario] = useState("");
 
-  // 6. Eliminación de Reseña (DELETE)
+  // 6. Eliminación de Reseña
   const [deletingResena, setDeletingResena] = useState(null);
 
-  // Sincronizar token reactivamente con localStorage y eventos de sesión
+  // Sincronizar token reactivamente con localStorage
   useEffect(() => {
     const syncToken = () => {
       try {
@@ -177,39 +176,39 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
     };
   }, []);
 
-  // 1. READ: Cargar Variantes desde DRF (GET /api/variantes/)
+  // Cargar Variantes desde API
   const loadVariantes = useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.getPaginated("/variantes/");
-      if (res && Array.isArray(res.results)) {
+      if (res && Array.isArray(res.results) && res.results.length > 0) {
         setVariantes(res.results);
       }
     } catch (err) {
-      const message =
-        err instanceof ApiError
-          ? err.message
-          : err?.message || "Error al conectar con el inventario de DRF.";
-      setFeedback({ type: "error", message });
+      console.warn("No se pudo sincronizar inventario con el servidor:", err);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // 1. READ: Cargar Reseñas desde DRF (GET /api/resenas/)
+  // Cargar Reseñas desde API
   const loadResenas = useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.getPaginated("/resenas/");
-      if (res && Array.isArray(res.results)) {
-        setResenas(res.results);
+      const items = res?.results || (Array.isArray(res) ? res : []);
+      if (Array.isArray(items) && items.length > 0) {
+        const enriched = items.map((r) => ({
+          ...r,
+          producto_nombre:
+            r.producto_nombre ||
+            PRODUCTOS_CATALOGO.find((p) => p.id === r.producto)?.nombre ||
+            `Calzado #${r.producto}`,
+        }));
+        setResenas(enriched);
       }
     } catch (err) {
-      const message =
-        err instanceof ApiError
-          ? err.message
-          : err?.message || "Error al conectar con las reseñas de DRF.";
-      setFeedback({ type: "error", message });
+      console.warn("No se pudieron cargar reseñas del servidor:", err);
     } finally {
       setLoading(false);
     }
@@ -230,18 +229,14 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
     return () => clearTimeout(timer);
   }, [feedback]);
 
-  // Sincronizar reactivamente el inventario con el Dashboard superior
+  // Sincronizar inventario con el componente padre
   useEffect(() => {
     if (typeof onVariantesChange === "function") {
       onVariantesChange(variantes);
     }
   }, [variantes, onVariantesChange]);
 
-  // ==========================================
-  // OPERACIONES CRUD DE VARIANTES (R3)
-  // ==========================================
-
-  // Abrir modal de edición (PATCH)
+  // Abrir modal de edición
   const handleOpenEditVariante = (variante) => {
     setEditingVariante(variante);
     setEditVarianteStock(String(variante.stock));
@@ -249,7 +244,7 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
     setEditVarianteActivo(Boolean(variante.activo));
   };
 
-  // Ejecutar UPDATE (PATCH /api/variantes/{sku}/)
+  // Guardar edición de variante
   const handleSaveVariantePatch = async (e) => {
     e.preventDefault();
     if (!editingVariante) return;
@@ -284,18 +279,17 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
 
       setFeedback({
         type: "success",
-        message: `✓ Variante ${editingVariante.sku} actualizada en DRF (PATCH). Nuevo stock: ${payload.stock} u.`,
+        message: `✓ Variante ${editingVariante.sku} actualizada con éxito. Nuevo stock: ${payload.stock} u.`,
       });
       setEditingVariante(null);
     } catch (err) {
       setFeedback({
         type: "error",
-        message: err.message || "Error al actualizar la variante con DRF.",
+        message: err.message || "Error al actualizar la variante.",
       });
     }
   };
 
-  // Controladores de apertura y cierre con reseteo de errores modales
   const handleOpenCreateVariante = () => {
     setCreateVarianteError(null);
     setIsCreateVarianteOpen(true);
@@ -316,11 +310,11 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
     setDeletingVariante(null);
   };
 
-  // Ejecutar CREATE (POST /api/variantes/)
+  // Crear variante
   const handleCreateVariante = async (e) => {
     e.preventDefault();
     if (!newVarSku.trim()) {
-      setCreateVarianteError("El código SKU es obligatorio.");
+      setCreateVarianteError("El código de referencia SKU es obligatorio.");
       return;
     }
 
@@ -348,7 +342,7 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
       setVariantes((prev) => [createdData, ...prev]);
       setFeedback({
         type: "success",
-        message: `✓ Nueva variante SKU '${payload.sku}' registrada exitosamente en DRF (POST).`,
+        message: `✓ Nueva variante '${payload.sku}' registrada exitosamente.`,
       });
       setCreateVarianteError(null);
       setIsCreateVarianteOpen(false);
@@ -356,14 +350,14 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
       setNewVarStock("10");
       setNewVarPrecio("");
     } catch (err) {
-      const errorMsg = err.message || "Error al crear la variante en DRF.";
+      const errorMsg = err.message || "Error al registrar la variante.";
       setCreateVarianteError(errorMsg);
     } finally {
       setIsSubmittingVariante(false);
     }
   };
 
-  // Ejecutar DELETE (DELETE /api/variantes/{sku}/)
+  // Eliminar variante
   const handleDeleteVariante = async () => {
     if (!deletingVariante) return;
 
@@ -380,26 +374,19 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
       setVariantes((prev) => prev.filter((v) => v.sku !== deletingVariante.sku));
       setFeedback({
         type: "success",
-        message: `✓ Variante ${deletingVariante.sku} eliminada de la base de datos (DELETE).`,
+        message: `✓ Variante ${deletingVariante.sku} eliminada correctamente.`,
       });
       setDeletingVariante(null);
       setDeleteVarianteError(null);
     } catch (err) {
-      const errorMsg = err.message || "No se pudo eliminar la variante de DRF.";
+      const errorMsg = err.message || "No se pudo eliminar la variante.";
       setDeleteVarianteError(errorMsg);
-      // Mantener el modal de confirmación abierto para que el usuario pueda
-      // leer la causa del bloqueo (ej. integridad referencial por pedidos asociados)
-      // y confirmar con 'Entendido / Cerrar'.
     } finally {
       setIsDeletingVariante(false);
     }
   };
 
-  // ==========================================
-  // OPERACIONES CRUD DE RESEÑAS (R3)
-  // ==========================================
-
-  // Ejecutar CREATE (POST /api/resenas/)
+  // Crear reseña
   const handleCreateResena = async (e) => {
     e.preventDefault();
     if (!newResenaComentario.trim()) {
@@ -424,7 +411,7 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
       setResenas((prev) => [created, ...prev]);
       setFeedback({
         type: "success",
-        message: "✓ Reseña de calzado creada y enviada a DRF (POST).",
+        message: "✓ Reseña registrada exitosamente.",
       });
       setIsCreateResenaOpen(false);
       setNewResenaComentario("");
@@ -436,14 +423,13 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
     }
   };
 
-  // Abrir modal de edición de reseña (PATCH)
   const handleOpenEditResena = (resena) => {
     setEditingResena(resena);
     setEditResenaCalificacion(resena.calificacion || 5);
     setEditResenaComentario(resena.comentario || "");
   };
 
-  // Ejecutar UPDATE (PATCH /api/resenas/{id}/)
+  // Guardar edición de reseña
   const handleSaveResenaPatch = async (e) => {
     e.preventDefault();
     if (!editingResena) return;
@@ -466,7 +452,7 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
       );
       setFeedback({
         type: "success",
-        message: `✓ Reseña #${editingResena.id} actualizada con éxito en DRF (PATCH).`,
+        message: `✓ Reseña actualizada con éxito.`,
       });
       setEditingResena(null);
     } catch (err) {
@@ -477,7 +463,7 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
     }
   };
 
-  // Ejecutar DELETE (DELETE /api/resenas/{id}/)
+  // Eliminar reseña
   const handleDeleteResena = async () => {
     if (!deletingResena) return;
 
@@ -492,7 +478,7 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
       setResenas((prev) => prev.filter((r) => r.id !== deletingResena.id));
       setFeedback({
         type: "success",
-        message: `✓ Reseña #${deletingResena.id} eliminada de DRF (DELETE).`,
+        message: `✓ Reseña eliminada correctamente.`,
       });
       setDeletingResena(null);
     } catch (err) {
@@ -504,7 +490,6 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
     }
   };
 
-  // Variantes filtradas por texto
   const variantesFiltradas = useMemo(() => {
     const q = filtroTexto.trim().toLowerCase();
     if (!q) return variantes;
@@ -519,24 +504,21 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
 
   return (
     <div className="rounded-xl bg-[#1E1E1E] border border-[#2A2A2A] p-6 space-y-6">
-      {/* 1. Cabecera del Panel CRUD */}
+      {/* 1. Cabecera del Panel */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#2A2A2A] pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <Badge variant="neon">4 OPERACIONES CRUD (R3)</Badge>
+            <Badge variant="outline">GESTIÓN DE INVENTARIO</Badge>
             <h2 className="font-heading text-lg sm:text-xl font-bold uppercase text-[#FFFFFF]">
-              GESTIÓN INTERACTIVA DE INVENTARIO Y RECURSOS
+              ADMINISTRACIÓN DE VARIANTES Y RESEÑAS
             </h2>
           </div>
           <p className="mt-1 text-xs text-[#9CA3AF]">
-            Ejecución en tiempo real de operaciones <code className="text-[#39FF14]">GET</code>,{" "}
-            <code className="text-[#39FF14]">POST</code>,{" "}
-            <code className="text-[#39FF14]">PATCH</code> y{" "}
-            <code className="text-[#39FF14]">DELETE</code> sobre endpoints de Django REST Framework.
+            Control de inventario por talle y color, actualización de existencias y moderación de opiniones.
           </p>
         </div>
 
-        {/* Pestañas de Cambio de Recurso */}
+        {/* Pestañas */}
         <div className="flex items-center gap-2 bg-[#141414] p-1 rounded-lg border border-[#2A2A2A]">
           <button
             onClick={() => setTabActiva("variantes")}
@@ -546,7 +528,7 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
                 : "text-[#9CA3AF] hover:text-white"
             }`}
           >
-            👟 VARIANTES SKU ({variantes.length})
+            👟 VARIANTES ({variantes.length})
           </button>
           <button
             onClick={() => setTabActiva("resenas")}
@@ -556,15 +538,15 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
                 : "text-[#9CA3AF] hover:text-white"
             }`}
           >
-            ⭐ RESEÑAS ({resenas.length})
+            ★ RESEÑAS ({resenas.length})
           </button>
         </div>
       </div>
 
-      {/* 2. Feedback de Operación */}
+      {/* Banner de Feedback */}
       {feedback && (
         <div
-          className={`rounded-lg p-3 text-xs flex items-center justify-between gap-3 ${
+          className={`rounded-lg p-3.5 text-xs flex items-center justify-between transition-all ${
             feedback.type === "success"
               ? "bg-[#182914] border border-[#39FF14] text-[#39FF14]"
               : "bg-[#2A1515] border border-[#EF4444] text-[#FCA5A5]"
@@ -573,41 +555,35 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
           <span>{feedback.message}</span>
           <button
             onClick={() => setFeedback(null)}
-            className="text-xs text-[#9CA3AF] hover:text-white font-bold"
+            className="text-xs font-bold opacity-75 hover:opacity-100"
           >
-            ×
+            ✕
           </button>
         </div>
       )}
 
-      {/* Aviso de autenticación para mutaciones CRUD si no hay token */}
-      {!token && (
-        <div className="rounded-lg bg-[#2A1515]/60 border border-[#EF4444]/60 p-3 text-xs text-[#FCA5A5] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <span>
-            🔒 <strong>Modo lectura:</strong> Para crear, modificar o eliminar variantes y reseñas en DRF, debes{" "}
-            <a href="/login" className="text-[#39FF14] underline font-bold">iniciar sesión</a> con credenciales autorizadas (Staff / Admin para inventario).
-          </span>
-          <Button variant="secondary" href="/login" className="text-[11px] py-1 px-3 self-start sm:self-auto">
-            INICIAR SESIÓN →
-          </Button>
-        </div>
-      )}
-
       {/* ========================================================= */}
-      {/* SECCIÓN 1: VARIANTES PRODUCTO (INVENTARIO FÍSICO POR SKU) */}
+      {/* SECCIÓN 1: VARIANTES DE CALZADO */}
       {/* ========================================================= */}
       {tabActiva === "variantes" && (
         <div className="space-y-4">
-          {/* Barra de Controles: Búsqueda y Botón de Creación */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="relative w-full sm:w-72">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            <div className="relative flex-1 max-w-sm">
               <input
                 type="text"
-                placeholder="Buscar SKU o calzado..."
+                placeholder="Filtrar por SKU, modelo o color..."
                 value={filtroTexto}
                 onChange={(e) => setFiltroTexto(e.target.value)}
-                className="w-full rounded-lg bg-[#141414] border border-[#2A2A2A] px-3 py-2 text-xs text-[#FFFFFF] placeholder-[#6B7280] focus:border-[#39FF14] focus:outline-none"
+                className="w-full rounded-lg bg-[#141414] border border-[#2A2A2A] px-3.5 py-2 text-xs text-white placeholder-[#6B7280] focus:border-[#39FF14] focus:outline-none"
               />
+              {filtroTexto && (
+                <button
+                  onClick={() => setFiltroTexto("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#9CA3AF] hover:text-white"
+                >
+                  ✕
+                </button>
+              )}
             </div>
 
             <div className="flex items-center gap-2">
@@ -617,35 +593,34 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
                 disabled={loading}
                 className="text-xs py-2 px-3"
               >
-                {loading ? "CARGANDO..." : "↻ RECARGAR"}
+                {loading ? "CARGANDO..." : "↻ ACTUALIZAR"}
               </Button>
               <Button
                 variant="primary"
                 onClick={handleOpenCreateVariante}
                 className="text-xs py-2 px-3"
               >
-                + NUEVA VARIANTE SKU (POST)
+                + NUEVA VARIANTE
               </Button>
             </div>
           </div>
 
-          {/* Tabla de Variantes */}
-          <div className="overflow-x-auto rounded-lg border border-[#2A2A2A]">
+          <div className="rounded-xl border border-[#2A2A2A] overflow-hidden">
             <table className="w-full text-left text-xs">
-              <thead className="bg-[#181818] border-b border-[#2A2A2A] text-[11px] font-heading font-bold uppercase text-[#9CA3AF]">
+              <thead className="border-b border-[#2A2A2A] bg-[#181818] text-[11px] font-heading font-bold uppercase text-[#9CA3AF]">
                 <tr>
-                  <th className="py-3 px-4">SKU Único</th>
-                  <th className="py-3 px-4">Calzado / Modelo</th>
-                  <th className="py-3 px-4">Talle</th>
+                  <th className="py-3 px-4">Referencia SKU</th>
+                  <th className="py-3 px-4">Calzado</th>
+                  <th className="py-3 px-4">Talle AR</th>
                   <th className="py-3 px-4">Color</th>
-                  <th className="py-3 px-4">Stock Físico</th>
+                  <th className="py-3 px-4">Stock</th>
                   <th className="py-3 px-4">Precio Final</th>
-                  <th className="py-3 px-4 text-right">Operaciones CRUD</th>
+                  <th className="py-3 px-4 text-right">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#2A2A2A]">
+              <tbody className="divide-y divide-[#2A2A2A] bg-[#141414]">
                 {variantesFiltradas.map((v) => (
-                  <tr key={v.sku || v.id} className="hover:bg-[#252525]/60 transition-colors">
+                  <tr key={v.sku} className="hover:bg-[#202020]/70 transition-colors">
                     <td className="py-3 px-4 font-mono font-bold text-[#39FF14]">
                       {v.sku}
                     </td>
@@ -679,13 +654,13 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
                         onClick={() => handleOpenEditVariante(v)}
                         className="rounded bg-[#2A2A2A] px-2.5 py-1 text-[11px] font-heading font-bold uppercase text-white hover:bg-[#39FF14] hover:text-[#121212] transition-colors"
                       >
-                        AJUSTAR (PATCH)
+                        EDITAR
                       </button>
                       <button
                         onClick={() => handleOpenDeleteVariante(v)}
                         className="rounded bg-[#2A1515] border border-[#EF4444]/40 px-2.5 py-1 text-[11px] font-heading font-bold uppercase text-[#F87171] hover:bg-[#EF4444] hover:text-white transition-colors"
                       >
-                        ELIMINAR (DELETE)
+                        ELIMINAR
                       </button>
                     </td>
                   </tr>
@@ -697,13 +672,13 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
       )}
 
       {/* ========================================================= */}
-      {/* SECCIÓN 2: RESEÑAS DE ATLETAS (CRUD COMPLETO) */}
+      {/* SECCIÓN 2: RESEÑAS DE CLIENTES */}
       {/* ========================================================= */}
       {tabActiva === "resenas" && (
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <p className="text-xs text-[#9CA3AF]">
-              Publicación y moderación de testimonios de atletas con nota de 1 a 5 estrellas.
+              Publicación y moderación de opiniones de compradores de calzado.
             </p>
             <div className="flex items-center gap-2">
               <Button
@@ -712,14 +687,14 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
                 disabled={loading}
                 className="text-xs py-2 px-3"
               >
-                {loading ? "CARGANDO..." : "↻ RECARGAR"}
+                {loading ? "CARGANDO..." : "↻ ACTUALIZAR"}
               </Button>
               <Button
                 variant="primary"
                 onClick={() => setIsCreateResenaOpen(true)}
                 className="text-xs py-2 px-3"
               >
-                + NUEVA RESEÑA (POST)
+                + NUEVA RESEÑA
               </Button>
             </div>
           </div>
@@ -737,7 +712,7 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
                       {r.producto_nombre || `Calzado #${r.producto}`}
                     </span>
                     <Badge variant="outline" className="text-[10px]">
-                      {r.usuario_nombre || "Atleta"}
+                      {r.usuario_nombre || "Cliente"}
                     </Badge>
                   </div>
                   <div className="flex items-center text-[#FBBF24] text-xs">
@@ -760,13 +735,13 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
                       onClick={() => handleOpenEditResena(r)}
                       className="rounded bg-[#2A2A2A] px-2.5 py-1 text-[11px] font-heading font-bold uppercase text-white hover:bg-[#39FF14] hover:text-[#121212] transition-colors"
                     >
-                      EDITAR (PATCH)
+                      EDITAR
                     </button>
                     <button
                       onClick={() => setDeletingResena(r)}
                       className="rounded bg-[#2A1515] border border-[#EF4444]/40 px-2.5 py-1 text-[11px] font-heading font-bold uppercase text-[#F87171] hover:bg-[#EF4444] hover:text-white transition-colors"
                     >
-                      ELIMINAR (DELETE)
+                      ELIMINAR
                     </button>
                   </div>
                 </div>
@@ -777,14 +752,14 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
       )}
 
       {/* ========================================================= */}
-      {/* MODALES ACCESIBLES DE OPERACIONES CRUD */}
+      {/* MODALES */}
       {/* ========================================================= */}
 
-      {/* Modal 1: Edición de Variante (PATCH) */}
+      {/* Modal 1: Edición de Variante */}
       <Modal
         isOpen={Boolean(editingVariante)}
         onClose={() => setEditingVariante(null)}
-        title={`AJUSTAR STOCK / PRECIO (${editingVariante?.sku})`}
+        title={`EDITAR VARIANTE SKU: ${editingVariante?.sku}`}
         footer={
           <>
             <Button
@@ -799,7 +774,7 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
               onClick={handleSaveVariantePatch}
               className="text-xs py-2 px-3"
             >
-              GUARDAR CAMBIOS (PATCH)
+              GUARDAR CAMBIOS
             </Button>
           </>
         }
@@ -807,7 +782,7 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
         <form onSubmit={handleSaveVariantePatch} className="space-y-4">
           <div>
             <label htmlFor="editVarianteStock" className="block text-xs font-bold uppercase text-[#D1D5DB] mb-1">
-              Stock Físico en Depósito (Unidades)
+              Stock en Depósito (Unidades)
             </label>
             <input
               id="editVarianteStock"
@@ -850,11 +825,11 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
         </form>
       </Modal>
 
-      {/* Modal 2: Creación de Variante (POST) */}
+      {/* Modal 2: Creación de Variante */}
       <Modal
         isOpen={isCreateVarianteOpen}
         onClose={handleCloseCreateVariante}
-        title="ALTA DE NUEVA VARIANTE SKU (POST)"
+        title="ALTA DE NUEVA VARIANTE SKU"
         footer={
           <>
             <Button
@@ -870,7 +845,7 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
               disabled={isSubmittingVariante}
               className="text-xs py-2 px-3"
             >
-              {isSubmittingVariante ? "CREANDO..." : "CREAR VARIANTE EN DRF"}
+              {isSubmittingVariante ? "CREANDO..." : "CREAR VARIANTE"}
             </Button>
           </>
         }
@@ -961,7 +936,7 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
 
             <div>
               <label className="block text-xs font-bold uppercase text-[#D1D5DB] mb-1">
-                Código SKU Único (DRF snake_case)
+                Código de Referencia SKU
               </label>
               <input
                 type="text"
@@ -1015,15 +990,11 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
         </div>
       </Modal>
 
-      {/* Modal 3: Confirmación de Eliminación de Variante (DELETE) */}
+      {/* Modal 3: Confirmación de Eliminación de Variante */}
       <Modal
         isOpen={Boolean(deletingVariante)}
         onClose={handleCloseDeleteVariante}
-        title={
-          deleteVarianteError
-            ? `ERROR AL ELIMINAR ${deletingVariante?.sku}`
-            : `ELIMINAR VARIANTE ${deletingVariante?.sku}`
-        }
+        title={`ELIMINAR VARIANTE ${deletingVariante?.sku}`}
         footer={
           deleteVarianteError ? (
             <Button
@@ -1048,7 +1019,7 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
                 disabled={isDeletingVariante}
                 className="text-xs py-2 px-3"
               >
-                {isDeletingVariante ? "ELIMINANDO..." : "CONFIRMAR ELIMINACIÓN (DELETE)"}
+                {isDeletingVariante ? "ELIMINANDO..." : "CONFIRMAR ELIMINACIÓN"}
               </Button>
             </>
           )
@@ -1072,28 +1043,22 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
 
           {!deleteVarianteError ? (
             <p className="text-xs text-[#D1D5DB] leading-relaxed">
-              ¿Estás seguro de que deseas eliminar permanentemente la variante SKU{" "}
-              <strong className="text-white font-mono">{deletingVariante?.sku}</strong> de la base de
-              datos de Django REST Framework? Esta acción ejecutará{" "}
-              <code className="text-[#EF4444] font-mono">
-                DELETE /api/variantes/{deletingVariante?.sku}/
-              </code>
-              .
+              ¿Estás seguro de que deseas eliminar permanentemente la variante{" "}
+              <strong className="text-white font-mono">{deletingVariante?.sku}</strong>?
             </p>
           ) : (
             <p className="text-xs text-[#9CA3AF] leading-relaxed">
-              Para proteger la integridad referencial y el histórico de transacciones en Django,
-              las variantes asociadas a órdenes de compra no pueden ser eliminadas físicamente.
+              Las variantes que ya cuentan con pedidos históricos asociados quedan protegidas para garantizar la integridad de compras previas.
             </p>
           )}
         </div>
       </Modal>
 
-      {/* Modal 4: Creación de Reseña (POST) */}
+      {/* Modal 4: Creación de Reseña */}
       <Modal
         isOpen={isCreateResenaOpen}
         onClose={() => setIsCreateResenaOpen(false)}
-        title="PUBLICAR RESEÑA DE ATLETA (POST)"
+        title="PUBLICAR RESEÑA DE ATLETA"
         footer={
           <>
             <Button
@@ -1108,7 +1073,7 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
               onClick={handleCreateResena}
               className="text-xs py-2 px-3"
             >
-              ENVIAR RESEÑA A DRF
+              PUBLICAR RESEÑA
             </Button>
           </>
         }
@@ -1150,11 +1115,11 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
 
           <div>
             <label className="block text-xs font-bold uppercase text-[#D1D5DB] mb-1">
-              Testimonio / Comentario Técnico
+              Testimonio / Comentario
             </label>
             <textarea
               rows={3}
-              placeholder="Describe el rendimiento biomecánico, placa de carbono y amortiguación..."
+              placeholder="Describí tu experiencia sobre amortiguación, respuesta y talle..."
               value={newResenaComentario}
               onChange={(e) => setNewResenaComentario(e.target.value)}
               className="w-full rounded bg-[#121212] border border-[#2A2A2A] px-3 py-2 text-xs text-white focus:border-[#39FF14] focus:outline-none"
@@ -1164,11 +1129,11 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
         </form>
       </Modal>
 
-      {/* Modal 5: Edición de Reseña (PATCH) */}
+      {/* Modal 5: Edición de Reseña */}
       <Modal
         isOpen={Boolean(editingResena)}
         onClose={() => setEditingResena(null)}
-        title={`EDITAR RESEÑA #${editingResena?.id} (PATCH)`}
+        title="EDITAR RESEÑA"
         footer={
           <>
             <Button
@@ -1183,7 +1148,7 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
               onClick={handleSaveResenaPatch}
               className="text-xs py-2 px-3"
             >
-              GUARDAR CAMBIOS (PATCH)
+              GUARDAR CAMBIOS
             </Button>
           </>
         }
@@ -1208,7 +1173,7 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
 
           <div>
             <label className="block text-xs font-bold uppercase text-[#D1D5DB] mb-1">
-              Comentario Actualizado
+              Comentario
             </label>
             <textarea
               rows={3}
@@ -1221,11 +1186,11 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
         </form>
       </Modal>
 
-      {/* Modal 6: Eliminación de Reseña (DELETE) */}
+      {/* Modal 6: Eliminación de Reseña */}
       <Modal
         isOpen={Boolean(deletingResena)}
         onClose={() => setDeletingResena(null)}
-        title={`ELIMINAR RESEÑA #${deletingResena?.id}`}
+        title="ELIMINAR RESEÑA"
         footer={
           <>
             <Button
@@ -1240,19 +1205,13 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
               onClick={handleDeleteResena}
               className="text-xs py-2 px-3"
             >
-              CONFIRMAR ELIMINACIÓN (DELETE)
+              CONFIRMAR ELIMINACIÓN
             </Button>
           </>
         }
       >
         <p className="text-xs text-[#D1D5DB] leading-relaxed">
-          ¿Confirmas la eliminación permanente de la reseña{" "}
-          <strong className="text-white font-mono">#{deletingResena?.id}</strong>? Esta acción
-          ejecutará{" "}
-          <code className="text-[#EF4444] font-mono">
-            DELETE /api/resenas/{deletingResena?.id}/
-          </code>{" "}
-          en Django REST Framework.
+          ¿Confirmás la eliminación permanente de la reseña seleccionada?
         </p>
       </Modal>
     </div>

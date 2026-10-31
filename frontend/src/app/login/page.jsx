@@ -1,5 +1,4 @@
 "use client";
-// Client Component ("use client"): Formulario interactivo de inicio de sesión con React Hook Form + Zod (loginSchema R5) conectado a Server Action (loginAction R4) para almacenamiento en Cookies HTTP-Only y sincronización con localStorage.
 
 import { useState, Suspense } from "react";
 import Link from "next/link";
@@ -38,15 +37,13 @@ function LoginForm() {
     setServerError("");
 
     try {
-      // 1. Invocar Server Action para autenticar contra SimpleJWT en DRF y setear Cookies HTTP-Only (R4)
       const result = await loginAction(data);
 
       if (!result.success) {
-        setServerError(result.error || "Credenciales inválidas. Verifica tu usuario y contraseña.");
+        setServerError(result.error || "Credenciales inválidas. Verificá tu usuario y contraseña.");
         return;
       }
 
-      // 2. Almacenamiento en localStorage para compatibilidad con flujos puramente cliente (/carrito checkout R5/R6)
       if (typeof window !== "undefined" && result.access) {
         localStorage.setItem("velox_access_token", result.access);
         if (result.refresh) {
@@ -58,7 +55,6 @@ function LoginForm() {
 
       setLoginSuccess(true);
 
-      // 3. Redirección reactiva a la ruta solicitada o al dashboard
       setTimeout(() => {
         router.push(redirectPath);
         router.refresh();
@@ -66,7 +62,7 @@ function LoginForm() {
     } catch (err) {
       console.error("Error en flujo de login:", err);
       setServerError(
-        "Aviso de desarrollo: No se pudo conectar con el backend de Django REST Framework. Verifica que el servicio esté corriendo en el servidor configurado."
+        "No se pudo conectar con el servidor. Por favor, intentá nuevamente en unos momentos."
       );
     } finally {
       setIsSubmitting(false);
@@ -82,19 +78,19 @@ function LoginForm() {
     <div className="w-full max-w-md rounded-2xl bg-[#1E1E1E] border border-[#2A2A2A] p-8 shadow-2xl space-y-6">
       {/* Cabecera del formulario */}
       <div className="text-center space-y-2">
-        <Badge variant="neon">AUTENTICACIÓN R4 & R5</Badge>
+        <Badge variant="outline">MI CUENTA</Badge>
         <h1 className="font-heading text-2xl sm:text-3xl font-extrabold uppercase text-[#FFFFFF]">
           ACCESO VELOX
         </h1>
         <p className="text-xs text-[#9CA3AF]">
-          Inicia sesión para gestionar pedidos, catálogo y telemetría deportiva.
+          Iniciá sesión para gestionar tus pedidos y acceder a tu perfil.
         </p>
       </div>
 
       {/* Notificación de Éxito o Error de Servidor */}
       {loginSuccess && (
         <div className="rounded-lg bg-[#182914] border border-[#39FF14] p-4 text-xs text-[#39FF14] animate-pulse">
-          ✓ ¡Sesión validada exitosamente con Cookie HTTP-Only! Redirigiendo a {redirectPath}...
+          ✓ ¡Sesión iniciada con éxito! Redirigiendo...
         </div>
       )}
 
@@ -111,13 +107,13 @@ function LoginForm() {
             htmlFor="username"
             className="block font-heading text-xs font-bold uppercase tracking-wider text-[#D1D5DB] mb-1.5"
           >
-            Nombre de Usuario (snake_case DRF)
+            Nombre de Usuario
           </label>
           <input
             id="username"
             type="text"
             autoComplete="username"
-            placeholder="ej. admin o cliente1"
+            placeholder="ej. cliente1 o admin"
             {...register("username")}
             className={`w-full rounded-lg bg-[#121212] border px-4 py-3 text-sm text-[#FFFFFF] placeholder-[#6B7280] transition-colors focus:outline-none focus:ring-1 ${
               errors.username
@@ -165,47 +161,59 @@ function LoginForm() {
             disabled={isSubmitting}
             className="w-full py-3.5 text-xs"
           >
-            {isSubmitting ? "AUTENTICANDO CON SERVER ACTION..." : "ACCEDER A VELOX →"}
+            {isSubmitting ? "INICIANDO SESIÓN..." : "INGRESAR A VELOX →"}
           </Button>
         </div>
       </form>
 
-      {/* Credenciales de Prueba para Defensa Oral con auto-completado */}
+      {/* Acceso Rápido de Prueba */}
       <div className="rounded-xl bg-[#141414] border border-[#2A2A2A] p-4 text-[11px] text-[#9CA3AF] space-y-2">
         <p className="font-heading font-bold uppercase text-[#FFFFFF]">
-          CREDENCIALES DE PRUEBA (EFI 2026):
+          ACCESO RÁPIDO:
         </p>
         <div className="flex flex-col gap-1.5">
-          <button
-            type="button"
-            onClick={() => handleFillCredentials("admin", "admin1234")}
-            className="text-left hover:text-[#39FF14] transition-colors group flex items-center justify-between"
-          >
-            <span>
-              <strong className="text-[#39FF14]">Admin:</strong> usuario: <code className="text-white">admin</code> | clave: <code className="text-white">admin1234</code>
-            </span>
-            <span className="text-[10px] uppercase text-[#6B7280] group-hover:text-[#39FF14]">Cargar ↵</span>
-          </button>
           <button
             type="button"
             onClick={() => handleFillCredentials("cliente1", "cliente1234")}
             className="text-left hover:text-[#39FF14] transition-colors group flex items-center justify-between"
           >
             <span>
-              <strong className="text-[#D1D5DB]">Cliente:</strong> usuario: <code className="text-white">cliente1</code> | clave: <code className="text-white">cliente1234</code>
+              <strong className="text-[#39FF14]">Cliente:</strong> usuario: <code className="text-white">cliente1</code> | clave: <code className="text-white">cliente1234</code>
+            </span>
+            <span className="text-[10px] uppercase text-[#6B7280] group-hover:text-[#39FF14]">Cargar ↵</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => handleFillCredentials("admin", "admin1234")}
+            className="text-left hover:text-[#39FF14] transition-colors group flex items-center justify-between"
+          >
+            <span>
+              <strong className="text-[#D1D5DB]">Admin:</strong> usuario: <code className="text-white">admin</code> | clave: <code className="text-white">admin1234</code>
             </span>
             <span className="text-[10px] uppercase text-[#6B7280] group-hover:text-[#39FF14]">Cargar ↵</span>
           </button>
         </div>
       </div>
 
-      <div className="text-center pt-2">
-        <Link
-          href="/"
-          className="text-xs text-[#9CA3AF] hover:text-[#39FF14] transition-colors"
-        >
-          ← Volver a la página principal
-        </Link>
+      {/* Enlace hacia el Registro */}
+      <div className="text-center pt-2 border-t border-[#2A2A2A] space-y-2">
+        <p className="text-xs text-[#9CA3AF]">
+          ¿No tenés una cuenta todavía?{" "}
+          <Link
+            href="/register"
+            className="text-[#39FF14] font-bold hover:underline"
+          >
+            Registrate acá
+          </Link>
+        </p>
+        <div>
+          <Link
+            href="/"
+            className="text-xs text-[#6B7280] hover:text-[#FFFFFF] transition-colors"
+          >
+            ← Volver a la tienda
+          </Link>
+        </div>
       </div>
     </div>
   );
