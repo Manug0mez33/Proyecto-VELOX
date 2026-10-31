@@ -5,7 +5,8 @@ los filtros django-filter y las acciones @action destacados y stock_por_talle.
 """
 from django.db.models import Prefetch, ProtectedError, Q, Sum
 from django.db.models.functions import Coalesce
-from rest_framework import status, viewsets
+from drf_spectacular.utils import extend_schema, inline_serializer
+from rest_framework import serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -68,6 +69,17 @@ class ProductoViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(productos, many=True)
         return Response(serializer.data)
 
+    @extend_schema(
+        # Documenta en Swagger la respuesta real (no es un Producto, es un resumen por talle).
+        responses=inline_serializer(
+            name="StockPorTalle",
+            fields={
+                "producto": serializers.IntegerField(),
+                "nombre": serializers.CharField(),
+                "talles": serializers.ListField(child=serializers.DictField()),
+            },
+        )
+    )
     @action(detail=True, methods=["get"])
     def stock_por_talle(self, request, pk=None):
         """

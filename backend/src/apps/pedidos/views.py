@@ -36,7 +36,8 @@ class PedidoViewSet(viewsets.ModelViewSet):
             'detalles__variante__talle',
             'detalles__variante__color',
         )
-        if getattr(user, 'es_personal_tienda', False):
+        # drf-spectacular genera el schema con un usuario anónimo: se devuelve el queryset sin filtrar.
+        if getattr(self, 'swagger_fake_view', False) or getattr(user, 'es_personal_tienda', False):
             return base_qs.order_by('-fecha_creacion')
         return base_qs.filter(usuario=user).order_by('-fecha_creacion')
 

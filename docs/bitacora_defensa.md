@@ -21,6 +21,24 @@ Este archivo es la **memoria técnica viva y guía de estudio del equipo de 4 in
 
 ## 1. Cronología del Proceso de Desarrollo
 
+### Índice de Pull Requests integrados
+
+| PR | Rama | Responsable | Entrada en esta bitácora |
+| :--- | :--- | :--- | :--- |
+| #1 | `feature/back-modelos-catalogo` | Valentino Cambria | Etapa 1 / PR: Proyecto Django base + Modelos de Catálogo |
+| #2 | `feature/back-core-usuarios` | Manuel Gómez | Etapa 1 / Card #17: DRF, Docker, Autenticación Dual y Usuarios |
+| #3 | `feature/front-setup-identidad` | Juan Falco | Etapa 1 (Sprint 1 — Frontend Parte 1) |
+| #4 | `feature/back-pedidos-resenas` | Manuel Gómez | Etapa 2 / Card #22: Pedidos, Stock Atómico y Reseñas |
+| #5 | `feature/front-context-schemas` | Tomás Benavidez | Etapa 2 (Sprint 2 — Frontend Parte 2) |
+| #6 | `feature/front-carrito-checkout` | Tomás Benavidez | Etapa 2 (Sprint 2 — Frontend Parte 3) |
+| #7 | `feature/front-catalogo-rutas` | Juan Falco | Etapa 2 / Card #24: Catálogo y Ficha Dinámica |
+| #10 | `feature/back-api-productos` | Valentino Cambria | Etapa 2 / PR: ViewSets de Catálogo |
+| — | `feature/back-docs-deploy` | Manuel Gómez y Valentino Cambria | Etapa 3 / PR: Documentación OpenAPI, Auditoría EFI y Deploy |
+
+> La PR #8 no figura porque se mergeó por error contra `main` y se deshizo (ver Etapa 3, "Decisiones técnicas y problemas resueltos"). La PR #9 (autenticación con Server Actions en el frontend) todavía no está integrada a `develop`.
+
+---
+
 ### Etapa 0: Planificación, Diseño de Dominio VELOX y Reglas de Ingeniería
 - **Fecha:** Octubre 2026
 - **Integrantes participantes:** Equipo completo (4 integrantes)
@@ -106,6 +124,24 @@ Este archivo es la **memoria técnica viva y guía de estudio del equipo de 4 in
   - Contenedorización con Docker (`Dockerfile` y `docker-compose.yml`).
   - Configuración de **Autenticación Dual** (`JWTAuthentication` + `SessionAuthentication`), paginación global (`PageNumberPagination`, `PAGE_SIZE = 10`), Swagger UI en `/api/docs/` y vista HTML de bienvenida en `/`.
   - Implementación de permisos por rol (`EsAdministrador`, `EsAdminOEmpleado`, `EsAdminOEmpleadoOSoloLectura`, `PermisoUsuarioViewSet`), serializadores en `snake_case` (`UsuarioSerializer`, `RegistroUsuarioSerializer`) y exposición del **ViewSet #1 (`UsuarioViewSet`)** con `@action perfil` y tests automatizados.
+
+---
+
+### Etapa 2 / Card #22: Pedidos, Descuento Atómico de Stock y Reseñas
+- **Rama:** `feature/back-pedidos-resenas` -> `develop` (PR #4)
+- **Responsable(s):** Manuel Gómez (Backend 1)
+- **Archivos clave:** `backend/src/apps/pedidos/models.py`, `serializers.py`, `views.py`, `permissions.py`, `admin.py`, `tests.py`
+- **Qué se implementó:**
+  - Modelos `Pedido`, `DetallePedido` y `Resena`, completando los **12 modelos** del dominio.
+  - `PedidoViewSet` con **NestedSerializer #2** (`PedidoListSerializer` anida el usuario comprador y los detalles con SKU, talle y color) y la acción `@action cancelar_pedido`.
+  - `ResenaViewSet` con lectura pública, escritura autenticada y una reseña por usuario y producto.
+- **Decisiones técnicas y problemas resueltos:**
+  - **Stock sin carreras:** el checkout descuenta stock dentro de `transaction.atomic()` usando `select_for_update()`, que bloquea la fila de la variante; dos compras simultáneas no pueden dejar stock negativo.
+  - **Precio congelado:** `DetallePedido.precio_unitario` guarda el precio al momento de la compra, así un cambio de precio posterior no altera pedidos ya hechos.
+  - **Cancelación con restitución:** `cancelar_pedido` devuelve el stock a cada variante y rechaza pedidos ya enviados o entregados.
+- **Guía para la defensa oral (Cómo explicarlo al docente):**
+  - **Para Facundo Lemo (Proceso / Backend):** "Toda la compra es una única transacción: o se crean el pedido, los detalles y el descuento de stock, o no se hace nada."
+  - **Para Valentino Arballo (Componentes / Frontend):** "El checkout del carrito envía `detalles` con `variante` y `cantidad` en `snake_case`, y los errores de stock vuelven como 400 con el mensaje por campo."
 
 ---
 
@@ -204,6 +240,32 @@ Este archivo es la **memoria técnica viva y guía de estudio del equipo de 4 in
 
 ---
 
+### Etapa 2 / Card #25: Autenticación JWT en Cookies HTTP-Only con Server Actions + RHF y Zod (R4, R5, R7)
+- **Rama:** `feature/front-auth-jwt` -> `develop`
+- **Responsable(s):** Juan Falco (Frontend 1)
+- **Archivos clave:**
+  - `frontend/src/app/actions.js` (`Server Actions` con `"use server"`: `loginAction`, `logoutAction`, `getAuthSessionAction`, `revalidateProductsAction`)
+  - `frontend/src/lib/auth.js` (`parseJwt`, `isTokenExpired`, `getServerToken`, `getServerUser`, `requireAuth`)
+  - `frontend/src/middleware.js` (Protección perimetral de rutas `/dashboard` mediante lectura de cookie HTTP-Only)
+  - `frontend/src/app/login/page.jsx` (Formulario interactivo RHF + Zod conectado a Server Action y guardado dual en Cookies y `localStorage`)
+  - `frontend/src/components/LogoutButton.jsx` (Botón de cierre de sesión conectado a `logoutAction()`)
+  - `frontend/src/app/__tests__/authLib.test.js`, `frontend/src/app/__tests__/authActions.test.js` (12 tests unitarios en 2 nuevas suites)
+  - `README.md`, `docs/bitacora_defensa.md`
+- **Qué se implementó:**
+  - Implementación de **Server Actions** (`src/app/actions.js`) con directiva `"use server"`:
+    - `loginAction(credentials)`: valida el payload con Zod (`loginSchema`), consume el endpoint `POST /api/token/` de SimpleJWT en Django REST Framework y establece los tokens `access` y `refresh` en **Cookies HTTP-Only** seguras (`httpOnly: true`, `sameSite: "lax"`, `secure` en producción) mediante `(await cookies()).set()`.
+    - `logoutAction()`: elimina de forma segura las Cookies HTTP-Only y revalida las rutas con `revalidatePath()`.
+    - `getAuthSessionAction()`: consulta el estado de la sesión en el servidor sin exponer secretos al navegador.
+  - Módulo utilitario `src/lib/auth.js`: decodificación de tokens JWT en Base64Url sin dependencias externas, comprobación estricta de tiempo de expiración (`exp`) y función de guard `requireAuth()` para Server Components.
+  - `src/middleware.js`: middleware de Next.js que intercepta accesos a `/dashboard/:path*` y redirige a `/login?redirect=...` si no existe la Cookie HTTP-Only.
+  - Formulario `/login` (`src/app/login/page.jsx`): Client Component con React Hook Form + Zod (`loginSchema`), botones de carga rápida de credenciales de prueba para la defensa oral (`admin` y `cliente1`), soporte para redirección dinámica por query param (`?redirect=...`) y almacenamiento sincronizado en `localStorage` para compatibilidad retroactiva con el flujo de compra de `/carrito`.
+  - Ampliación de la suite de pruebas unitarias en Vitest de 54 a **66 tests** pasando al 100% en 9 suites.
+- **Decisiones técnicas y problemas resueltos:**
+  - **Inmunidad ante ataques XSS mediante Cookies HTTP-Only (R4):** A diferencia de un almacenamiento exclusivo en `localStorage` que es vulnerable a inyección de scripts, el token principal viaja en una Cookie con flag `httpOnly: true`, lo que impide que JavaScript malicioso en el cliente pueda leerlo.
+  - **Compatibilidad dual con Server y Client Components:** Se implementó una estrategia híbrida donde la Server Action establece la Cookie HTTP-Only (utilizada por el servidor y el middleware) y al mismo tiempo el cliente recibe el token en la respuesta segura para sincronizar `localStorage` y emitir el evento `velox-auth-changed`, permitiendo que el checkout transaccional de `/carrito` siga operando sin fricción.
+- **Guía para la defensa oral (Cómo explicarlo al docente):**
+  - **Para Facundo Lemo (Proceso / Backend):** "La autenticación se integra directamente con el endpoint estándar de SimpleJWT `POST /api/token/` respetando los campos `username` y `password` en `snake_case`. El servidor responde con los tokens JWT que son inmediatamente blindados en Cookies HTTP-Only en el servidor de Next.js."
+  - **Para Valentino Arballo (Componentes / Frontend):** "Cumplimos los requisitos R4 y R5 de forma ejemplar: el login utiliza React Hook Form con `zodResolver` y delega la autenticación a una Server Action (`actions.js`). En lugar de guardar el token únicamente en `localStorage` (vulnerable a XSS), la Server Action utiliza `(await cookies()).set()` con flag `httpOnly: true`. El middleware intercepta las rutas de `/dashboard` verificando la presencia de dicha cookie antes de renderizar la página."
 ### Etapa 2 / PR: ViewSets de Catálogo + NestedSerializer + Filtros + @action
 - **Rama:** `feature/back-api-productos` -> `develop`
 - **Responsable(s):** Valentino Cambria (Backend 2)
@@ -258,6 +320,33 @@ Este archivo es la **memoria técnica viva y guía de estudio del equipo de 4 in
 - **Guía para la defensa oral (Cómo explicarlo al docente):**
   - **Para Facundo Lemo (Proceso / Backend):** "La acción `cancelar_pedido` demuestra cómo el backend asegura la integridad de los datos: usa `transaction.atomic()` y `select_for_update()` para devolver las unidades exactas a cada variante por SKU sin condiciones de carrera. El frontend respeta esta semántica invocando directamente el endpoint `@action`."
   - **Para Valentino Arballo (Componentes / Frontend):** "Cumplimos con las 2 rutas dinámicas obligatorias (`/productos/[id]` y `/dashboard/pedidos/[id]`) y las 4 operaciones CRUD completas (`GET`, `POST`, `PATCH`, `DELETE`). Cada nuevo componente incluye su comentario justificando Server vs. Client Component, y los diálogos modales garantizan accesibilidad con foco, backdrop y tecla Escape."
+### Etapa 3 / PR: Documentación OpenAPI, Auditoría EFI, Deploy en Render y README con Capturas
+- **Rama:** `feature/back-docs-deploy` -> `develop` -> `main`
+- **Responsable(s):** Manuel Gómez y Valentino Cambria (Backend)
+- **Archivos clave:**
+  - `render.yaml` (Blueprint de Render: servicio web + PostgreSQL)
+  - `backend/Dockerfile`, `backend/start.sh`, `backend/.dockerignore`, `backend/docker-compose.yml`, `backend/.env.example`
+  - `backend/pyproject.toml`, `backend/uv.lock` (`gunicorn`, `whitenoise`, `psycopg`)
+  - `backend/src/nucleo/settings.py` (PostgreSQL por `DATABASE_URL`, estáticos, HTTPS/CSRF)
+  - `backend/src/apps/productos/management/commands/cargar_catalogo.py`
+  - `backend/src/apps/pedidos/views.py`, `backend/src/apps/productos/views.py` (ajustes de Swagger)
+  - `docs/capturas/*.png`, `README.md`, `docs/bitacora_defensa.md`
+- **Qué se implementó:**
+  - **Documentación OpenAPI:** Swagger UI (`/api/docs/`), ReDoc (`/api/redoc/`) y schema (`/api/schema/`) ya estaban servidos; se corrigieron los 6 warnings de generación del schema, que ahora valida con `--fail-on-warn`.
+  - **Auditoría EFI** con la skill `auditar-consigna-efi`: todos los requisitos del backend cumplen (tabla en el `README.md`); el único pendiente era el deploy.
+  - **Preparación para producción:** `gunicorn` como servidor, `whitenoise` para servir los estilos del admin y la API navegable, PostgreSQL vía `DATABASE_URL` (con SQLite como respaldo en desarrollo) y configuración HTTPS/CSRF para el dominio público.
+  - **Deploy como código:** `render.yaml` crea la base y el servicio en Render con un clic; cada push a `main` redespliega.
+  - **README** con diagrama ER, documentación de la API, pasos de deploy, variables de entorno, Docker y 5 capturas del sistema funcionando.
+- **Decisiones técnicas y problemas resueltos:**
+  - **Dependencias nuevas aprobadas por el equipo:** las reglas prohíben agregar paquetes sin aprobación; se aprobaron solo las 3 imprescindibles para producción. La URL de la base se interpreta con `urllib.parse` (librería estándar) para no sumar `dj-database-url`.
+  - **Render gratis no tiene consola:** por eso el arranque (`start.sh`) migra, carga el catálogo con `cargar_catalogo` (solo si la base está vacía, para no pisar el stock en cada reinicio) y crea el superusuario desde variables de entorno.
+  - **El `.venv` del host pisaba el del contenedor** en `docker-compose.yml` por el volumen `.:/app`; se agregó un volumen anónimo `/app/.venv`.
+  - **Estáticos:** con `DEBUG=False` Django no sirve archivos estáticos, y el admin se veía sin estilos; `collectstatic` en el build + `whitenoise` lo resuelven.
+  - **Verificación previa al deploy:** se ejecutó localmente el mismo arranque de producción (`DEBUG=False`, PostgreSQL 16, gunicorn): todos los endpoints, Swagger, JWT, estáticos y login del admin respondieron correctamente, y un reinicio no recargó el catálogo.
+  - **Incidente de GitFlow:** la PR de ViewSets de Catálogo se mergeó por error contra `main` (PR #8). Como el merge arrastraba todo `develop` a `main`, se descartó hacer un `revert` (al integrar `develop` más tarde, el revert habría borrado de `main` el trabajo de todo el equipo) y se volvió `main` a su commit anterior con `git push --force-with-lease`. Luego se rehízo la PR contra `develop` (PR #10), resolviendo un conflicto en esta bitácora con la entrada de la Card #24.
+- **Guía para la defensa oral (Cómo explicarlo al docente):**
+  - **Para Facundo Lemo (Proceso / Backend):** "En desarrollo usamos SQLite y `runserver`; en producción el mismo código usa PostgreSQL, gunicorn y whitenoise, y todo se decide por variables de entorno. El deploy está versionado en `render.yaml`."
+  - **Para Valentino Arballo (Componentes / Frontend):** "El frontend en producción apunta a la URL pública de Render mediante `NEXT_PUBLIC_API_URL`, y el backend solo acepta su origen gracias a `CORS_ALLOWED_ORIGINS`."
 
 ---
 
@@ -304,6 +393,9 @@ Esta tabla resume las respuestas técnicas que los 4 integrantes deben dominar p
 | **12. ¿Cómo funcionan los filtros de productos?** | `backend/src/apps/productos/filters.py` | `ProductoFilter` (un `FilterSet` de `django-filter`) expone `marca`, `categoria`, `genero` y dos filtros propios: `precio_min` (`precio_base__gte`) y `precio_max` (`precio_base__lte`). `SearchFilter` agrega `?search=` y `OrderingFilter` agrega `?ordering=`; los tres están activos globalmente en `REST_FRAMEWORK`. |
 | **13. ¿Qué devuelven `destacados` y `stock_por_talle`?** | `backend/src/apps/productos/views.py` | `destacados` (`detail=False`, actúa sobre la colección) devuelve los 6 productos activos más recientes con stock. `stock_por_talle` (`detail=True`, actúa sobre un producto) agrupa sus variantes activas por talle con el stock total y el detalle por color/SKU. |
 | **14. ¿Quién puede modificar el catálogo?** | `backend/src/apps/usuarios/permissions.py` | Cualquiera puede leer productos, marcas, categorías y variantes (`SAFE_METHODS`), pero solo ADMIN o EMPLEADO pueden crear, editar o borrar. Proveedores es privado para el personal porque contiene CUIT y datos de contacto. |
+| **15. ¿Cómo se despliega el backend en producción?** | `render.yaml`, `backend/Dockerfile`, `backend/start.sh` | Render construye la imagen Docker (con `collectstatic`), crea una base PostgreSQL y al arrancar ejecuta `migrate`, carga el catálogo si la base está vacía y levanta `gunicorn`. Las diferencias con desarrollo se manejan solo con variables de entorno (`DATABASE_URL`, `DJANGO_DEBUG`, `ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS`). |
+| **16. ¿Por qué `gunicorn` y `whitenoise` en vez de `runserver`?** | `backend/start.sh`, `backend/src/nucleo/settings.py` | `runserver` es un servidor de desarrollo de un solo proceso y no sirve estáticos con `DEBUG=False`. `gunicorn` atiende peticiones con varios workers y `whitenoise` sirve los CSS/JS del admin y de la API navegable comprimidos y con caché, sin necesidad de Nginx. |
+| **17. ¿Dónde se documenta la API?** | `backend/src/nucleo/urls.py` | `drf-spectacular` genera el esquema OpenAPI 3 a partir de los ViewSets y serializers: Swagger UI en `/api/docs/` (permite probar endpoints con JWT), ReDoc en `/api/redoc/` y el YAML en `/api/schema/`. Donde la respuesta no es un modelo (`stock_por_talle`) se describe con `@extend_schema`. |
 
 ---
 
@@ -325,12 +417,12 @@ Esta tabla registra cada componente y módulo del frontend para justificar su ar
 | `src/app/productos/[id]/page.jsx` | **Server Component** | ✅ Implementado | Ficha técnica dinámica (1ra ruta dinámica R1) que obtiene el calzado en el servidor para SEO y metadata OpenGraph, hidratando la isla interactiva `ProductDetailClient.jsx`. |
 | `src/components/ProductDetailClient.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Isla interactiva de ficha técnica para navegación de fotos de galería (1:N), selección de talle/color SKU con stock dinámico y sección de reseñas. |
 | `src/app/dashboard/layout.jsx` | **Server Component** | ✅ Implementado | Layout anidado (R1) que estructura el shell administrativo y barra lateral sin forzar hidratación en toda la página. |
-| `src/app/dashboard/page.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Resumen ejecutivo del panel con KPIs reactivos en tiempo real ("STOCK EN DEPÓSITO" y "VARIANTES SKU ACTIVAS") sincronizados bidireccionalmente con el módulo interactivo `DashboardCrudManager`. |
-| `src/app/dashboard/pedidos/page.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Ruta anidada (R1) para la gestión reactiva de pedidos con filtros por estado en tiempo real, buscador y badges semánticos. |
-| `src/app/dashboard/pedidos/[id]/page.jsx` | **Server Component** | ✅ Implementado | 2da ruta dinámica obligatoria (R1) que valida el identificador de orden de compra en el servidor e hidrata la isla interactiva `PedidoDetalleClient`. |
-| `src/components/PedidoDetalleClient.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Ficha completa de orden de compra con desglose de calzados SKU, dirección de entrega, modal de confirmación y llamada a `@action` `cancelar_pedido`. |
-| `src/components/DashboardCrudManager.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Módulo interactivo del Dashboard para las 4 operaciones CRUD completas (R3) sobre inventario de variantes SKU y reseñas con validación, feedback de error en modal y confirmación protegida. |
-| `src/app/login/page.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Formulario interactivo de autenticación con React Hook Form + Zod (`authSchema.js`) y captura de errores DRF. |
+| `src/app/dashboard/page.jsx` | **Server Component** | ✅ Implementado | Resumen ejecutivo del panel de control con métricas en tiempo real y mapa de operaciones CRUD. |
+| `src/app/login/page.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Formulario interactivo con React Hook Form + Zod (`loginSchema`) conectado a Server Action (`loginAction`) con guardado dual en Cookies HTTP-Only y `localStorage`, auto-completado de credenciales y redirección dinámica. |
+| `src/app/actions.js` | **Server Actions (`"use server"`)** | ✅ Implementado | Funciones de servidor para autenticación (`loginAction`, `logoutAction`, `getAuthSessionAction`) con persistencia en Cookies HTTP-Only y mutaciones con `revalidatePath()`. |
+| `src/lib/auth.js` | **Módulo Servidor / Helper** | ✅ Implementado | Utilidades de autenticación segura: decodificación `parseJwt()` sin dependencias, verificación de expiración `isTokenExpired()` y guard de protección `requireAuth()`. |
+| `src/middleware.js` | **Middleware Edge (Proxy)** | ✅ Implementado | Protección perimetral de rutas `/dashboard/:path*`, verificando la existencia de la Cookie HTTP-Only `velox_access_token` antes de resolver la petición. |
+| `src/components/LogoutButton.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Botón interactivo de cierre de sesión que invoca la Server Action `logoutAction()`, limpia `localStorage` y redirige a `/login`. |
 | `src/app/carrito/page.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Vista interactiva del carrito conectada a `CartContext` y al endpoint transaccional `POST /api/pedidos/` de DRF con autenticación JWT, selector de cantidades, formulario modal de checkout interactivo validado con React Hook Form + Zod (`checkoutFormSchema` y `orderSchema`), variantes reales del fixture y manejo de errores 400/401. |
 | `src/context/CartContext.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Estado global con Context API (R6) para compartir carrito entre componentes cliente con persistencia en `localStorage`. |
 | `src/components/Navbar.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Consume `useCart()` de forma reactiva para mostrar el contador de productos en tiempo real y gestiona el menú móvil. |
