@@ -130,6 +130,7 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
   // 2. Creación de Variante (POST)
   const [isCreateVarianteOpen, setIsCreateVarianteOpen] = useState(false);
   const [createVarianteError, setCreateVarianteError] = useState(null);
+  const [isSubmittingVariante, setIsSubmittingVariante] = useState(false);
   const [newVarProducto, setNewVarProducto] = useState(6);
   const [newVarTalle, setNewVarTalle] = useState(3);
   const [newVarColor, setNewVarColor] = useState(3);
@@ -140,6 +141,7 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
   // 3. Eliminación de Variante (DELETE)
   const [deletingVariante, setDeletingVariante] = useState(null);
   const [deleteVarianteError, setDeleteVarianteError] = useState(null);
+  const [isDeletingVariante, setIsDeletingVariante] = useState(false);
 
   // 4. Creación de Reseña (POST)
   const [isCreateResenaOpen, setIsCreateResenaOpen] = useState(false);
@@ -184,9 +186,11 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
         setVariantes(res.results);
       }
     } catch (err) {
-      if (err instanceof ApiError) {
-        setFeedback({ type: "error", message: err.message });
-      }
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : err?.message || "Error al conectar con el inventario de DRF.";
+      setFeedback({ type: "error", message });
     } finally {
       setLoading(false);
     }
@@ -201,9 +205,11 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
         setResenas(res.results);
       }
     } catch (err) {
-      if (err instanceof ApiError) {
-        setFeedback({ type: "error", message: err.message });
-      }
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : err?.message || "Error al conectar con las reseñas de DRF.";
+      setFeedback({ type: "error", message });
     } finally {
       setLoading(false);
     }
@@ -330,6 +336,7 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
       payload.precio_ajustado = newVarPrecio.trim();
     }
 
+    setIsSubmittingVariante(true);
     try {
       const currentToken =
         token || (typeof window !== "undefined" ? localStorage.getItem("velox_access_token") : null);
@@ -351,6 +358,8 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
     } catch (err) {
       const errorMsg = err.message || "Error al crear la variante en DRF.";
       setCreateVarianteError(errorMsg);
+    } finally {
+      setIsSubmittingVariante(false);
     }
   };
 
@@ -358,6 +367,7 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
   const handleDeleteVariante = async () => {
     if (!deletingVariante) return;
 
+    setIsDeletingVariante(true);
     try {
       setDeleteVarianteError(null);
       const currentToken =
@@ -380,6 +390,8 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
       // Mantener el modal de confirmación abierto para que el usuario pueda
       // leer la causa del bloqueo (ej. integridad referencial por pedidos asociados)
       // y confirmar con 'Entendido / Cerrar'.
+    } finally {
+      setIsDeletingVariante(false);
     }
   };
 
@@ -855,9 +867,10 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
             <Button
               variant="primary"
               onClick={handleCreateVariante}
+              disabled={isSubmittingVariante}
               className="text-xs py-2 px-3"
             >
-              CREAR VARIANTE EN DRF
+              {isSubmittingVariante ? "CREANDO..." : "CREAR VARIANTE EN DRF"}
             </Button>
           </>
         }
@@ -1032,9 +1045,10 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
               <Button
                 variant="danger"
                 onClick={handleDeleteVariante}
+                disabled={isDeletingVariante}
                 className="text-xs py-2 px-3"
               >
-                CONFIRMAR ELIMINACIÓN (DELETE)
+                {isDeletingVariante ? "ELIMINANDO..." : "CONFIRMAR ELIMINACIÓN (DELETE)"}
               </Button>
             </>
           )

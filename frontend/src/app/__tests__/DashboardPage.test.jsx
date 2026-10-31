@@ -160,4 +160,35 @@ describe("DashboardPage (/dashboard) - KPIs Reactivos de Inventario", () => {
       expect(screen.getByText("1")).toBeInTheDocument();
     });
   });
+
+  it("excluye variantes inactivas del KPI de variantes activas pero computa su stock físico", async () => {
+    vi.spyOn(api, "getPaginated").mockResolvedValueOnce({
+      count: 2,
+      next: null,
+      previous: null,
+      results: [
+        {
+          ...mockVariantes.results[0],
+          stock: 40,
+          activo: true,
+        },
+        {
+          ...mockVariantes.results[1],
+          stock: 60,
+          activo: false, // Inactiva para venta
+        },
+      ],
+    });
+
+    render(<DashboardPage />);
+
+    // Stock total físico en depósito: 40 + 60 = 100 u., pero activas solo 1
+    await waitFor(() => {
+      const cardStock = screen.getByText("STOCK EN DEPÓSITO").closest("a");
+      expect(within(cardStock).getByText("100 u.")).toBeInTheDocument();
+
+      const cardActivas = screen.getByText("VARIANTES SKU ACTIVAS").closest("a");
+      expect(within(cardActivas).getByText("1")).toBeInTheDocument();
+    });
+  });
 });

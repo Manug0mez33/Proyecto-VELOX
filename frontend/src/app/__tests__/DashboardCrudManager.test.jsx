@@ -361,4 +361,52 @@ describe("DashboardCrudManager (4 Operaciones CRUD - R3) - GET, POST, PATCH, DEL
       screen.queryByText(/No se puede eliminar la variante porque está asociada a pedidos existentes/i)
     ).not.toBeInTheDocument();
   });
+
+  it("limpia el error modal de alta de variante al modificar los selectores de talle o stock", async () => {
+    vi.spyOn(api, "getPaginated").mockResolvedValueOnce(mockVariantesResponse);
+    vi.spyOn(api, "post").mockRejectedValueOnce(
+      new Error("Combinación talle/color inválida en DRF.")
+    );
+
+    render(<DashboardCrudManager />);
+
+    await waitFor(() => {
+      expect(screen.getByText("VX-VCX-39-NEG")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /\+ NUEVA VARIANTE SKU \(POST\)/i }));
+
+    const inputSku = screen.getByPlaceholderText(/ej\. VX-VCX-41-NEO/i);
+    fireEvent.change(inputSku, { target: { value: "VX-TST-42-AZU" } });
+
+    fireEvent.click(screen.getByRole("button", { name: /CREAR VARIANTE EN DRF/i }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Combinación talle\/color inválida en DRF/i)
+      ).toBeInTheDocument();
+    });
+
+    // Modificar stock debe limpiar el error inmediatamente
+    const inputStock = screen.getByLabelText ? screen.getByDisplayValue("10") : screen.getByRole("spinbutton");
+    fireEvent.change(inputStock, { target: { value: "15" } });
+
+    expect(
+      screen.queryByText(/Combinación talle\/color inválida en DRF/i)
+    ).not.toBeInTheDocument();
+  });
+
+  it("muestra alerta de feedback cuando la carga inicial de variantes falla con un error general", async () => {
+    vi.spyOn(api, "getPaginated").mockRejectedValueOnce(
+      new Error("Fallo de conexión con backend Django")
+    );
+
+    render(<DashboardCrudManager />);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Fallo de conexión con backend Django/i)
+      ).toBeInTheDocument();
+    });
+  });
 });
