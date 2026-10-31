@@ -36,7 +36,7 @@ cd frontend
 npm install
 npm run dev
 ```
-La aplicación estará disponible en `http://localhost:3000`.
+La aplicación estará disponible en `http://localhost:3000` y en producción en `https://proyecto-velox.vercel.app/`.
 
 ### 3. Rutas y Componentes Implementados (Sprint 1 & Sprint 2)
 - **Rutas y Layouts (R1):**
@@ -146,7 +146,7 @@ El schema se valida sin warnings: `uv run python manage.py spectacular --validat
 
 ## ☁️ Backend — Deploy Público en Render
 
-**URL pública:** `https://velox-backend.onrender.com` *(completar con la URL asignada por Render)*
+**URL pública:** `https://velox-backend-smxi.onrender.com` (Swagger en `https://velox-backend-smxi.onrender.com/api/docs/`)
 
 El deploy está definido como código en `render.yaml` (Blueprint):
 
@@ -198,7 +198,7 @@ Auditoría realizada con la skill `auditar-consigna-efi` sobre el código de `ba
 | `admin.py` configurado | CUMPLE | 11 modelos registrados con `list_display`, `search_fields` y `ordering` (y `list_filter` en todos salvo `Color`); `DetallePedido` se edita como inline del `Pedido` |
 | Permisos por rol y CORS | CUMPLE | `apps/*/permissions.py`, `django-cors-headers` |
 | `uv` y Docker | CUMPLE | `pyproject.toml`, `uv.lock`, `Dockerfile`, `docker-compose.yml` |
-| Deploy público | PENDIENTE | Configurado en `render.yaml`; falta crear el servicio en Render y completar la URL |
+| Deploy público | CUMPLE | Desplegado en producción en Render: `https://velox-backend-smxi.onrender.com/api/` |
 
 ## 🗂️ Backend — Catálogo e Inventario (`backend/src/apps/productos/`)
 
