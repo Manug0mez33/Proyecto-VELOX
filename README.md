@@ -92,17 +92,107 @@ uv run python manage.py createsuperuser   # usuario para entrar a /admin/
 uv run python manage.py runserver         # http://127.0.0.1:8000/admin/
 ```
 
-**Estructura:** `backend/pyproject.toml` + `uv.lock`, proyecto Django en `backend/src/` (`manage.py`, configuración en `nucleo/`, apps en `apps/usuarios/` y `apps/productos/`).
+**Estructura:** `backend/pyproject.toml` + `uv.lock`, proyecto Django en `backend/src/` (`manage.py`, configuración en `nucleo/`, apps en `apps/usuarios/`, `apps/productos/` y `apps/pedidos/`).
+
+**Tests:** `cd backend/src && uv run python manage.py test` (15 tests de integración).
 
 **Variables de entorno** (opcionales en desarrollo, obligatorias en producción):
 
 | Variable | Valor por defecto | Uso |
 | :--- | :--- | :--- |
 | `DJANGO_SECRET_KEY` | clave insegura de desarrollo | Clave criptográfica de Django |
-| `DJANGO_DEBUG` | `True` | Modo debug |
-| `DJANGO_ALLOWED_HOSTS` | `localhost,127.0.0.1` | Hosts permitidos (separados por coma) |
+| `DJANGO_DEBUG` | `True` | Modo debug (`False` en producción) |
+| `DJANGO_ALLOWED_HOSTS` | `localhost,127.0.0.1,0.0.0.0,testserver` | Hosts permitidos (separados por coma) |
+| `CORS_ALLOWED_ORIGINS` | `http://localhost:3000,http://127.0.0.1:3000` | Orígenes del frontend Next.js autorizados |
+| `DATABASE_URL` | *(vacía → SQLite)* | Conexión PostgreSQL en producción |
+| `CSRF_TRUSTED_ORIGINS` | *(vacía)* | Dominios https desde donde se usa `/admin/` |
+| `DJANGO_SUPERUSER_USERNAME` / `_EMAIL` / `_PASSWORD` | *(vacías)* | Superusuario creado automáticamente al arrancar en producción |
+
+Plantilla completa en `backend/.env.example`.
+
+### Ejecución con Docker (desarrollo)
+
+```bash
+cd backend
+docker compose up --build    # http://localhost:8000 — migra, carga el catálogo y levanta runserver
+```
 
 **Usuario personalizado:** `apps.usuarios.Usuario` hereda de `AbstractUser` y agrega `rol` (`ADMIN`, `EMPLEADO`, `CLIENTE`), `telefono`, `direccion` y `ciudad`; `email` es único. Está configurado como `AUTH_USER_MODEL` desde la primera migración.
+
+## 🗺️ Backend — Modelo de Datos (Diagrama ER)
+
+12 modelos relacionales normalizados en 3FN (detalle y justificación en `docs/backend/arquitectura_y_dominio.md`):
+
+![Diagrama ER de VELOX](docs/backend/diagrama_db_velox.png)
+
+## 📘 Backend — Documentación de la API
+
+| URL | Contenido |
+| :--- | :--- |
+| `/api/docs/` | **Swagger UI**: documentación interactiva OpenAPI 3 (`drf-spectacular`); permite probar cada endpoint con el botón *Authorize* (JWT `Bearer`). |
+| `/api/redoc/` | **ReDoc**: especificación de lectura de todos los endpoints, parámetros y respuestas. |
+| `/api/schema/` | Esquema OpenAPI 3 en YAML (lo consumen Swagger y ReDoc). |
+| `/api/` | **API navegable** de Django REST Framework (raíz del router con los 8 ViewSets). |
+| `/` | Vista tradicional de bienvenida (template HTML). |
+| `/admin/` | Panel de administración de Django. |
+
+El schema se valida sin warnings: `uv run python manage.py spectacular --validate --fail-on-warn --file /dev/null`.
+
+## ☁️ Backend — Deploy Público en Render
+
+**URL pública:** `https://velox-backend.onrender.com` *(completar con la URL asignada por Render)*
+
+El deploy está definido como código en `render.yaml` (Blueprint):
+
+| Componente | Configuración |
+| :--- | :--- |
+| Servicio web `velox-backend` | Docker (`backend/Dockerfile`), plan free, despliega la rama `main` |
+| Base de datos `velox-db` | PostgreSQL free, conectada por `DATABASE_URL` |
+| Servidor | `gunicorn` (2 workers) — `backend/start.sh` |
+| Estáticos | `whitenoise` (admin y API navegable con estilos sin Nginx) |
+| Arranque | `migrate` → `cargar_catalogo` (solo si la base está vacía) → superusuario desde variables → `gunicorn` |
+
+**Pasos para desplegar (una sola vez):**
+1. Entrar a [render.com](https://render.com) con GitHub → **New → Blueprint** → elegir este repositorio.
+2. Completar las variables que pide: `CORS_ALLOWED_ORIGINS` (URL del frontend en producción) y `DJANGO_SUPERUSER_USERNAME` / `_EMAIL` / `_PASSWORD`.
+3. **Apply**. Render crea la base, construye la imagen y publica la API. Cada push a `main` redespliega automáticamente.
+4. En el frontend, configurar `NEXT_PUBLIC_API_URL=https://<url-de-render>/api` (Requisito R8 de Programación III).
+
+> En el plan gratuito el servicio se suspende tras 15 minutos sin uso: la primera petición después tarda ~50 s. Conviene abrir la URL unos minutos antes de la defensa.
+
+## 📸 Backend — Capturas del Sistema Funcionando
+
+Tomadas con el servidor en modo producción (`DEBUG=False`, PostgreSQL, gunicorn y whitenoise):
+
+| Vista de bienvenida (`/`) | Swagger UI (`/api/docs/`) |
+| :---: | :---: |
+| ![Inicio](docs/capturas/01_inicio.png) | ![Swagger](docs/capturas/02_swagger.png) |
+| **Listado con NestedSerializer (`/api/productos/`)** | **@action `stock_por_talle`** |
+| ![Productos](docs/capturas/03_api_productos.png) | ![Stock por talle](docs/capturas/04_api_stock_por_talle.png) |
+| **Filtros django-filter (`?marca=1&ordering=precio_base`)** | |
+| ![Filtros](docs/capturas/05_api_filtros.png) | |
+
+## ✅ Backend — Cumplimiento de la Consigna (Ingeniería de Software)
+
+Auditoría realizada con la skill `auditar-consigna-efi` sobre el código de `backend/`:
+
+| Requisito | Estado | Evidencia |
+| :--- | :---: | :--- |
+| Mínimo 10 modelos | CUMPLE (12) | `apps/usuarios/models.py`, `apps/productos/models.py`, `apps/pedidos/models.py` |
+| `Usuario(AbstractUser)` con `rol` | CUMPLE | `apps/usuarios/models.py` (`AUTH_USER_MODEL`) |
+| 8 ViewSets en router | CUMPLE (8) | `nucleo/routers.py`: usuarios, pedidos, resenas, productos, marcas, categorias, variantes, proveedores |
+| Paginación en listados | CUMPLE | `REST_FRAMEWORK['DEFAULT_PAGINATION_CLASS']` = `PageNumberPagination` |
+| ViewSet con filtros y búsqueda | CUMPLE | `ProductoViewSet` + `apps/productos/filters.py` |
+| 2 NestedSerializers en `list` | CUMPLE (2) | `ProductoNestedSerializer`, `PedidoListSerializer` |
+| 2 `@action` personalizadas | CUMPLE (4) | `destacados`, `stock_por_talle`, `cancelar_pedido`, `perfil` |
+| Autenticación Sesión + JWT | CUMPLE | `REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES']`, `/api/token/` |
+| Swagger / OpenAPI en `/api/docs/` | CUMPLE | `nucleo/urls.py` (Swagger, ReDoc y schema) |
+| API navegable | CUMPLE | `/api/` (renderers por defecto de DRF) |
+| Vista tradicional en `/` | CUMPLE | `nucleo/views.py` + `templates/inicio.html` |
+| `admin.py` configurado | CUMPLE | 11 modelos registrados con `list_display`, `search_fields` y `ordering` (y `list_filter` en todos salvo `Color`); `DetallePedido` se edita como inline del `Pedido` |
+| Permisos por rol y CORS | CUMPLE | `apps/*/permissions.py`, `django-cors-headers` |
+| `uv` y Docker | CUMPLE | `pyproject.toml`, `uv.lock`, `Dockerfile`, `docker-compose.yml` |
+| Deploy público | PENDIENTE | Configurado en `render.yaml`; falta crear el servicio en Render y completar la URL |
 
 ## 🗂️ Backend — Catálogo e Inventario (`backend/src/apps/productos/`)
 
@@ -146,11 +236,6 @@ cd backend/src && uv run python manage.py test apps.productos   # 7 tests de la 
 ```
 
 ## 🔐 Backend — Autenticación Dual, Docker y Endpoints de Usuarios (Card #17)
-
-### Ejecución con Docker y Docker Compose
-```bash
-docker compose up --build
-```
 
 ### Endpoints Incorporados (`apps/usuarios` y Núcleo DRF)
 
