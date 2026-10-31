@@ -1,5 +1,3 @@
-// Server Component: Página de catálogo (/productos - R1) que lee searchParams en el servidor, consulta el endpoint paginado de DRF procesando la estructura { count, next, previous, results } y renderiza ProductCard y FilterBar sin sobrecargar el bundle JS del cliente.
-
 import Link from "next/link";
 import FilterBar from "../../components/FilterBar";
 import ProductCard from "../../components/ProductCard";
@@ -12,7 +10,7 @@ export const metadata = {
     "Catálogo oficial de calzado deportivo VELOX: placas de carbono, amortiguación Nitro-Foam y variantes SKU con disponibilidad en tiempo real.",
 };
 
-// Catálogo mock de contingencia (12 productos completos en 3FN con marcas, categorías y variantes SKU)
+// Catálogo mock de contingencia (12 productos completos con marcas, categorías y variantes SKU)
 const MOCK_PRODUCTOS_CATALOGO = [
   {
     id: 1,
@@ -242,7 +240,7 @@ const MOCK_CATEGORIAS = [
   { id: 4, nombre: "Trail" },
 ];
 
-const ITEMS_PER_PAGE = 6;
+const ITEMS_PER_PAGE = 10;
 
 async function getCatalogo(params = {}) {
   try {
@@ -255,7 +253,7 @@ async function getCatalogo(params = {}) {
       return data;
     }
   } catch (error) {
-    // Si el backend no está disponible o da error de red, usamos el fallback
+    // Si la API no responde o da 404 por página, se usa el catálogo local
   }
 
   // Filtrado en memoria sobre el mock
@@ -266,8 +264,9 @@ async function getCatalogo(params = {}) {
     filtered = filtered.filter(
       (p) =>
         p.nombre.toLowerCase().includes(q) ||
-        p.descripcion.toLowerCase().includes(q) ||
-        p.sku_referencia.toLowerCase().includes(q)
+        p.descripcion?.toLowerCase().includes(q) ||
+        p.sku_referencia?.toLowerCase().includes(q) ||
+        p.variantes?.some((v) => v.sku?.toLowerCase().includes(q))
     );
   }
 
@@ -345,15 +344,13 @@ export default async function CatalogoPage({ searchParams }) {
       {/* Encabezado del Catálogo */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#2A2A2A] pb-6">
         <div className="space-y-2">
-          <Badge variant="outline">CATÁLOGO TÉCNICO • REQUISITO R1 Y R3</Badge>
+          <Badge variant="outline">TIENDA OFICIAL VELOX</Badge>
           <h1 className="font-heading text-3xl sm:text-4xl font-extrabold uppercase tracking-tight text-[#FFFFFF]">
             CATÁLOGO DE ALTO RENDIMIENTO
           </h1>
           <p className="text-sm text-[#D1D5DB] max-w-2xl">
-            Calzado deportivo propulsivo conectado a la API de Django REST
-            Framework con contratos en{" "}
-            <code className="text-[#39FF14]">snake_case</code> y variantes SKU
-            con disponibilidad exacta.
+            Calzado deportivo propulsivo de alta gama con placa de fibra de carbono,
+            amortiguación reactiva y disponibilidad por talle en tiempo real.
           </p>
         </div>
 
@@ -365,7 +362,7 @@ export default async function CatalogoPage({ searchParams }) {
         </div>
       </div>
 
-      {/* Barra de Filtros Interactiva (Client Component) */}
+      {/* Barra de Filtros Interactiva */}
       <FilterBar marcas={MOCK_MARCAS} categorias={MOCK_CATEGORIAS} />
 
       {/* Grilla de Productos */}
@@ -398,7 +395,7 @@ export default async function CatalogoPage({ searchParams }) {
         </div>
       )}
 
-      {/* Barra de Paginación Estilo DRF ({ count, next, previous, results }) */}
+      {/* Barra de Paginación */}
       {totalPages > 1 && (
         <nav
           className="flex flex-wrap items-center justify-center gap-2 pt-6 border-t border-[#2A2A2A]"

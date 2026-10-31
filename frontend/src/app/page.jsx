@@ -1,8 +1,7 @@
-// Server Component: Landing page principal (/) de VELOX que consulta GET /api/productos/destacados/ desde el servidor con fallback seguro para optimizar SEO y First Contentful Paint (FCP).
-
 import Link from "next/link";
 import Button from "../components/Button";
 import Badge from "../components/Badge";
+import ProductCard from "../components/ProductCard";
 
 const FALLBACK_DESTACADOS = [
   {
@@ -14,11 +13,17 @@ const FALLBACK_DESTACADOS = [
     precio_base: "189500.00",
     sku_referencia: "VLX-AER-41-NEO",
     stock_total: 14,
-    es_destacado: false,
+    es_destacado: true,
     descripcion:
       "Suela de carbono propulsiva y malla ultraligera para récords en asfalto.",
     talles: ["39", "40", "41", "42"],
     talle_activo: "41",
+    variantes: [
+      { id: 101, sku: "VLX-AER-39-NEO", talle: "39", stock: 3, color: "Negro/Neón" },
+      { id: 102, sku: "VLX-AER-40-NEO", talle: "40", stock: 4, color: "Negro/Neón" },
+      { id: 103, sku: "VLX-AER-41-NEO", talle: "41", stock: 5, color: "Negro/Neón" },
+      { id: 104, sku: "VLX-AER-42-NEO", talle: "42", stock: 2, color: "Negro/Neón" },
+    ],
   },
   {
     id: 2,
@@ -34,6 +39,11 @@ const FALLBACK_DESTACADOS = [
       "Doble cámara de nitrógeno inyectado y agarre reactivo en pista húmeda.",
     talles: ["40", "41", "42", "43"],
     talle_activo: "42",
+    variantes: [
+      { id: 201, sku: "VLX-VOR-40", talle: "40", stock: 1, color: "Titanio/Neón" },
+      { id: 202, sku: "VLX-VOR-41", talle: "41", stock: 3, color: "Titanio/Neón" },
+      { id: 203, sku: "VLX-VOR-42", talle: "42", stock: 4, color: "Titanio/Neón" },
+    ],
   },
   {
     id: 3,
@@ -49,6 +59,11 @@ const FALLBACK_DESTACADOS = [
       "Tacos multidireccionales de 5mm y membrana hidrofóbica de alta tracción.",
     talles: ["41", "42", "43", "44"],
     talle_activo: "43",
+    variantes: [
+      { id: 301, sku: "VLX-TER-41", talle: "41", stock: 1, color: "Gris/Verde" },
+      { id: 302, sku: "VLX-TER-42", talle: "42", stock: 1, color: "Gris/Verde" },
+      { id: 303, sku: "VLX-TER-43", talle: "43", stock: 1, color: "Gris/Verde" },
+    ],
   },
 ];
 
@@ -72,17 +87,12 @@ async function getProductosDestacados() {
   }
 }
 
-function formatPrecioARS(valor) {
-  const numero = Number(valor) || 0;
-  return `$${numero.toLocaleString("es-AR", { maximumFractionDigits: 0 })}`;
-}
-
 export default async function HomePage() {
   const destacados = await getProductosDestacados();
 
   return (
     <div className="mx-auto max-w-[1440px] px-6 lg:px-20 py-10 space-y-20">
-      {/* ==================== 1. HERO SECTION (Frame 01 Figma) ==================== */}
+      {/* ==================== 1. HERO SECTION ==================== */}
       <section className="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 pt-2">
         {/* Columna Izquierda: Copywriting & CTAs */}
         <div className="lg:col-span-6 space-y-6">
@@ -111,13 +121,13 @@ export default async function HomePage() {
             pasada.
           </p>
 
-          {/* CTAs con Tono de Voz VELOX */}
+          {/* CTAs */}
           <div className="flex flex-wrap items-center gap-4 pt-2">
             <Button variant="primary" href="/productos">
-              ACELERAR AHORA →
+              EXPLORAR CATÁLOGO →
             </Button>
             <Button variant="secondary" href="/tecnologia">
-              ANALIZAR RENDIMIENTO
+              CONOCER LA TECNOLOGÍA
             </Button>
           </div>
 
@@ -150,34 +160,30 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {/* Columna Derecha: Showcase Zapatilla con Glow Verde Neón */}
+        {/* Columna Derecha: Showcase Zapatilla */}
         <div className="lg:col-span-6">
           <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-[#1E1E1E] to-[#141414] border border-[#2A2A2A] p-6 sm:p-8">
-            {/* Top Spec Badges */}
             <div className="relative z-10 flex items-center justify-between">
               <span className="rounded-md bg-[#2A2A2A] px-3 py-1.5 font-heading text-[11px] font-bold tracking-wider text-[#39FF14]">
-                SKU: VLX-HYP-42-NEO
+                REF: VLX-HYP-42-NEO
               </span>
-              <Badge variant="outline">STOCK ACTIVO</Badge>
+              <Badge variant="outline">DISPONIBLE</Badge>
             </div>
 
-            {/* Glow sutil verde neón detrás del render del calzado (Manual de Marca pág. 3) */}
             <div className="relative my-8 flex h-[240px] sm:h-[260px] items-center justify-center">
               <div
                 className="pointer-events-none absolute h-44 w-80 rounded-full bg-[#39FF14]/20 blur-3xl"
                 aria-hidden="true"
               />
 
-              {/* Líneas técnicas de telemetría */}
               <div className="pointer-events-none absolute inset-x-4 top-2 border-t border-dashed border-[#2A2A2A]" />
               <div className="pointer-events-none absolute inset-x-4 bottom-2 border-t border-dashed border-[#2A2A2A]" />
 
-              {/* Silueta Vectorial VELOX Hyperion Carbon X (idéntica a Figma) */}
               <svg
                 viewBox="0 0 470 250"
                 className="relative z-10 w-full max-w-[430px] drop-shadow-[0_12px_28px_rgba(57,255,20,0.22)]"
                 role="img"
-                aria-label="Render técnico VELOX Hyperion Carbon X"
+                aria-label="Silueta VELOX Hyperion Carbon X"
               >
                 <defs>
                   <linearGradient id="shoeBody" x1="0" y1="0" x2="1" y2="0.4">
@@ -215,7 +221,6 @@ export default async function HomePage() {
               </svg>
             </div>
 
-            {/* Pie del Hero Card */}
             <div className="relative z-10 flex flex-col sm:flex-row sm:items-end justify-between gap-4 pt-2">
               <div>
                 <h2 className="font-heading text-xl sm:text-2xl font-bold text-[#FFFFFF]">
@@ -233,219 +238,74 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ==================== 2. CALZADOS DESTACADOS (@action GET /api/productos/destacados/) ==================== */}
+      {/* ==================== 2. CALZADOS DESTACADOS ==================== */}
       <section className="space-y-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#2A2A2A] pb-5">
           <div>
-            <span className="font-mono text-xs font-bold uppercase tracking-widest text-[#39FF14]">
-              ● @action: GET /api/productos/destacados/
+            <span className="font-heading text-xs font-bold uppercase tracking-widest text-[#39FF14]">
+              ● CALZADOS DESTACADOS
             </span>
             <h2 className="font-heading text-2xl sm:text-3xl font-bold uppercase text-[#FFFFFF] mt-1">
               DESTACADOS DE LA SEMANA
             </h2>
             <p className="text-sm text-[#D1D5DB]">
-              Modelos de competición servidos por ProductoViewSet con variantes
-              SKU y stock en tiempo real.
+              Modelos de competición de alto nivel con placa propulsiva y amortiguación elástica.
             </p>
           </div>
           <Link
             href="/productos"
             className="font-heading text-xs font-bold uppercase tracking-wider text-[#39FF14] hover:underline"
           >
-            VER CATÁLOGO COMPLETO (12 MODELOS) →
+            VER CATÁLOGO COMPLETO →
           </Link>
         </div>
 
-        {/* Grilla de 3 tarjetas siguiendo el Manual de Marca (#2A2A2A y rounded-lg = 8px) */}
+        {/* Grilla interactiva con selección de talles y compra directa */}
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {destacados.map((producto, idx) => {
-            const marcaNombre =
-              producto.marca_detalle?.nombre ||
-              producto.marca?.nombre ||
-              "VELOX LAB";
-            const categoriaNombre =
-              producto.categoria_detalle?.nombre ||
-              producto.categoria?.nombre ||
-              "COMPETICIÓN";
-            const stockTotal =
-              producto.stock_total ??
-              (Array.isArray(producto.variantes)
-                ? producto.variantes.reduce(
-                    (acc, v) => acc + (Number(v.stock_actual) || 0),
-                    0
-                  )
-                : 10);
-            const skuRef =
-              producto.sku_referencia ||
-              producto.variantes?.[0]?.sku ||
-              `VLX-PRO-0${idx + 1}`;
-            const talles = producto.talles || ["40", "41", "42", "43"];
-            const isHighlighted = Boolean(producto.es_destacado || idx === 1);
-
-            return (
-              <article
-                key={producto.id || idx}
-                className={`flex flex-col justify-between rounded-lg bg-[#2A2A2A] p-5 transition-colors ${
-                  isHighlighted
-                    ? "border-[1.5px] border-[#39FF14]"
-                    : "border border-[#383838] hover:border-[#39FF14]/60"
-                }`}
-              >
-                <div>
-                  {/* Caja de Imagen con silueta PNG/SVG aislada y Glow */}
-                  <div className="relative mb-5 flex h-[215px] w-full items-center justify-center rounded-md bg-[#181818] p-4 overflow-hidden">
-                    <div
-                      className="pointer-events-none absolute h-24 w-48 rounded-full bg-[#39FF14]/15 blur-2xl"
-                      aria-hidden="true"
-                    />
-
-                    <div className="absolute top-3 left-3">
-                      <Badge variant={isHighlighted ? "neon" : "default"}>
-                        {isHighlighted ? "★ DESTACADO" : categoriaNombre}
-                      </Badge>
-                    </div>
-
-                    <div className="absolute top-3 right-3">
-                      <Badge
-                        variant={stockTotal <= 3 ? "danger" : "outline"}
-                      >
-                        {stockTotal <= 3
-                          ? `ÚLTIMAS ${stockTotal}`
-                          : `STOCK: ${stockTotal}`}
-                      </Badge>
-                    </div>
-
-                    {/* Render aislado del calzado */}
-                    <svg
-                      viewBox="0 0 340 160"
-                      className="relative z-10 w-64"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M45 125 L80 65 L150 72 L215 45 L285 88 L300 120 L45 125 Z"
-                        fill="#262626"
-                        stroke={isHighlighted ? "#FFFFFF" : "#39FF14"}
-                        strokeWidth="2"
-                      />
-                      <rect
-                        x="40"
-                        y="122"
-                        width="265"
-                        height="13"
-                        rx="6"
-                        fill="#39FF14"
-                      />
-                    </svg>
-                  </div>
-
-                  {/* Metadatos del producto */}
-                  <p className="text-xs font-bold uppercase tracking-wider text-[#9CA3AF]">
-                    {marcaNombre} • {producto.genero || "UNISEX"}
-                  </p>
-                  <h3 className="mt-1 font-heading text-xl font-semibold text-[#FFFFFF]">
-                    {producto.nombre}
-                  </h3>
-                  <p className="mt-2 text-xs text-[#D1D5DB] line-clamp-2">
-                    {producto.descripcion} —{" "}
-                    <span className="font-mono text-[#39FF14]">
-                      SKU: {skuRef}
-                    </span>
-                  </p>
-
-                  {/* Selector visual de talles AR */}
-                  <div className="mt-4">
-                    <p className="text-[11px] font-bold uppercase text-[#D1D5DB]">
-                      TALLES DISPONIBLES (AR):
-                    </p>
-                    <div className="mt-2 flex gap-2">
-                      {talles.map((talle) => {
-                        const active =
-                          talle === (producto.talle_activo || "41");
-                        return (
-                          <span
-                            key={talle}
-                            className={`inline-flex h-7 w-9 items-center justify-center rounded font-heading text-xs font-bold ${
-                              active
-                                ? "bg-[#39FF14] text-[#121212]"
-                                : "bg-[#121212] text-[#D1D5DB]"
-                            }`}
-                          >
-                            {talle}
-                          </span>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Precio y CTA con Tono de Marca */}
-                <div className="mt-6 flex items-center justify-between pt-4 border-t border-[#383838]">
-                  <span
-                    className={`font-heading text-2xl font-bold ${
-                      isHighlighted ? "text-[#39FF14]" : "text-[#FFFFFF]"
-                    }`}
-                  >
-                    {formatPrecioARS(producto.precio_base)}
-                  </span>
-                  <Button
-                    variant="primary"
-                    href={`/productos/${producto.id || 1}`}
-                    className="px-4 py-2.5 text-xs"
-                  >
-                    ANALIZAR RENDIMIENTO
-                  </Button>
-                </div>
-              </article>
-            );
-          })}
+          {destacados.map((producto, idx) => (
+            <ProductCard key={producto.id || idx} producto={producto} />
+          ))}
         </div>
       </section>
 
-      {/* ==================== 3. BANNER DE ARQUITECTURA E IDENTIDAD VELOX ==================== */}
+      {/* ==================== 3. INNOVACIÓN BIOMECÁNICA VELOX ==================== */}
       <section className="rounded-xl bg-[#1B1B1B] border border-[#2A2A2A] p-8 sm:p-10">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 items-center">
           <div className="lg:col-span-8 space-y-4">
             <span className="font-heading text-xs font-bold uppercase tracking-widest text-[#39FF14]">
-              ARQUITECTURA FULL-STACK • INGENIERÍA VELOX
+              INNOVACIÓN BIOMECÁNICA • SERIE PRO 2026
             </span>
             <h2 className="font-heading text-2xl sm:text-3xl font-bold uppercase text-[#FFFFFF]">
-              SISTEMA DE INVENTARIO FÍSICO POR VARIANTE SKU
+              SISTEMA DE PROPULSIÓN REACTIVA VELOX
             </h2>
             <p className="text-sm text-[#D1D5DB] leading-relaxed">
-              Cada calzado de VELOX separa el modelo conceptual (
-              <code className="text-[#39FF14]">Producto</code>) de la unidad
-              física en stock (
-              <code className="text-[#39FF14]">VarianteProducto</code> con
-              talle, color y código SKU único), conectando en tiempo real con
-              los endpoints de Django REST Framework.
+              Cada calzado VELOX combina ingeniería biomecánica de alta precisión con materiales avanzados,
+              maximizando el retorno de energía, la estabilidad torsional y la amortiguación crítica en entrenamientos y carreras de fondo.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
               <div className="rounded-lg bg-[#2A2A2A] p-4">
                 <p className="font-heading text-lg font-bold text-[#39FF14]">
-                  01. SKU ÚNICO
+                  01. PLACA DE CARBONO
                 </p>
                 <p className="mt-1 text-xs text-[#D1D5DB]">
-                  Normalización 3FN entre Producto conceptual y stock real por
-                  talle y color.
+                  Estructura anatómica que catapulta cada zancada, reduciendo la fatiga muscular y optimizando el ritmo de carrera.
                 </p>
               </div>
               <div className="rounded-lg bg-[#2A2A2A] p-4">
                 <p className="font-heading text-lg font-bold text-[#39FF14]">
-                  02. JWT COOKIE
+                  02. ESPUMA NITRO-FOAM
                 </p>
                 <p className="mt-1 text-xs text-[#D1D5DB]">
-                  Autenticación segura mediante Server Actions y Cookies
-                  HTTP-Only.
+                  Compuesto ultraligero con nitrógeno inyectado para un 87% de retorno de energía elástica constante.
                 </p>
               </div>
               <div className="rounded-lg bg-[#2A2A2A] p-4">
                 <p className="font-heading text-lg font-bold text-[#39FF14]">
-                  03. ZOD + RHF
+                  03. SUELA MATRIX-GRIP
                 </p>
                 <p className="mt-1 text-xs text-[#D1D5DB]">
-                  Validación de formularios en paridad estricta snake_case con
-                  DRF.
+                  Diseño de tracción multidireccional con agarre superior tanto en asfalto húmedo como en pista sintética.
                 </p>
               </div>
             </div>
@@ -453,13 +313,12 @@ export default async function HomePage() {
 
           <div className="lg:col-span-4 flex flex-col justify-between rounded-lg bg-[#2A2A2A] border border-[#39FF14]/40 p-6 space-y-5">
             <div>
-              <Badge variant="neon">MANIFIESTO TÉCNICO</Badge>
+              <Badge variant="neon">LABORATORIO VELOX</Badge>
               <h3 className="mt-3 font-heading text-xl font-bold text-[#FFFFFF]">
-                INGENIERÍA EN FIBRA DE CARBONO
+                INGENIERÍA DE RENDIMIENTO
               </h3>
               <p className="mt-2 text-xs text-[#D1D5DB] leading-relaxed">
-                Conocé cómo diseñamos nuestras placas propulsivas, compuestos de
-                nitrógeno y suelas de tracción extrema.
+                Descubrí cómo diseñamos calzado para deportistas de alto nivel y conocé nuestra filosofía de desarrollo.
               </p>
             </div>
             <Button variant="primary" href="/tecnologia" className="w-full">

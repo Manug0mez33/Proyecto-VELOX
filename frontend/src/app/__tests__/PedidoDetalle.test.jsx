@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import PedidoDetalleClient from "../../components/PedidoDetalleClient";
 import { api } from "../../lib/api";
 
-describe("PedidoDetalleClient (2da Ruta Dinámica /dashboard/pedidos/[id] - R1) & @action cancelar_pedido", () => {
+describe("PedidoDetalleClient (Ficha de Orden /dashboard/pedidos/[id]) & Cancelar Pedido", () => {
   beforeEach(() => {
     localStorage.clear();
     vi.clearAllMocks();
@@ -70,12 +70,12 @@ describe("PedidoDetalleClient (2da Ruta Dinámica /dashboard/pedidos/[id] - R1) 
 
     await waitFor(() => {
       expect(
-        screen.getByRole("button", { name: /CANCELAR PEDIDO \(@ACTION\)/i })
+        screen.getByRole("button", { name: /CANCELAR PEDIDO/i })
       ).toBeInTheDocument();
     });
   });
 
-  it("abre el modal de confirmación y ejecuta la acción POST /api/pedidos/{id}/cancelar_pedido/", async () => {
+  it("abre el modal de confirmación y ejecuta la cancelación", async () => {
     localStorage.setItem("velox_access_token", "fake_token_jwt");
     vi.spyOn(api, "get").mockResolvedValueOnce(mockPedidoPendiente);
 
@@ -91,14 +91,14 @@ describe("PedidoDetalleClient (2da Ruta Dinámica /dashboard/pedidos/[id] - R1) 
     });
 
     // Click en cancelar pedido
-    const btnCancelar = screen.getByRole("button", { name: /CANCELAR PEDIDO \(@ACTION\)/i });
+    const btnCancelar = screen.getByRole("button", { name: /CANCELAR PEDIDO/i });
     fireEvent.click(btnCancelar);
 
     // Modal debe estar visible
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(screen.getByText("CANCELAR PEDIDO #1")).toBeInTheDocument();
     expect(
-      screen.getByText(/POST \/api\/pedidos\/1\/cancelar_pedido\//i)
+      screen.getByText(/Al cancelar la orden/i)
     ).toBeInTheDocument();
 
     // Confirmar en el modal
@@ -122,7 +122,7 @@ describe("PedidoDetalleClient (2da Ruta Dinámica /dashboard/pedidos/[id] - R1) 
 
     // El botón ya no debe estar disponible para un pedido cancelado
     expect(
-      screen.queryByRole("button", { name: /CANCELAR PEDIDO \(@ACTION\)/i })
+      screen.queryByRole("button", { name: /CANCELAR PEDIDO/i })
     ).not.toBeInTheDocument();
   });
 
@@ -136,12 +136,12 @@ describe("PedidoDetalleClient (2da Ruta Dinámica /dashboard/pedidos/[id] - R1) 
     });
 
     expect(
-      screen.queryByRole("button", { name: /CANCELAR PEDIDO \(@ACTION\)/i })
+      screen.queryByRole("button", { name: /CANCELAR PEDIDO/i })
     ).not.toBeInTheDocument();
     expect(screen.getByText(/PEDIDO CANCELADO:/i)).toBeInTheDocument();
   });
 
-  it("muestra mensaje de error dentro del modal si @action cancelar_pedido falla", async () => {
+  it("muestra mensaje de error dentro del modal si cancelar_pedido falla", async () => {
     localStorage.setItem("velox_access_token", "fake_token_jwt");
     vi.spyOn(api, "get").mockResolvedValueOnce(mockPedidoPendiente);
     vi.spyOn(api, "post").mockRejectedValueOnce(
@@ -154,7 +154,7 @@ describe("PedidoDetalleClient (2da Ruta Dinámica /dashboard/pedidos/[id] - R1) 
       expect(screen.getByText("ORDEN DE COMPRA #1")).toBeInTheDocument();
     });
 
-    const btnCancelar = screen.getByRole("button", { name: /CANCELAR PEDIDO \(@ACTION\)/i });
+    const btnCancelar = screen.getByRole("button", { name: /CANCELAR PEDIDO/i });
     fireEvent.click(btnCancelar);
 
     const btnConfirmar = screen.getByRole("button", { name: /SÍ, CANCELAR PEDIDO/i });

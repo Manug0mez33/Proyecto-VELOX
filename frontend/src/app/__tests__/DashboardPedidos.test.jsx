@@ -68,10 +68,10 @@ describe("Dashboard Pedidos (/dashboard/pedidos - R1) - Listado Reactivo y Filtr
     render(<PedidosPage />);
 
     expect(
-      screen.getByText("GESTIÓN REACTIVA DE PEDIDOS")
+      screen.getByText("GESTIÓN DE PEDIDOS")
     ).toBeInTheDocument();
     expect(
-      screen.getByText("SESIÓN JWT REQUERIDA (DRF AUTHENTICATION)")
+      screen.getByText("INICIO DE SESIÓN REQUERIDO")
     ).toBeInTheDocument();
     expect(screen.getByText("INICIAR SESIÓN AHORA →")).toBeInTheDocument();
   });
@@ -133,7 +133,7 @@ describe("Dashboard Pedidos (/dashboard/pedidos - R1) - Listado Reactivo y Filtr
       expect(screen.getByText("#1")).toBeInTheDocument();
     });
 
-    const inputBusqueda = screen.getByPlaceholderText(/Buscar por ID, SKU o cliente.../i);
+    const inputBusqueda = screen.getByPlaceholderText(/Buscar por ID, referencia o cliente.../i);
     fireEvent.change(inputBusqueda, { target: { value: "Carbon X" } });
 
     expect(screen.queryByText("#1")).not.toBeInTheDocument();
@@ -167,7 +167,7 @@ describe("Dashboard Pedidos (/dashboard/pedidos - R1) - Listado Reactivo y Filtr
       expect(screen.getByText("#1")).toBeInTheDocument();
     });
 
-    const enlaces = screen.getAllByRole("link", { name: /VER DETALLE →/i });
+    const enlaces = screen.getAllByRole("link", { name: /VER FICHA →/i });
     expect(enlaces[0]).toHaveAttribute("href", "/dashboard/pedidos/1");
     expect(enlaces[1]).toHaveAttribute("href", "/dashboard/pedidos/2");
   });

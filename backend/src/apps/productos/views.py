@@ -34,7 +34,7 @@ class ProductoViewSet(viewsets.ModelViewSet):
 
     permission_classes = [EsAdminOEmpleadoOSoloLectura]
     filterset_class = ProductoFilter
-    search_fields = ["nombre", "descripcion", "marca__nombre"]
+    search_fields = ["nombre", "descripcion", "marca__nombre", "variantes__sku"]
     ordering_fields = ["precio_base", "creado_en", "nombre"]
     ordering = ["-creado_en"]
 
