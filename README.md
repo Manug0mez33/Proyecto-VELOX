@@ -44,11 +44,17 @@ La aplicación estará disponible en `http://localhost:3000`.
   - `/tecnologia` (`src/app/tecnologia/page.jsx`): Manifiesto técnico e ingeniería biomecánica VELOX.
   - `/productos` (`src/app/productos/page.jsx`): Catálogo general paginado con Server Component que procesa el sobre paginado de DRF (`{ count, next, previous, results }`), sincronización bidireccional con query params y fallback completo en memoria.
   - `/productos/[id]` (`src/app/productos/[id]/page.jsx`): Ficha técnica dinámica de calzado deportivo con Server Component para SEO y metadata, e hidratación de `ProductDetailClient.jsx` para galería interactiva de fotos (1:N), selector de talles AR y colores SKU con verificación de stock en tiempo real y módulo de reseñas de atletas.
+  - `/dashboard` (`src/app/dashboard/layout.jsx` y `page.jsx`): Layout anidado y panel administrativo con KPIs en tiempo real del catálogo, variantes SKU y el módulo interactivo `DashboardCrudManager.jsx` con cobertura completa de las 4 operaciones CRUD (`GET`, `POST`, `PATCH`, `DELETE`) sobre inventario de variantes SKU y reseñas de calzado.
+  - `/dashboard/pedidos` (`src/app/dashboard/pedidos/page.jsx`): Ruta anidada (R1) con listado reactivo de pedidos consumiendo `GET /api/pedidos/` de DRF mediante JWT, filtros dinámicos por estado (`TODOS`, `PENDIENTE`, `PAGADO`, `ENVIADO`, `ENTREGADO`, `CANCELADO`), badges de estado, buscador en vivo y empty state.
+  - `/dashboard/pedidos/[id]` (`src/app/dashboard/pedidos/[id]/page.jsx` y `src/components/PedidoDetalleClient.jsx`): 2da ruta dinámica obligatoria de la EFI (R1) con ficha completa de orden de compra (`GET /api/pedidos/{id}/`), desglose de calzados (SKU, modelo, talle AR, color, cantidad, subtotal), datos de cliente, destino y botón para ejecutar la acción transaccional `@action` de DRF `POST /api/pedidos/{id}/cancelar_pedido/` con confirmación en `Modal.jsx`, feedback visual y restitución atómica de stock en la base de datos.
+  - `/login` (`src/app/login/page.jsx`): Formulario interactivo con React Hook Form + Zod (`authSchema.js`) y manejo estructurado de errores DRF.
   - `/dashboard` (`src/app/dashboard/layout.jsx` y `page.jsx`): Layout anidado y panel administrativo con KPIs en tiempo real del catálogo y variantes SKU.
   - `/login` (`src/app/login/page.jsx`): Formulario interactivo con React Hook Form + Zod (`loginSchema R5`) conectado a Server Action (`loginAction R4`) para almacenamiento de tokens en Cookies HTTP-Only y `localStorage`, auto-completado de credenciales y redirección dinámica.
   - `/carrito` (`src/app/carrito/page.jsx`): Carrito de compras interactivo conectado al estado global `CartContext` y al endpoint transaccional real `POST /api/pedidos/` de Django REST Framework con autenticación JWT (`Authorization: Bearer <token>`), selector de cantidades, botón rápido con variantes reales del catálogo (IDs 54, 49, 55, 44 del fixture), validación RHF + Zod (`checkoutFormSchema` y `orderSchema`), modal de orden confirmada con datos devueltos por DRF y captura de errores estructurados (stock insuficiente 400 y sesión expirada 401).
   - Estados globales App Router: `src/app/layout.jsx` (Layout raíz con `CartProvider`), `src/app/loading.jsx`, `src/app/error.jsx` y `src/app/not-found.jsx`.
 - **Componentes Reutilizables Base (R2):**
+  - `src/components/DashboardCrudManager.jsx` (`Client Component` — módulo interactivo para las 4 operaciones CRUD: `GET` listados paginados de variantes/reseñas, `POST` alta de variantes SKU y reseñas, `PATCH` ajuste interactivo de stock/precio y edición de comentarios, y `DELETE` eliminación con confirmación modal)
+  - `src/components/PedidoDetalleClient.jsx` (`Client Component` — ficha técnica de pedido con desglose de calzados, cálculo de totales, modal de confirmación y llamada a la acción `@action` `cancelar_pedido` de DRF)
   - `src/components/ProductCard.jsx` (`Client Component` — tarjeta de producto con selector de talle AR interactivo en vivo, recálculo de SKU/precio y compra directa a `CartContext`)
   - `src/components/FilterBar.jsx` (`Client Component` — barra de filtrado declarativa por búsqueda, marca, categoría, género, pills de talles AR y ordenamiento sincronizada con la URL)
   - `src/components/ProductDetailClient.jsx` (`Client Component` — isla interactiva de ficha técnica con galería de fotos, variantes SKU, stock y reseñas)
@@ -68,7 +74,7 @@ La aplicación estará disponible en `http://localhost:3000`.
 - **Validaciones Zod en `snake_case` (R5):**
   - `src/validations/authSchema.js`: Esquemas `loginSchema` y `registerSchema` alineados a `RegistroUsuarioSerializer`.
   - `src/validations/orderSchema.js`: Esquemas `checkoutFormSchema`, `checkoutSchema` y `orderItemSchema` alineados exactamente a `Pedido.MetodoPago` (`TARJETA_CREDITO`, `TARJETA_DEBITO`, `TRANSFERENCIA`, `EFECTIVO`) y `PedidoCreateSerializer`.
-- **Cliente API REST (R3):**
+- **Cliente API REST y CRUD Completo (R3):**
   - `src/lib/api.js`: Helper de peticiones HTTP con soporte para el sobre paginado de DRF `{ count, next, previous, results }`, clase `ApiError` y métodos CRUD completos (`get`, `getPaginated`, `post`, `put`, `patch`, `delete`).
 
 ### 4. Ejecución de Tests Unitarios (R7)
@@ -77,7 +83,7 @@ Ejecutar la suite completa de tests unitarios en Vitest con Testing Library y JS
 cd frontend
 npm run test
 ```
-*Cobertura: 9 suites de prueba y 66 tests unitarios verificando `CartContext` (incluyendo sincronización multi-pestaña y preservación de `variante_id`), esquemas de Zod (`authSchema`, `orderSchema` con opciones de pago oficiales y validación estricta de SKU/variante), normalización, métodos CRUD y formateo recursivo de errores anidados DRF en `api.js`, componente `Modal`, componente `ProductCard` (renderizado, selector dinámico de talles AR, stock y despacho al carrito), módulos de autenticación (`parseJwt`, `isTokenExpired` en `auth.js`), Server Actions (`loginAction`, `logoutAction`, `getAuthSessionAction` con Cookies HTTP-Only en `actions.js`) y flujo completo de checkout interactivo conectado a DRF con autenticación JWT, descuento de stock y manejo de errores 400/401.*
+*Cobertura: 11 suites de prueba y 82 tests unitarios verificando al 100%: `CartContext` (incluyendo sincronización multi-pestaña y preservación de `variante_id`), esquemas de Zod (`authSchema`, `orderSchema`), métodos CRUD y formateo recursivo de errores anidados DRF en `api.js`, componente `Modal`, componente `ProductCard` (renderizado, selector dinámico de talles AR, stock y despacho al carrito), checkout transaccional de `/carrito` conectado a DRF con JWT, listado reactivo de pedidos `/dashboard/pedidos` con filtros por estado y buscador, ficha técnica de la 2da ruta dinámica `/dashboard/pedidos/[id]` con ejecución de `@action` `cancelar_pedido`, módulo interactivo de 4 operaciones CRUD (`DashboardCrudManager`) con feedback de error en modales y sincronización reactiva de KPIs en `/dashboard` (`DashboardPage.test.jsx`).*
 ## 🚀 Backend — Puesta en marcha local (`uv`)
 
 Requisitos: Python 3.12+ y [`uv`](https://docs.astral.sh/uv/).

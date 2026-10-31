@@ -7,7 +7,7 @@ import LogoutButton from "../../components/LogoutButton";
 const DASHBOARD_LINKS = [
   { href: "/dashboard", label: "RESUMEN EJECUTIVO", icon: "📊" },
   { href: "/productos", label: "CATÁLOGO & STOCK", icon: "👟" },
-  { href: "/carrito", label: "GESTIÓN DE PEDIDOS", icon: "📦" },
+  { href: "/dashboard/pedidos", label: "GESTIÓN DE PEDIDOS", icon: "📦" },
   { href: "/tecnologia", label: "TELEMETRÍA & LAB", icon: "⚡" },
 ];
 

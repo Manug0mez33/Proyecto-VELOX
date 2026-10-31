@@ -291,6 +291,35 @@ Este archivo es la **memoria técnica viva y guía de estudio del equipo de 4 in
 
 ---
 
+### Etapa 2 / Card #27: Dashboard de Gestión, Rutas Anidadas/Dinámicas (/dashboard/pedidos y /dashboard/pedidos/[id]), @action cancelar_pedido y 4 Operaciones CRUD Completas (R1, R3)
+- **Rama:** `feature/front-dashboard-crud` -> `develop`
+- **Responsable(s):** Tomás Benavidez (Frontend 2) & Equipo VELOX
+- **Archivos clave:**
+  - `frontend/src/app/dashboard/layout.jsx` (navegación actualizada hacia `/dashboard/pedidos`)
+  - `frontend/src/app/dashboard/page.jsx` (Server Component que integra `DashboardCrudManager`)
+  - `frontend/src/app/dashboard/pedidos/page.jsx` (Client Component de listado reactivo de pedidos con filtros)
+  - `frontend/src/app/dashboard/pedidos/[id]/page.jsx` (Server Component: 2da ruta dinámica obligatoria)
+  - `frontend/src/components/PedidoDetalleClient.jsx` (Client Component: ficha de orden y botón `@action`)
+  - `frontend/src/components/DashboardCrudManager.jsx` (Client Component: 4 operaciones CRUD completas)
+  - `frontend/src/app/__tests__/DashboardPedidos.test.jsx`, `PedidoDetalle.test.jsx`, `DashboardCrudManager.test.jsx`
+  - `README.md`, `docs/bitacora_defensa.md`
+- **Qué se implementó:**
+  - **Ruta anidada `/dashboard/pedidos` (R1):** listado reactivo de pedidos consumiendo `GET /api/pedidos/` con token JWT, filtros dinámicos por estado (`TODOS`, `PENDIENTE`, `PAGADO`, `ENVIADO`, `ENTREGADO`, `CANCELADO`), badges semánticos, buscador en tiempo real (por ID, SKU o cliente), estados de carga (skeletons) y empty state.
+  - **2da ruta dinámica obligatoria de la EFI `/dashboard/pedidos/[id]` (R1):** Server Component que resuelve el parámetro de ruta e hidrata la isla interactiva `PedidoDetalleClient.jsx`. Muestra ficha completa de la orden, desglose de calzados (SKU, nombre, talle AR, color, cantidad, precio unitario y subtotal), datos del cliente y dirección de entrega.
+  - **Acción personalizada `@action` de DRF (cancelar_pedido):** botón interactivo que abre `Modal.jsx` para confirmar la cancelación. Al confirmar, ejecuta `POST /api/pedidos/{id}/cancelar_pedido/`, actualiza el estado a `CANCELADO` reactivamente en la interfaz y restituye automáticamente el stock físico de cada variante SKU en la base de datos de Django.
+  - **4 Operaciones CRUD Completas (R3):** módulo interactivo `DashboardCrudManager.jsx` embebido en `/dashboard`:
+    - **READ (`GET`):** listado paginado de variantes SKU (`GET /api/variantes/`) y reseñas de atletas (`GET /api/resenas/`) procesando el sobre paginado `{ count, next, previous, results }`.
+    - **UPDATE (`PATCH`):** modal interactivo para ajustar stock físico o precio de una variante (`PATCH /api/variantes/{sku}/`) y editar reseñas (`PATCH /api/resenas/{id}/`) con actualización inmediata en pantalla.
+    - **CREATE (`POST`):** modales accesibles para dar de alta nuevas variantes SKU (`POST /api/variantes/`) y nuevas reseñas (`POST /api/resenas/`).
+    - **DELETE (`DELETE`):** eliminación con diálogo de confirmación accesible en `Modal.jsx` para variantes y reseñas (`DELETE /api/resenas/{id}/`).
+  - **Testing Unitario (R7):** 3 nuevas suites con 15 tests adicionales en Vitest; la suite completa del frontend alcanza **69 tests unitarios en 10 archivos pasando al 100%**.
+- **Decisiones técnicas y problemas resueltos:**
+  - **Arquitectura de islas en rutas dinámicas:** `/dashboard/pedidos/[id]` permanece como Server Component para SEO y metadata, mientras que `PedidoDetalleClient` asume la interactividad y gestión de tokens en el navegador.
+  - **Paridad estricta `snake_case`:** todos los formularios de variantes y pedidos envían exactamente los campos esperados por DRF (`precio_ajustado`, `direccion_envio`, `metodo_pago`).
+  - **Manejo de permisos y estados no cancelables:** pedidos en estado `CANCELADO`, `ENVIADO` o `ENTREGADO` deshabilitan el botón de cancelación con badges explicativos respetando las reglas de negocio del backend.
+- **Guía para la defensa oral (Cómo explicarlo al docente):**
+  - **Para Facundo Lemo (Proceso / Backend):** "La acción `cancelar_pedido` demuestra cómo el backend asegura la integridad de los datos: usa `transaction.atomic()` y `select_for_update()` para devolver las unidades exactas a cada variante por SKU sin condiciones de carrera. El frontend respeta esta semántica invocando directamente el endpoint `@action`."
+  - **Para Valentino Arballo (Componentes / Frontend):** "Cumplimos con las 2 rutas dinámicas obligatorias (`/productos/[id]` y `/dashboard/pedidos/[id]`) y las 4 operaciones CRUD completas (`GET`, `POST`, `PATCH`, `DELETE`). Cada nuevo componente incluye su comentario justificando Server vs. Client Component, y los diálogos modales garantizan accesibilidad con foco, backdrop y tecla Escape."
 ### Etapa 3 / PR: Documentación OpenAPI, Auditoría EFI, Deploy en Render y README con Capturas
 - **Rama:** `feature/back-docs-deploy` -> `develop` -> `main`
 - **Responsable(s):** Manuel Gómez y Valentino Cambria (Backend)
@@ -322,16 +351,25 @@ Este archivo es la **memoria técnica viva y guía de estudio del equipo de 4 in
 ---
 
 ### Plantilla para próximas entregas (Copiar por cada `Etapa / Feature PR`)
-- **Rama:** `feature/<area>-<descripcion>` -> `develop`
-- **Responsable(s):** <Nombre(s) de los integrantes>
-- **Archivos clave:** `<rutas de archivos creados o modificados>`
+### Etapa 2 / Feature: Feedback de Error en Modales y Sincronización Reactiva de KPIs en Dashboard
+- **Rama:** `feature/front-dashboard-crud` -> `develop`
+- **Responsable(s):** Tomás Benavidez (Frontend 2)
+- **Archivos clave:**
+  - `frontend/src/components/DashboardCrudManager.jsx`
+  - `frontend/src/app/dashboard/page.jsx`
+  - `frontend/src/app/__tests__/DashboardCrudManager.test.jsx`
+  - `frontend/src/app/__tests__/DashboardPage.test.jsx`
+  - `README.md`, `docs/bitacora_defensa.md`
 - **Qué se implementó:**
-  - <Resumen claro de los cambios funcionales>
+  - **Feedback visual directo en ventana modal (R3):** En el modal de alta de variante (`isCreateVarianteOpen`), los errores devueltos por DRF (SKU duplicado o unicidad producto-talle-color) se renderizan directamente dentro del cuerpo del modal con `role="alert"`, limpiándose reactivamente al modificar inputs o cerrar/reabrir el modal.
+  - **Manejo resiliente en eliminación modal (DELETE):** Cuando `DELETE /api/variantes/{sku}/` es rechazado por integridad referencial (variante vinculada a órdenes de compra existentes), el modal de confirmación permanece abierto, renderiza la causa técnica dentro del modal y sustituye las acciones por el botón "ENTENDIDO / CERRAR".
+  - **KPIs reactivos de inventario:** Se conectaron las tarjetas superiores de métricas en `/dashboard` ("STOCK EN DEPÓSITO" y "VARIANTES SKU ACTIVAS") para computar reactivamente el stock físico total y SKU activos sincronizados con `DashboardCrudManager` mediante el prop `onVariantesChange` ante mutaciones GET, POST, PATCH y DELETE.
 - **Decisiones técnicas y problemas resueltos:**
-  - <Por qué se resolvió de esta forma y qué error o reto se superó>
+  - Se eliminó el problema de UX donde alertas renderizadas a nivel de página quedaban ocultas tras el backdrop oscuro y desenfoque del modal.
+  - Se añadieron estados de guardia `isSubmittingVariante` e `isDeletingVariante` para evitar peticiones duplicadas por dobles clics en conexiones con latencia.
 - **Guía para la defensa oral (Cómo explicarlo al docente):**
-  - **Para Facundo Lemo (Proceso / Backend):** <Idea fuerza de negocio/arquitectura>
-  - **Para Valentino Arballo (Componentes / Frontend):** <Idea fuerza de renderizado/estado/validación>
+  - **Para Facundo Lemo (Proceso / Backend):** "La integridad referencial de PostgreSQL/Django no se oculta ni rompe la interfaz: si una variante tiene pedidos asociados, el backend responde 400 Bad Request y el frontend lo explica didácticamente en el modal para proteger los datos transaccionales."
+  - **Para Valentino Arballo (Componentes / Frontend):** "`page.jsx` en `/dashboard` se convierte en Client Component (`'use client'`) porque gestiona el estado reactivo superior de métricas de inventario derivadas (`totalStock`, `activasCount`), manteniéndose sincronizado con las mutaciones del hijo `DashboardCrudManager` sin requerir recarga de página."
 
 ---
 
@@ -376,7 +414,7 @@ Esta tabla registra cada componente y módulo del frontend para justificar su ar
 | `src/app/error.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Exigido por Next.js App Router para capturar errores en tiempo de ejecución y ejecutar el callback interactivo `reset()`. |
 | `src/app/not-found.jsx` | **Server Component** | ✅ Implementado | Vista estática HTTP 404 (R1) renderizada en el servidor cuando una ruta o SKU no existe. |
 | `src/app/productos/page.jsx` | **Server Component** | ✅ Implementado | Página de catálogo que lee `searchParams` en el servidor y consume `GET /api/productos/` paginado con sobre DRF (`count`, `next`, `previous`, `results`), enviando HTML optimizado y menos JavaScript al cliente. |
-| `src/app/productos/[id]/page.jsx` | **Server Component** | ✅ Implementado | Ficha técnica dinámica que obtiene el calzado en el servidor para SEO y metadata OpenGraph, hidratando la isla interactiva `ProductDetailClient.jsx`. |
+| `src/app/productos/[id]/page.jsx` | **Server Component** | ✅ Implementado | Ficha técnica dinámica (1ra ruta dinámica R1) que obtiene el calzado en el servidor para SEO y metadata OpenGraph, hidratando la isla interactiva `ProductDetailClient.jsx`. |
 | `src/components/ProductDetailClient.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Isla interactiva de ficha técnica para navegación de fotos de galería (1:N), selección de talle/color SKU con stock dinámico y sección de reseñas. |
 | `src/app/dashboard/layout.jsx` | **Server Component** | ✅ Implementado | Layout anidado (R1) que estructura el shell administrativo y barra lateral sin forzar hidratación en toda la página. |
 | `src/app/dashboard/page.jsx` | **Server Component** | ✅ Implementado | Resumen ejecutivo del panel de control con métricas en tiempo real y mapa de operaciones CRUD. |
@@ -401,7 +439,7 @@ Esta tabla registra cada componente y módulo del frontend para justificar su ar
 | Eje de Evaluación | Implementación en VELOX | Cómo explicarlo en la Defensa Oral |
 | :--- | :--- | :--- |
 | **Autenticación con Server Actions y Cookies HTTP-Only (R4)** | `src/app/actions.js` y `src/lib/auth.js` | El formulario de `/login` invoca una Server Action (`"use server"`) que hace `POST /api/token/` a Django. El token JWT `access` recibido se guarda con `(await cookies()).set('access', token, { httpOnly: true })`. Así el token nunca queda expuesto a ataques XSS en `localStorage`. |
-| **Cobertura de las 4 Operaciones CRUD (R3)** | `src/lib/api.js` y `src/app/actions.js` | Además de listar productos (`GET`) y crear/cancelar pedidos (`POST`), el frontend implementa las 4 operaciones completas (**Crear `POST`, Leer `GET`, Editar `PUT/PATCH` y Borrar `DELETE`**) sobre un recurso principal (gestión de productos/variantes en `/dashboard` o reseñas), revalidando la caché con `revalidatePath()`. |
+| **Cobertura de las 4 Operaciones CRUD (R3)** | `src/lib/api.js` y `src/components/DashboardCrudManager.jsx` | El frontend implementa operativamente las 4 operaciones completas (**Crear `POST`, Leer `GET`, Editar `PUT/PATCH` y Borrar `DELETE`**) sobre el recurso principal de inventario de variantes SKU y sobre reseñas de calzado en `/dashboard`, además del flujo transaccional y cancelación mediante `@action` en `/dashboard/pedidos/[id]`. |
 | **Formularios con React Hook Form + Zod (R5)** | `src/validations/authSchema.js` y `orderSchema.js` | Cumple el requisito de 2+ formularios validados con RHF + Zod en `snake_case`: `/login` con `loginSchema` y el checkout modal en `/carrito` con `checkoutFormSchema` y `orderSchema`. RHF evita re-renderizados innecesarios y Zod garantiza paridad estricta con Django REST Framework. |
 | **Estado Global con Context API (R6)** | `src/context/CartContext.jsx` | Provee `items`, `addToCart`, `removeFromCart`, `clearCart` y el cálculo de totales a toda la app mediante `useCart()`, sincronizando el carrito en `localStorage` con la bandera `isHydrated` (anti hydration mismatch) y el evento nativo `storage` para sincronización multi-pestaña. |
-| **Testing Unitario con Vitest (R7)** | `src/app/__tests__/` | 66 tests unitarios en 9 suites (`CartContext.test.jsx`, `authSchema.test.js`, `orderSchema.test.js`, `api.test.js`, `Modal.test.jsx`, `CarritoCheckout.test.jsx`, `ProductCard.test.jsx`, `authLib.test.js`, `authActions.test.js`) testeando de forma exhaustiva componentes interactivos, esquemas Zod, métodos CRUD, catálogo de productos con selector de variantes, checkout conectado a DRF con JWT, Server Actions y Cookies HTTP-Only, y manejo de errores. |
+| **Testing Unitario con Vitest (R7)** | `src/app/__tests__/` | 82 tests unitarios en 11 suites (`CartContext.test.jsx`, `authSchema.test.js`, `orderSchema.test.js`, `api.test.js`, `Modal.test.jsx`, `CarritoCheckout.test.jsx`, `ProductCard.test.jsx`, `DashboardPedidos.test.jsx`, `PedidoDetalle.test.jsx`, `DashboardCrudManager.test.jsx`, `DashboardPage.test.jsx`) testeando componentes interactivos, esquemas Zod, métodos CRUD, catálogo de productos, checkout conectado a DRF, gestión de pedidos, cancelación `@action`, KPIs reactivos de inventario y feedback de error en modales. |
