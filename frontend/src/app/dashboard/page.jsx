@@ -1,40 +1,11 @@
-// Server Component: Vista principal del panel de control (/dashboard - R1, R3) con KPIs ejecutivos, accesos directos a pedidos y módulo interactivo de gestión CRUD sobre variantes de inventario y reseñas de calzado.
+"use client";
+// Client Component ("use client"): Vista principal del panel de control (/dashboard - R1, R3) con KPIs ejecutivos reactivos al inventario real, accesos directos a pedidos y módulo interactivo de gestión CRUD sobre variantes de inventario y reseñas de calzado.
 
+import { useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 import Badge from "../../components/Badge";
 import Button from "../../components/Button";
-import DashboardCrudManager from "../../components/DashboardCrudManager";
-
-const KPIS = [
-  {
-    titulo: "MODELOS EN CATÁLOGO",
-    valor: "12",
-    subtexto: "Normalizados en 3FN (Producto)",
-    color: "#39FF14",
-    enlace: "/productos",
-  },
-  {
-    titulo: "VARIANTES SKU ACTIVAS",
-    valor: "58",
-    subtexto: "Combinación Talle + Color única",
-    color: "#FFFFFF",
-    enlace: "/dashboard",
-  },
-  {
-    titulo: "STOCK EN DEPÓSITO",
-    valor: "348 u.",
-    subtexto: "Unidades físicas vendibles",
-    color: "#39FF14",
-    enlace: "/dashboard",
-  },
-  {
-    titulo: "GESTIÓN DE PEDIDOS",
-    valor: "24",
-    subtexto: "Órdenes transaccionales y @action",
-    color: "#FFFFFF",
-    enlace: "/dashboard/pedidos",
-  },
-];
+import DashboardCrudManager, { SAMPLE_VARIANTES } from "../../components/DashboardCrudManager";
 
 const RECURSOS_CRUD = [
   {
@@ -68,11 +39,62 @@ const RECURSOS_CRUD = [
 ];
 
 export default function DashboardPage() {
+  const [variantes, setVariantes] = useState(SAMPLE_VARIANTES);
+
+  const handleVariantesChange = useCallback((nuevasVariantes) => {
+    setVariantes(nuevasVariantes);
+  }, []);
+
+  // Cálculo reactivo de métricas de inventario
+  const totalStock = useMemo(() => {
+    if (!Array.isArray(variantes)) return 0;
+    return variantes.reduce((acc, v) => acc + (Number(v.stock) || 0), 0);
+  }, [variantes]);
+
+  const activasCount = useMemo(() => {
+    if (!Array.isArray(variantes)) return 0;
+    return variantes.filter((v) => v.activo !== false).length;
+  }, [variantes]);
+
+  const kpis = useMemo(
+    () => [
+      {
+        titulo: "MODELOS EN CATÁLOGO",
+        valor: "12",
+        subtexto: "Normalizados en 3FN (Producto)",
+        color: "#39FF14",
+        enlace: "/productos",
+      },
+      {
+        titulo: "VARIANTES SKU ACTIVAS",
+        valor: String(activasCount),
+        subtexto: "Combinación Talle + Color única",
+        color: "#FFFFFF",
+        enlace: "/dashboard",
+      },
+      {
+        titulo: "STOCK EN DEPÓSITO",
+        valor: `${totalStock} u.`,
+        subtexto: "Unidades físicas vendibles",
+        color: "#39FF14",
+        enlace: "/dashboard",
+      },
+      {
+        titulo: "GESTIÓN DE PEDIDOS",
+        valor: "24",
+        subtexto: "Órdenes transaccionales y @action",
+        color: "#FFFFFF",
+        enlace: "/dashboard/pedidos",
+      },
+    ],
+    [activasCount, totalStock]
+  );
+
   return (
     <div className="space-y-8">
       {/* 1. Grilla de Métricas Principales (KPIs) */}
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {KPIS.map((kpi) => (
+        {kpis.map((kpi) => (
           <Link
             key={kpi.titulo}
             href={kpi.enlace}
@@ -96,7 +118,7 @@ export default function DashboardPage() {
 
       {/* 2. Módulo Interactivo de 4 Operaciones CRUD (R3) */}
       <section>
-        <DashboardCrudManager />
+        <DashboardCrudManager onVariantesChange={handleVariantesChange} />
       </section>
 
       {/* 3. Matriz de Control de Endpoints de la API */}

@@ -36,7 +36,7 @@ const COLORES_BASE = [
 ];
 
 // Datos iniciales de demostración para pruebas sin servidor o inicialización
-const SAMPLE_VARIANTES = [
+export const SAMPLE_VARIANTES = [
   {
     id: 44,
     sku: "VX-VCX-39-NEG",
@@ -109,7 +109,7 @@ function formatARS(valor) {
   return `$${num.toLocaleString("es-AR", { maximumFractionDigits: 0 })}`;
 }
 
-export default function DashboardCrudManager() {
+export default function DashboardCrudManager({ onVariantesChange } = {}) {
   const [tabActiva, setTabActiva] = useState("variantes"); // "variantes" | "resenas"
   const [token, setToken] = useState(null);
 
@@ -129,6 +129,7 @@ export default function DashboardCrudManager() {
 
   // 2. Creación de Variante (POST)
   const [isCreateVarianteOpen, setIsCreateVarianteOpen] = useState(false);
+  const [createVarianteError, setCreateVarianteError] = useState(null);
   const [newVarProducto, setNewVarProducto] = useState(6);
   const [newVarTalle, setNewVarTalle] = useState(3);
   const [newVarColor, setNewVarColor] = useState(3);
@@ -138,6 +139,7 @@ export default function DashboardCrudManager() {
 
   // 3. Eliminación de Variante (DELETE)
   const [deletingVariante, setDeletingVariante] = useState(null);
+  const [deleteVarianteError, setDeleteVarianteError] = useState(null);
 
   // 4. Creación de Reseña (POST)
   const [isCreateResenaOpen, setIsCreateResenaOpen] = useState(false);
@@ -222,6 +224,13 @@ export default function DashboardCrudManager() {
     return () => clearTimeout(timer);
   }, [feedback]);
 
+  // Sincronizar reactivamente el inventario con el Dashboard superior
+  useEffect(() => {
+    if (typeof onVariantesChange === "function") {
+      onVariantesChange(variantes);
+    }
+  }, [variantes, onVariantesChange]);
+
   // ==========================================
   // OPERACIONES CRUD DE VARIANTES (R3)
   // ==========================================
@@ -280,11 +289,32 @@ export default function DashboardCrudManager() {
     }
   };
 
+  // Controladores de apertura y cierre con reseteo de errores modales
+  const handleOpenCreateVariante = () => {
+    setCreateVarianteError(null);
+    setIsCreateVarianteOpen(true);
+  };
+
+  const handleCloseCreateVariante = () => {
+    setCreateVarianteError(null);
+    setIsCreateVarianteOpen(false);
+  };
+
+  const handleOpenDeleteVariante = (variante) => {
+    setDeleteVarianteError(null);
+    setDeletingVariante(variante);
+  };
+
+  const handleCloseDeleteVariante = () => {
+    setDeleteVarianteError(null);
+    setDeletingVariante(null);
+  };
+
   // Ejecutar CREATE (POST /api/variantes/)
   const handleCreateVariante = async (e) => {
     e.preventDefault();
     if (!newVarSku.trim()) {
-      setFeedback({ type: "error", message: "El código SKU es obligatorio." });
+      setCreateVarianteError("El código SKU es obligatorio.");
       return;
     }
 
@@ -313,15 +343,14 @@ export default function DashboardCrudManager() {
         type: "success",
         message: `✓ Nueva variante SKU '${payload.sku}' registrada exitosamente en DRF (POST).`,
       });
+      setCreateVarianteError(null);
       setIsCreateVarianteOpen(false);
       setNewVarSku("");
       setNewVarStock("10");
       setNewVarPrecio("");
     } catch (err) {
-      setFeedback({
-        type: "error",
-        message: err.message || "Error al crear la variante en DRF.",
-      });
+      const errorMsg = err.message || "Error al crear la variante en DRF.";
+      setCreateVarianteError(errorMsg);
     }
   };
 
@@ -330,6 +359,7 @@ export default function DashboardCrudManager() {
     if (!deletingVariante) return;
 
     try {
+      setDeleteVarianteError(null);
       const currentToken =
         token || (typeof window !== "undefined" ? localStorage.getItem("velox_access_token") : null);
 
@@ -343,12 +373,13 @@ export default function DashboardCrudManager() {
         message: `✓ Variante ${deletingVariante.sku} eliminada de la base de datos (DELETE).`,
       });
       setDeletingVariante(null);
+      setDeleteVarianteError(null);
     } catch (err) {
-      setFeedback({
-        type: "error",
-        message: err.message || "No se pudo eliminar la variante de DRF.",
-      });
-      setDeletingVariante(null);
+      const errorMsg = err.message || "No se pudo eliminar la variante de DRF.";
+      setDeleteVarianteError(errorMsg);
+      // Mantener el modal de confirmación abierto para que el usuario pueda
+      // leer la causa del bloqueo (ej. integridad referencial por pedidos asociados)
+      // y confirmar con 'Entendido / Cerrar'.
     }
   };
 
@@ -578,7 +609,7 @@ export default function DashboardCrudManager() {
               </Button>
               <Button
                 variant="primary"
-                onClick={() => setIsCreateVarianteOpen(true)}
+                onClick={handleOpenCreateVariante}
                 className="text-xs py-2 px-3"
               >
                 + NUEVA VARIANTE SKU (POST)
@@ -639,7 +670,7 @@ export default function DashboardCrudManager() {
                         AJUSTAR (PATCH)
                       </button>
                       <button
-                        onClick={() => setDeletingVariante(v)}
+                        onClick={() => handleOpenDeleteVariante(v)}
                         className="rounded bg-[#2A1515] border border-[#EF4444]/40 px-2.5 py-1 text-[11px] font-heading font-bold uppercase text-[#F87171] hover:bg-[#EF4444] hover:text-white transition-colors"
                       >
                         ELIMINAR (DELETE)
@@ -810,13 +841,13 @@ export default function DashboardCrudManager() {
       {/* Modal 2: Creación de Variante (POST) */}
       <Modal
         isOpen={isCreateVarianteOpen}
-        onClose={() => setIsCreateVarianteOpen(false)}
+        onClose={handleCloseCreateVariante}
         title="ALTA DE NUEVA VARIANTE SKU (POST)"
         footer={
           <>
             <Button
               variant="secondary"
-              onClick={() => setIsCreateVarianteOpen(false)}
+              onClick={handleCloseCreateVariante}
               className="text-xs py-2 px-3"
             >
               CANCELAR
@@ -831,139 +862,217 @@ export default function DashboardCrudManager() {
           </>
         }
       >
-        <form onSubmit={handleCreateVariante} className="space-y-4">
-          <div>
-            <label className="block text-xs font-bold uppercase text-[#D1D5DB] mb-1">
-              Producto / Modelo
-            </label>
-            <select
-              value={newVarProducto}
-              onChange={(e) => setNewVarProducto(e.target.value)}
-              className="w-full rounded bg-[#121212] border border-[#2A2A2A] px-3 py-2 text-xs text-white focus:border-[#39FF14] focus:outline-none"
+        <div className="space-y-4">
+          {createVarianteError && (
+            <div
+              role="alert"
+              className="rounded-lg bg-[#2A1515] border border-[#EF4444] p-3 text-xs text-[#FCA5A5] flex items-start justify-between gap-3"
             >
-              {PRODUCTOS_CATALOGO.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.nombre}
-                </option>
-              ))}
-            </select>
-          </div>
+              <div className="flex items-start gap-2">
+                <span className="text-sm font-bold text-[#EF4444] leading-none mt-0.5">⚠</span>
+                <span className="leading-relaxed">{createVarianteError}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCreateVarianteError(null)}
+                className="text-xs text-[#9CA3AF] hover:text-white font-bold ml-2"
+                aria-label="Cerrar alerta de error"
+              >
+                ×
+              </button>
+            </div>
+          )}
 
-          <div className="grid grid-cols-2 gap-3">
+          <form onSubmit={handleCreateVariante} className="space-y-4">
             <div>
               <label className="block text-xs font-bold uppercase text-[#D1D5DB] mb-1">
-                Talle AR
+                Producto / Modelo
               </label>
               <select
-                value={newVarTalle}
-                onChange={(e) => setNewVarTalle(e.target.value)}
+                value={newVarProducto}
+                onChange={(e) => {
+                  setNewVarProducto(e.target.value);
+                  if (createVarianteError) setCreateVarianteError(null);
+                }}
                 className="w-full rounded bg-[#121212] border border-[#2A2A2A] px-3 py-2 text-xs text-white focus:border-[#39FF14] focus:outline-none"
               >
-                {TALLES_BASE.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.numero}
+                {PRODUCTOS_CATALOGO.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.nombre}
                   </option>
                 ))}
               </select>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold uppercase text-[#D1D5DB] mb-1">
-                Color
-              </label>
-              <select
-                value={newVarColor}
-                onChange={(e) => setNewVarColor(e.target.value)}
-                className="w-full rounded bg-[#121212] border border-[#2A2A2A] px-3 py-2 text-xs text-white focus:border-[#39FF14] focus:outline-none"
-              >
-                {COLORES_BASE.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.nombre}
-                  </option>
-                ))}
-              </select>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-bold uppercase text-[#D1D5DB] mb-1">
+                  Talle AR
+                </label>
+                <select
+                  value={newVarTalle}
+                  onChange={(e) => {
+                    setNewVarTalle(e.target.value);
+                    if (createVarianteError) setCreateVarianteError(null);
+                  }}
+                  className="w-full rounded bg-[#121212] border border-[#2A2A2A] px-3 py-2 text-xs text-white focus:border-[#39FF14] focus:outline-none"
+                >
+                  {TALLES_BASE.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.numero}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-[#D1D5DB] mb-1">
+                  Color
+                </label>
+                <select
+                  value={newVarColor}
+                  onChange={(e) => {
+                    setNewVarColor(e.target.value);
+                    if (createVarianteError) setCreateVarianteError(null);
+                  }}
+                  className="w-full rounded bg-[#121212] border border-[#2A2A2A] px-3 py-2 text-xs text-white focus:border-[#39FF14] focus:outline-none"
+                >
+                  {COLORES_BASE.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.nombre}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label className="block text-xs font-bold uppercase text-[#D1D5DB] mb-1">
-              Código SKU Único (DRF snake_case)
-            </label>
-            <input
-              type="text"
-              placeholder="ej. VX-VCX-41-NEO"
-              value={newVarSku}
-              onChange={(e) => setNewVarSku(e.target.value)}
-              className="w-full rounded bg-[#121212] border border-[#2A2A2A] px-3 py-2 text-xs text-white font-mono focus:border-[#39FF14] focus:outline-none uppercase"
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold uppercase text-[#D1D5DB] mb-1">
-                Stock Inicial
+                Código SKU Único (DRF snake_case)
               </label>
               <input
-                type="number"
-                min="0"
-                value={newVarStock}
-                onChange={(e) => setNewVarStock(e.target.value)}
-                className="w-full rounded bg-[#121212] border border-[#2A2A2A] px-3 py-2 text-xs text-white focus:border-[#39FF14] focus:outline-none"
+                type="text"
+                placeholder="ej. VX-VCX-41-NEO"
+                value={newVarSku}
+                onChange={(e) => {
+                  setNewVarSku(e.target.value);
+                  if (createVarianteError) setCreateVarianteError(null);
+                }}
+                className="w-full rounded bg-[#121212] border border-[#2A2A2A] px-3 py-2 text-xs text-white font-mono focus:border-[#39FF14] focus:outline-none uppercase"
                 required
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-bold uppercase text-[#D1D5DB] mb-1">
-                Precio Ajustado (Opcional)
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                placeholder="ej. 219999.00"
-                value={newVarPrecio}
-                onChange={(e) => setNewVarPrecio(e.target.value)}
-                className="w-full rounded bg-[#121212] border border-[#2A2A2A] px-3 py-2 text-xs text-white focus:border-[#39FF14] focus:outline-none"
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-bold uppercase text-[#D1D5DB] mb-1">
+                  Stock Inicial
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={newVarStock}
+                  onChange={(e) => {
+                    setNewVarStock(e.target.value);
+                    if (createVarianteError) setCreateVarianteError(null);
+                  }}
+                  className="w-full rounded bg-[#121212] border border-[#2A2A2A] px-3 py-2 text-xs text-white focus:border-[#39FF14] focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-[#D1D5DB] mb-1">
+                  Precio Ajustado (Opcional)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder="ej. 219999.00"
+                  value={newVarPrecio}
+                  onChange={(e) => {
+                    setNewVarPrecio(e.target.value);
+                    if (createVarianteError) setCreateVarianteError(null);
+                  }}
+                  className="w-full rounded bg-[#121212] border border-[#2A2A2A] px-3 py-2 text-xs text-white focus:border-[#39FF14] focus:outline-none"
+                />
+              </div>
             </div>
-          </div>
-        </form>
+          </form>
+        </div>
       </Modal>
 
       {/* Modal 3: Confirmación de Eliminación de Variante (DELETE) */}
       <Modal
         isOpen={Boolean(deletingVariante)}
-        onClose={() => setDeletingVariante(null)}
-        title={`ELIMINAR VARIANTE ${deletingVariante?.sku}`}
+        onClose={handleCloseDeleteVariante}
+        title={
+          deleteVarianteError
+            ? `ERROR AL ELIMINAR ${deletingVariante?.sku}`
+            : `ELIMINAR VARIANTE ${deletingVariante?.sku}`
+        }
         footer={
-          <>
+          deleteVarianteError ? (
             <Button
               variant="secondary"
-              onClick={() => setDeletingVariante(null)}
+              onClick={handleCloseDeleteVariante}
               className="text-xs py-2 px-3"
             >
-              CANCELAR
+              ENTENDIDO / CERRAR
             </Button>
-            <Button
-              variant="danger"
-              onClick={handleDeleteVariante}
-              className="text-xs py-2 px-3"
-            >
-              CONFIRMAR ELIMINACIÓN (DELETE)
-            </Button>
-          </>
+          ) : (
+            <>
+              <Button
+                variant="secondary"
+                onClick={handleCloseDeleteVariante}
+                className="text-xs py-2 px-3"
+              >
+                CANCELAR
+              </Button>
+              <Button
+                variant="danger"
+                onClick={handleDeleteVariante}
+                className="text-xs py-2 px-3"
+              >
+                CONFIRMAR ELIMINACIÓN (DELETE)
+              </Button>
+            </>
+          )
         }
       >
-        <p className="text-xs text-[#D1D5DB] leading-relaxed">
-          ¿Estás seguro de que deseas eliminar permanentemente la variante SKU{" "}
-          <strong className="text-white font-mono">{deletingVariante?.sku}</strong> de la base de
-          datos de Django REST Framework? Esta acción ejecutará{" "}
-          <code className="text-[#EF4444] font-mono">
-            DELETE /api/variantes/{deletingVariante?.sku}/
-          </code>
-          .
-        </p>
+        <div className="space-y-4">
+          {deleteVarianteError && (
+            <div
+              role="alert"
+              className="rounded-lg bg-[#2A1515] border border-[#EF4444] p-3 text-xs text-[#FCA5A5] flex items-start gap-2.5"
+            >
+              <span className="text-base font-bold text-[#EF4444] leading-none mt-0.5">⚠</span>
+              <div className="space-y-1">
+                <p className="font-bold text-[#EF4444] uppercase tracking-wide">
+                  No se pudo eliminar la variante
+                </p>
+                <p className="leading-relaxed">{deleteVarianteError}</p>
+              </div>
+            </div>
+          )}
+
+          {!deleteVarianteError ? (
+            <p className="text-xs text-[#D1D5DB] leading-relaxed">
+              ¿Estás seguro de que deseas eliminar permanentemente la variante SKU{" "}
+              <strong className="text-white font-mono">{deletingVariante?.sku}</strong> de la base de
+              datos de Django REST Framework? Esta acción ejecutará{" "}
+              <code className="text-[#EF4444] font-mono">
+                DELETE /api/variantes/{deletingVariante?.sku}/
+              </code>
+              .
+            </p>
+          ) : (
+            <p className="text-xs text-[#9CA3AF] leading-relaxed">
+              Para proteger la integridad referencial y el histórico de transacciones en Django,
+              las variantes asociadas a órdenes de compra no pueden ser eliminadas físicamente.
+            </p>
+          )}
+        </div>
       </Modal>
 
       {/* Modal 4: Creación de Reseña (POST) */}

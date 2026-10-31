@@ -279,6 +279,50 @@ describe("DashboardCrudManager (4 Operaciones CRUD - R3) - GET, POST, PATCH, DEL
         screen.getByText(/Ya existe un\/a variante de producto con este\/a sku/i)
       ).toBeInTheDocument();
     });
+
+    // Verificar que al escribir en el input SKU, el error se limpie
+    fireEvent.change(inputSku, { target: { value: "VX-VCX-39-DIF" } });
+    expect(
+      screen.queryByText(/Ya existe un\/a variante de producto con este\/a sku/i)
+    ).not.toBeInTheDocument();
+  });
+
+  it("limpia el error modal de alta de variante al cerrar y volver a abrir la ventana modal", async () => {
+    vi.spyOn(api, "getPaginated").mockResolvedValueOnce(mockVariantesResponse);
+    vi.spyOn(api, "post").mockRejectedValueOnce(
+      new Error("Los campos producto, talle, color deben formar un conjunto único.")
+    );
+
+    render(<DashboardCrudManager />);
+
+    await waitFor(() => {
+      expect(screen.getByText("VX-VCX-39-NEG")).toBeInTheDocument();
+    });
+
+    // Abrir modal de creación
+    fireEvent.click(screen.getByRole("button", { name: /\+ NUEVA VARIANTE SKU \(POST\)/i }));
+
+    const inputSku = screen.getByPlaceholderText(/ej\. VX-VCX-41-NEO/i);
+    fireEvent.change(inputSku, { target: { value: "VX-DUP-40-NEO" } });
+
+    fireEvent.click(screen.getByRole("button", { name: /CREAR VARIANTE EN DRF/i }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Los campos producto, talle, color deben formar un conjunto único/i)
+      ).toBeInTheDocument();
+    });
+
+    // Cerrar modal
+    fireEvent.click(screen.getByRole("button", { name: /CANCELAR/i }));
+
+    // Reabrir modal
+    fireEvent.click(screen.getByRole("button", { name: /\+ NUEVA VARIANTE SKU \(POST\)/i }));
+
+    // El error previo debe haber sido reseteado
+    expect(
+      screen.queryByText(/Los campos producto, talle, color deben formar un conjunto único/i)
+    ).not.toBeInTheDocument();
   });
 
   it("muestra feedback de error cuando DELETE falla en DRF por integridad referencial", async () => {
@@ -306,5 +350,15 @@ describe("DashboardCrudManager (4 Operaciones CRUD - R3) - GET, POST, PATCH, DEL
         screen.getByText(/No se puede eliminar la variante porque está asociada a pedidos existentes/i)
       ).toBeInTheDocument();
     });
+
+    // El modal debe permanecer abierto y mostrar botón "ENTENDIDO / CERRAR"
+    const btnEntendido = screen.getByRole("button", { name: /ENTENDIDO \/ CERRAR/i });
+    expect(btnEntendido).toBeInTheDocument();
+
+    // Al hacer click en "ENTENDIDO / CERRAR", el modal se cierra
+    fireEvent.click(btnEntendido);
+    expect(
+      screen.queryByText(/No se puede eliminar la variante porque está asociada a pedidos existentes/i)
+    ).not.toBeInTheDocument();
   });
 });
