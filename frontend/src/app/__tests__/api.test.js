@@ -239,12 +239,12 @@ describe("api helper (R3) - Normalización del sobre paginado DRF y Manejo de Er
     });
 
     it("maneja errores de red envolviéndolos en ApiError con status 0", async () => {
-      global.fetch = vi.fn().mockRejectedValue(new Error("Failed to fetch"));
+      global.fetch = vi.fn().mockRejectedValue(new TypeError("Failed to fetch"));
 
       await expect(api.get("/productos/")).rejects.toMatchObject({
         name: "ApiError",
         status: 0,
-        message: "Failed to fetch",
+        message: expect.stringContaining("No se pudo conectar con el servidor de VELOX"),
       });
     });
   });

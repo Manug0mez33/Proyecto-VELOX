@@ -3,6 +3,7 @@ Serializadores del módulo de Usuarios de VELOX.
 Respetan estrictamente la convención snake_case pactada con el Frontend en Next.js (Zod / React Hook Form).
 """
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from apps.usuarios.models import Usuario
 
 
@@ -98,3 +99,20 @@ class RegistroUsuarioSerializer(serializers.ModelSerializer):
             instance.set_password(password)
         instance.save()
         return instance
+
+
+class TokenVeloxSerializer(TokenObtainPairSerializer):
+    """
+    Emisión de tokens JWT (POST /api/token/) con datos del usuario dentro del payload.
+    El frontend decodifica el token para saber quién está logueado (autor de reseñas)
+    y si puede entrar al dashboard, sin hacer otra consulta a la API.
+    """
+
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token['username'] = user.username
+        token['rol'] = user.rol
+        # Superusuarios cuentan como personal aunque su rol por defecto sea CLIENTE.
+        token['es_personal_tienda'] = user.es_personal_tienda
+        return token

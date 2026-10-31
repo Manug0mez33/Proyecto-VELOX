@@ -11,6 +11,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.usuarios.permissions import EsAdminOEmpleado, EsAdminOEmpleadoOSoloLectura
+from nucleo.paginacion import PaginacionCatalogo
 
 from .filters import ProductoFilter
 from .models import Categoria, Marca, Producto, Proveedor, VarianteProducto
@@ -30,9 +31,11 @@ class ProductoViewSet(viewsets.ModelViewSet):
     - list/retrieve: ProductoNestedSerializer (marca, categoría, imágenes y variantes anidadas).
     - create/update/destroy: ProductoSerializer con IDs; solo ADMIN o EMPLEADO.
     - Filtros: marca, categoria, genero, precio_min/precio_max; búsqueda en nombre y descripción.
+    - Paginación de 6 productos por página (PaginacionCatalogo).
     """
 
     permission_classes = [EsAdminOEmpleadoOSoloLectura]
+    pagination_class = PaginacionCatalogo
     filterset_class = ProductoFilter
     search_fields = ["nombre", "descripcion", "marca__nombre", "variantes__sku"]
     ordering_fields = ["precio_base", "creado_en", "nombre"]

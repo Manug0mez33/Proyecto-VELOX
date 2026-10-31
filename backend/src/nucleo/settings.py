@@ -148,8 +148,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,
+    # 10 por página y ?page_size=N opcional (ver nucleo/paginacion.py).
+    'DEFAULT_PAGINATION_CLASS': 'nucleo.paginacion.PaginacionVelox',
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
         'rest_framework.filters.SearchFilter',
@@ -162,6 +162,8 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=4),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'AUTH_HEADER_TYPES': ('Bearer',),
+    # Agrega username, rol y es_personal_tienda al payload del token.
+    'TOKEN_OBTAIN_SERIALIZER': 'apps.usuarios.serializers.TokenVeloxSerializer',
 }
 
 SPECTACULAR_SETTINGS = {
@@ -182,6 +184,13 @@ CORS_ALLOWED_ORIGINS = [
         'http://localhost:3000,http://127.0.0.1:3000',
     ).split(',')
     if origin.strip()
+]
+# Orígenes por patrón (separados por coma), ej. las URLs de preview que Vercel genera por rama/PR:
+# ^https://proyecto-velox-[a-z0-9-]+-manug0mez33s-projects\.vercel\.app$
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    regex.strip()
+    for regex in os.environ.get('CORS_ALLOWED_ORIGIN_REGEXES', '').split(',')
+    if regex.strip()
 ]
 CORS_ALLOW_CREDENTIALS = True
 

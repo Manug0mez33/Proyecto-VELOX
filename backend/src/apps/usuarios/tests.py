@@ -54,3 +54,26 @@ class UsuariosYAuthTests(TestCase):
         res_perfil = self.client.get('/api/usuarios/perfil/')
         self.assertEqual(res_perfil.status_code, status.HTTP_200_OK)
         self.assertEqual(res_perfil.data['email'], 'atleta@velox.com.ar')
+
+
+class TokenConRolTests(TestCase):
+    """El JWT incluye username, rol y es_personal_tienda para que el frontend controle el acceso."""
+
+    def _payload(self, username, password):
+        import base64
+        import json
+
+        access = APIClient().post('/api/token/', {'username': username, 'password': password}).data['access']
+        segmento = access.split('.')[1]
+        return json.loads(base64.urlsafe_b64decode(segmento + '=' * (-len(segmento) % 4)))
+
+    def test_cliente_no_es_personal(self):
+        Usuario.objects.create_user(username='cliente', email='c@test.com', password='Clave-123', rol=Usuario.Rol.CLIENTE)
+        payload = self._payload('cliente', 'Clave-123')
+        self.assertEqual(payload['username'], 'cliente')
+        self.assertEqual(payload['rol'], 'CLIENTE')
+        self.assertFalse(payload['es_personal_tienda'])
+
+    def test_superusuario_es_personal_aunque_su_rol_sea_cliente(self):
+        Usuario.objects.create_superuser(username='admin', email='a@test.com', password='Clave-123')
+        self.assertTrue(self._payload('admin', 'Clave-123')['es_personal_tienda'])

@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { loginSchema } from "../validations/authSchema";
 import { AUTH_COOKIE_NAME, REFRESH_COOKIE_NAME, USER_COOKIE_NAME } from "../lib/auth";
+import { esPersonalTienda } from "../lib/jwt";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
@@ -13,7 +14,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/a
  * Valida los datos con Zod (loginSchema en snake_case) y almacena los tokens en Cookies HTTP-Only.
  * 
  * @param {object|FormData} payload - Objeto { username, password } o instancia de FormData
- * @returns {Promise<{ success: boolean, access?: string, refresh?: string, username?: string, error?: string }>}
+ * @returns {Promise<{ success: boolean, access?: string, refresh?: string, username?: string, es_personal_tienda?: boolean, error?: string }>}
  */
 export async function loginAction(payload) {
   try {
@@ -107,6 +108,8 @@ export async function loginAction(payload) {
       access: data.access,
       refresh: data.refresh,
       username,
+      // Define a dónde se redirige tras el login (dashboard solo para ADMIN/EMPLEADO).
+      es_personal_tienda: esPersonalTienda(data.access),
     };
   } catch (error) {
     console.error("Error en Server Action loginAction:", error);

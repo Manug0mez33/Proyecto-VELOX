@@ -1,10 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import Badge from "./Badge";
 import Button from "./Button";
 import { useCart } from "../context/CartContext";
+import { api } from "../lib/api";
+import { parseJwt } from "../lib/jwt";
+
+function formatearFecha(iso) {
+  const fecha = iso ? new Date(iso) : null;
+  return fecha && !isNaN(fecha.getTime()) ? fecha.toLocaleDateString("es-AR") : "";
+}
 
 export default function ProductDetailClient({ producto }) {
   const { addToCart } = useCart();
@@ -54,29 +61,63 @@ export default function ProductDetailClient({ producto }) {
   const [fotoActiva, setFotoActiva] = useState(0);
   const [agregadoReciente, setAgregadoReciente] = useState(false);
 
-  // Reseñas de clientes
-  const [resenas, setResenas] = useState([
-    {
-      id: 1,
-      autor: "Manuel G.",
-      calificacion: 5,
-      fecha: "Hace 2 días",
-      comentario:
-        "Excelente retorno de energía en pasadas de 1000m. La placa de carbono responde al instante en el despegue.",
-    },
-    {
-      id: 2,
-      autor: "Valentino C.",
-      calificacion: 5,
-      fecha: "Hace 1 semana",
-      comentario:
-        "El calce en talle 41 AR es perfecto. El drop de 8mm mantiene una postura reactiva sin sobrecargar pantorrillas.",
-    },
-  ]);
+  // Reseñas reales del producto (GET/POST/PATCH/DELETE /api/resenas/)
+  const [resenas, setResenas] = useState([]);
+  const [cargandoResenas, setCargandoResenas] = useState(true);
+  const [errorResenas, setErrorResenas] = useState("");
+  const [token, setToken] = useState(null);
+  const [usuarioId, setUsuarioId] = useState(null);
 
   const [nuevaCalificacion, setNuevaCalificacion] = useState(5);
   const [nuevoComentario, setNuevoComentario] = useState("");
   const [resenaEnviada, setResenaEnviada] = useState(false);
+  const [enviandoResena, setEnviandoResena] = useState(false);
+
+  // Edición y borrado de las reseñas propias
+  const [editandoId, setEditandoId] = useState(null);
+  const [editCalificacion, setEditCalificacion] = useState(5);
+  const [editComentario, setEditComentario] = useState("");
+  const [confirmandoBorradoId, setConfirmandoBorradoId] = useState(null);
+
+  // El user_id del token permite saber qué reseñas son del usuario logueado.
+  useEffect(() => {
+    const syncSesion = () => {
+      try {
+        const stored = localStorage.getItem("velox_access_token");
+        setToken(stored || null);
+        setUsuarioId(parseJwt(stored)?.user_id ?? null);
+      } catch {
+        setToken(null);
+        setUsuarioId(null);
+      }
+    };
+    syncSesion();
+    window.addEventListener("velox-auth-changed", syncSesion);
+    window.addEventListener("storage", syncSesion);
+    return () => {
+      window.removeEventListener("velox-auth-changed", syncSesion);
+      window.removeEventListener("storage", syncSesion);
+    };
+  }, []);
+
+  const cargarResenas = useCallback(async () => {
+    setCargandoResenas(true);
+    try {
+      const data = await api.getPaginated("/resenas/", {
+        params: { producto: producto.id, ordering: "-creado_en", page_size: 100 },
+      });
+      setResenas(data.results);
+      setErrorResenas("");
+    } catch (err) {
+      setErrorResenas(err.message || "No se pudieron cargar las reseñas.");
+    } finally {
+      setCargandoResenas(false);
+    }
+  }, [producto.id]);
+
+  useEffect(() => {
+    cargarResenas();
+  }, [cargarResenas]);
 
   const varianteSeleccionada =
     tallesDisponibles.find((v) => v.talle === talleSeleccionado) ||
@@ -119,22 +160,68 @@ export default function ProductDetailClient({ producto }) {
     setTimeout(() => setAgregadoReciente(false), 2000);
   };
 
-  const handlePublicarResena = (e) => {
+  const handlePublicarResena = async (e) => {
     e.preventDefault();
-    if (!nuevoComentario.trim()) return;
+    if (!nuevoComentario.trim() || !token) return;
 
-    const nueva = {
-      id: Date.now(),
-      autor: "Atleta VELOX",
-      calificacion: Number(nuevaCalificacion),
-      fecha: "Recién",
-      comentario: nuevoComentario.trim(),
-    };
+    setEnviandoResena(true);
+    setErrorResenas("");
+    try {
+      const creada = await api.post(
+        "/resenas/",
+        {
+          producto: producto.id,
+          calificacion: Number(nuevaCalificacion),
+          comentario: nuevoComentario.trim(),
+        },
+        { token }
+      );
+      setResenas((prev) => [creada, ...prev]);
+      setNuevoComentario("");
+      setResenaEnviada(true);
+      setTimeout(() => setResenaEnviada(false), 2500);
+    } catch (err) {
+      setErrorResenas(err.message || "No se pudo publicar la reseña.");
+    } finally {
+      setEnviandoResena(false);
+    }
+  };
 
-    setResenas([nueva, ...resenas]);
-    setNuevoComentario("");
-    setResenaEnviada(true);
-    setTimeout(() => setResenaEnviada(false), 2500);
+  const handleEmpezarEdicion = (resena) => {
+    setConfirmandoBorradoId(null);
+    setEditandoId(resena.id);
+    setEditCalificacion(resena.calificacion);
+    setEditComentario(resena.comentario);
+  };
+
+  const handleGuardarEdicion = async (e) => {
+    e.preventDefault();
+    if (!editComentario.trim()) return;
+
+    setErrorResenas("");
+    try {
+      const actualizada = await api.patch(
+        `/resenas/${editandoId}/`,
+        { calificacion: Number(editCalificacion), comentario: editComentario.trim() },
+        { token }
+      );
+      setResenas((prev) => prev.map((r) => (r.id === editandoId ? actualizada : r)));
+      setEditandoId(null);
+    } catch (err) {
+      setErrorResenas(err.message || "No se pudo editar la reseña.");
+    }
+  };
+
+  const handleEliminar = async (id) => {
+    setErrorResenas("");
+    try {
+      await api.delete(`/resenas/${id}/`, { token });
+      setResenas((prev) => prev.filter((r) => r.id !== id));
+    } catch (err) {
+      setErrorResenas(err.message || "No se pudo eliminar la reseña.");
+    } finally {
+      setConfirmandoBorradoId(null);
+    }
   };
 
   return (
@@ -365,29 +452,136 @@ export default function ProductDetailClient({ producto }) {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Listado de Reseñas */}
           <div className="lg:col-span-7 space-y-4">
-            {resenas.map((r) => (
-              <div
-                key={r.id}
-                className="rounded-lg bg-[#181818] border border-[#343434] p-4 space-y-2"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="font-heading text-xs font-bold text-[#39FF14]">
-                      {"★".repeat(r.calificacion)}
-                    </span>
-                    <span className="font-heading text-xs font-bold text-[#FFFFFF]">
-                      {r.autor}
+            {errorResenas && (
+              <div className="rounded bg-[#2B1414] border border-[#EF4444] p-3 text-xs text-[#FCA5A5]">
+                {errorResenas}
+              </div>
+            )}
+
+            {cargandoResenas && (
+              <p className="text-xs text-[#9CA3AF]">Cargando opiniones...</p>
+            )}
+
+            {!cargandoResenas && resenas.length === 0 && !errorResenas && (
+              <p className="text-xs text-[#9CA3AF]">
+                Todavía no hay opiniones de este calzado. ¡Sé el primero en dejar la tuya!
+              </p>
+            )}
+
+            {resenas.map((r) => {
+              // SimpleJWT guarda user_id como texto ('3') y la API devuelve usuario como número (3).
+              const esPropia = usuarioId !== null && String(r.usuario) === String(usuarioId);
+
+              if (editandoId === r.id) {
+                return (
+                  <form
+                    key={r.id}
+                    onSubmit={handleGuardarEdicion}
+                    className="rounded-lg bg-[#181818] border border-[#39FF14] p-4 space-y-3"
+                  >
+                    <select
+                      value={editCalificacion}
+                      onChange={(e) => setEditCalificacion(e.target.value)}
+                      aria-label="Calificación"
+                      className="w-full h-9 rounded-md bg-[#121212] border border-[#3F3F3F] px-3 text-xs text-[#FFFFFF] focus:outline-none focus:border-[#39FF14]"
+                    >
+                      {[5, 4, 3, 2, 1].map((n) => (
+                        <option key={n} value={n}>
+                          {"★".repeat(n)} ({n}/5)
+                        </option>
+                      ))}
+                    </select>
+                    <textarea
+                      rows={3}
+                      value={editComentario}
+                      onChange={(e) => setEditComentario(e.target.value)}
+                      aria-label="Comentario"
+                      className="w-full rounded-md bg-[#121212] border border-[#3F3F3F] p-3 text-xs text-[#FFFFFF] focus:outline-none focus:border-[#39FF14]"
+                    />
+                    <div className="flex gap-2">
+                      <Button type="submit" variant="primary" className="text-xs py-2 px-4">
+                        GUARDAR
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="text-xs py-2 px-4"
+                        onClick={() => setEditandoId(null)}
+                      >
+                        CANCELAR
+                      </Button>
+                    </div>
+                  </form>
+                );
+              }
+
+              return (
+                <div
+                  key={r.id}
+                  className="rounded-lg bg-[#181818] border border-[#343434] p-4 space-y-2"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="font-heading text-xs font-bold text-[#39FF14]">
+                        {"★".repeat(r.calificacion)}
+                      </span>
+                      <span className="font-heading text-xs font-bold text-[#FFFFFF]">
+                        {r.usuario_nombre}
+                        {esPropia && <span className="text-[#39FF14]"> (vos)</span>}
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-[#9CA3AF]">
+                      {formatearFecha(r.creado_en)}
                     </span>
                   </div>
-                  <span className="text-[11px] text-[#9CA3AF]">
-                    {r.fecha}
-                  </span>
+                  <p className="text-xs sm:text-sm text-[#D1D5DB] leading-relaxed">
+                    &ldquo;{r.comentario}&rdquo;
+                  </p>
+
+                  {/* Solo el autor ve las acciones sobre su reseña */}
+                  {esPropia &&
+                    (confirmandoBorradoId === r.id ? (
+                      <div className="flex items-center gap-3 pt-1 text-[11px]">
+                        <span className="text-[#FCA5A5]">¿Eliminar esta reseña?</span>
+                        <button
+                          type="button"
+                          onClick={() => handleEliminar(r.id)}
+                          className="font-bold uppercase text-[#EF4444] hover:underline"
+                        >
+                          Sí, eliminar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setConfirmandoBorradoId(null)}
+                          className="font-bold uppercase text-[#D1D5DB] hover:underline"
+                        >
+                          No
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-4 pt-1 text-[11px]">
+                        <button
+                          type="button"
+                          onClick={() => handleEmpezarEdicion(r)}
+                          className="font-bold uppercase text-[#39FF14] hover:underline"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditandoId(null);
+                            setConfirmandoBorradoId(r.id);
+                          }}
+                          className="font-bold uppercase text-[#EF4444] hover:underline"
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    ))}
                 </div>
-                <p className="text-xs sm:text-sm text-[#D1D5DB] leading-relaxed">
-                  &ldquo;{r.comentario}&rdquo;
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Formulario para Publicar Reseña */}
@@ -402,6 +596,14 @@ export default function ProductDetailClient({ producto }) {
               </div>
             )}
 
+            {!token ? (
+              <p className="text-xs text-[#D1D5DB]">
+                <Link href={`/login?redirect=/productos/${producto.id}`} className="font-bold text-[#39FF14] hover:underline">
+                  Iniciá sesión
+                </Link>{" "}
+                para dejar tu opinión sobre este calzado.
+              </p>
+            ) : (
             <form onSubmit={handlePublicarResena} className="space-y-3">
               <div>
                 <label className="block text-[11px] font-bold uppercase text-[#D1D5DB] mb-1">
@@ -437,10 +639,12 @@ export default function ProductDetailClient({ producto }) {
                 type="submit"
                 variant="primary"
                 className="w-full text-xs py-2.5"
+                disabled={enviandoResena}
               >
-                ENVIAR OPINIÓN
+                {enviandoResena ? "ENVIANDO..." : "ENVIAR OPINIÓN"}
               </Button>
             </form>
+            )}
           </div>
         </div>
       </section>
