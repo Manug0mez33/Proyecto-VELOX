@@ -204,6 +204,32 @@ Este archivo es la **memoria técnica viva y guía de estudio del equipo de 4 in
 
 ---
 
+### Etapa 2 / Card #25: Autenticación JWT en Cookies HTTP-Only con Server Actions + RHF y Zod (R4, R5, R7)
+- **Rama:** `feature/front-auth-jwt` -> `develop`
+- **Responsable(s):** Juan Falco (Frontend 1)
+- **Archivos clave:**
+  - `frontend/src/app/actions.js` (`Server Actions` con `"use server"`: `loginAction`, `logoutAction`, `getAuthSessionAction`, `revalidateProductsAction`)
+  - `frontend/src/lib/auth.js` (`parseJwt`, `isTokenExpired`, `getServerToken`, `getServerUser`, `requireAuth`)
+  - `frontend/src/middleware.js` (Protección perimetral de rutas `/dashboard` mediante lectura de cookie HTTP-Only)
+  - `frontend/src/app/login/page.jsx` (Formulario interactivo RHF + Zod conectado a Server Action y guardado dual en Cookies y `localStorage`)
+  - `frontend/src/components/LogoutButton.jsx` (Botón de cierre de sesión conectado a `logoutAction()`)
+  - `frontend/src/app/__tests__/authLib.test.js`, `frontend/src/app/__tests__/authActions.test.js` (12 tests unitarios en 2 nuevas suites)
+  - `README.md`, `docs/bitacora_defensa.md`
+- **Qué se implementó:**
+  - Implementación de **Server Actions** (`src/app/actions.js`) con directiva `"use server"`:
+    - `loginAction(credentials)`: valida el payload con Zod (`loginSchema`), consume el endpoint `POST /api/token/` de SimpleJWT en Django REST Framework y establece los tokens `access` y `refresh` en **Cookies HTTP-Only** seguras (`httpOnly: true`, `sameSite: "lax"`, `secure` en producción) mediante `(await cookies()).set()`.
+    - `logoutAction()`: elimina de forma segura las Cookies HTTP-Only y revalida las rutas con `revalidatePath()`.
+    - `getAuthSessionAction()`: consulta el estado de la sesión en el servidor sin exponer secretos al navegador.
+  - Módulo utilitario `src/lib/auth.js`: decodificación de tokens JWT en Base64Url sin dependencias externas, comprobación estricta de tiempo de expiración (`exp`) y función de guard `requireAuth()` para Server Components.
+  - `src/middleware.js`: middleware de Next.js que intercepta accesos a `/dashboard/:path*` y redirige a `/login?redirect=...` si no existe la Cookie HTTP-Only.
+  - Formulario `/login` (`src/app/login/page.jsx`): Client Component con React Hook Form + Zod (`loginSchema`), botones de carga rápida de credenciales de prueba para la defensa oral (`admin` y `cliente1`), soporte para redirección dinámica por query param (`?redirect=...`) y almacenamiento sincronizado en `localStorage` para compatibilidad retroactiva con el flujo de compra de `/carrito`.
+  - Ampliación de la suite de pruebas unitarias en Vitest de 54 a **66 tests** pasando al 100% en 9 suites.
+- **Decisiones técnicas y problemas resueltos:**
+  - **Inmunidad ante ataques XSS mediante Cookies HTTP-Only (R4):** A diferencia de un almacenamiento exclusivo en `localStorage` que es vulnerable a inyección de scripts, el token principal viaja en una Cookie con flag `httpOnly: true`, lo que impide que JavaScript malicioso en el cliente pueda leerlo.
+  - **Compatibilidad dual con Server y Client Components:** Se implementó una estrategia híbrida donde la Server Action establece la Cookie HTTP-Only (utilizada por el servidor y el middleware) y al mismo tiempo el cliente recibe el token en la respuesta segura para sincronizar `localStorage` y emitir el evento `velox-auth-changed`, permitiendo que el checkout transaccional de `/carrito` siga operando sin fricción.
+- **Guía para la defensa oral (Cómo explicarlo al docente):**
+  - **Para Facundo Lemo (Proceso / Backend):** "La autenticación se integra directamente con el endpoint estándar de SimpleJWT `POST /api/token/` respetando los campos `username` y `password` en `snake_case`. El servidor responde con los tokens JWT que son inmediatamente blindados en Cookies HTTP-Only en el servidor de Next.js."
+  - **Para Valentino Arballo (Componentes / Frontend):** "Cumplimos los requisitos R4 y R5 de forma ejemplar: el login utiliza React Hook Form con `zodResolver` y delega la autenticación a una Server Action (`actions.js`). En lugar de guardar el token únicamente en `localStorage` (vulnerable a XSS), la Server Action utiliza `(await cookies()).set()` con flag `httpOnly: true`. El middleware intercepta las rutas de `/dashboard` verificando la presencia de dicha cookie antes de renderizar la página."
 ### Etapa 2 / PR: ViewSets de Catálogo + NestedSerializer + Filtros + @action
 - **Rama:** `feature/back-api-productos` -> `develop`
 - **Responsable(s):** Valentino Cambria (Backend 2)
@@ -285,7 +311,11 @@ Esta tabla registra cada componente y módulo del frontend para justificar su ar
 | `src/components/ProductDetailClient.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Isla interactiva de ficha técnica para navegación de fotos de galería (1:N), selección de talle/color SKU con stock dinámico y sección de reseñas. |
 | `src/app/dashboard/layout.jsx` | **Server Component** | ✅ Implementado | Layout anidado (R1) que estructura el shell administrativo y barra lateral sin forzar hidratación en toda la página. |
 | `src/app/dashboard/page.jsx` | **Server Component** | ✅ Implementado | Resumen ejecutivo del panel de control con métricas en tiempo real y mapa de operaciones CRUD. |
-| `src/app/login/page.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Formulario interactivo de autenticación con React Hook Form + Zod (`authSchema.js`) y captura de errores DRF. |
+| `src/app/login/page.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Formulario interactivo con React Hook Form + Zod (`loginSchema`) conectado a Server Action (`loginAction`) con guardado dual en Cookies HTTP-Only y `localStorage`, auto-completado de credenciales y redirección dinámica. |
+| `src/app/actions.js` | **Server Actions (`"use server"`)** | ✅ Implementado | Funciones de servidor para autenticación (`loginAction`, `logoutAction`, `getAuthSessionAction`) con persistencia en Cookies HTTP-Only y mutaciones con `revalidatePath()`. |
+| `src/lib/auth.js` | **Módulo Servidor / Helper** | ✅ Implementado | Utilidades de autenticación segura: decodificación `parseJwt()` sin dependencias, verificación de expiración `isTokenExpired()` y guard de protección `requireAuth()`. |
+| `src/middleware.js` | **Middleware Edge (Proxy)** | ✅ Implementado | Protección perimetral de rutas `/dashboard/:path*`, verificando la existencia de la Cookie HTTP-Only `velox_access_token` antes de resolver la petición. |
+| `src/components/LogoutButton.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Botón interactivo de cierre de sesión que invoca la Server Action `logoutAction()`, limpia `localStorage` y redirige a `/login`. |
 | `src/app/carrito/page.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Vista interactiva del carrito conectada a `CartContext` y al endpoint transaccional `POST /api/pedidos/` de DRF con autenticación JWT, selector de cantidades, formulario modal de checkout interactivo validado con React Hook Form + Zod (`checkoutFormSchema` y `orderSchema`), variantes reales del fixture y manejo de errores 400/401. |
 | `src/context/CartContext.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Estado global con Context API (R6) para compartir carrito entre componentes cliente con persistencia en `localStorage`. |
 | `src/components/Navbar.jsx` | **Client Component (`"use client"`)** | ✅ Implementado | Consume `useCart()` de forma reactiva para mostrar el contador de productos en tiempo real y gestiona el menú móvil. |
@@ -305,4 +335,4 @@ Esta tabla registra cada componente y módulo del frontend para justificar su ar
 | **Cobertura de las 4 Operaciones CRUD (R3)** | `src/lib/api.js` y `src/app/actions.js` | Además de listar productos (`GET`) y crear/cancelar pedidos (`POST`), el frontend implementa las 4 operaciones completas (**Crear `POST`, Leer `GET`, Editar `PUT/PATCH` y Borrar `DELETE`**) sobre un recurso principal (gestión de productos/variantes en `/dashboard` o reseñas), revalidando la caché con `revalidatePath()`. |
 | **Formularios con React Hook Form + Zod (R5)** | `src/validations/authSchema.js` y `orderSchema.js` | Cumple el requisito de 2+ formularios validados con RHF + Zod en `snake_case`: `/login` con `loginSchema` y el checkout modal en `/carrito` con `checkoutFormSchema` y `orderSchema`. RHF evita re-renderizados innecesarios y Zod garantiza paridad estricta con Django REST Framework. |
 | **Estado Global con Context API (R6)** | `src/context/CartContext.jsx` | Provee `items`, `addToCart`, `removeFromCart`, `clearCart` y el cálculo de totales a toda la app mediante `useCart()`, sincronizando el carrito en `localStorage` con la bandera `isHydrated` (anti hydration mismatch) y el evento nativo `storage` para sincronización multi-pestaña. |
-| **Testing Unitario con Vitest (R7)** | `src/app/__tests__/` | 54 tests unitarios en 7 suites (`CartContext.test.jsx`, `authSchema.test.js`, `orderSchema.test.js`, `api.test.js`, `Modal.test.jsx`, `CarritoCheckout.test.jsx`, `ProductCard.test.jsx`) testeando de forma exhaustiva componentes interactivos, esquemas Zod, métodos CRUD, catálogo de productos con selector de variantes, checkout conectado a DRF con JWT y manejo de errores. |
+| **Testing Unitario con Vitest (R7)** | `src/app/__tests__/` | 66 tests unitarios en 9 suites (`CartContext.test.jsx`, `authSchema.test.js`, `orderSchema.test.js`, `api.test.js`, `Modal.test.jsx`, `CarritoCheckout.test.jsx`, `ProductCard.test.jsx`, `authLib.test.js`, `authActions.test.js`) testeando de forma exhaustiva componentes interactivos, esquemas Zod, métodos CRUD, catálogo de productos con selector de variantes, checkout conectado a DRF con JWT, Server Actions y Cookies HTTP-Only, y manejo de errores. |
