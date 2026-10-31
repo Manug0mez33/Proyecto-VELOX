@@ -158,3 +158,38 @@ class PedidosYResenasTests(TestCase):
             format='json',
         )
         self.assertEqual(res_duplicada.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class PermisosResenaTests(TestCase):
+    """Una reseña solo la editan o eliminan su autor o el personal de la tienda."""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.autor = Usuario.objects.create_user(username='autor', email='autor@test.com', password='x')
+        self.otro = Usuario.objects.create_user(username='otro', email='otro@test.com', password='x')
+        self.empleado = Usuario.objects.create_user(
+            username='empleado', email='empleado@test.com', password='x', rol=Usuario.Rol.EMPLEADO
+        )
+        producto = Producto.objects.create(
+            marca=Marca.objects.create(nombre='M'),
+            categoria=Categoria.objects.create(nombre='C'),
+            proveedor=Proveedor.objects.create(razon_social='P', cuit='30-12345678-9', email='p@test.com'),
+            nombre='Calzado', precio_base=1000,
+        )
+        self.resena = Resena.objects.create(usuario=self.autor, producto=producto, calificacion=5, comentario='Muy bueno')
+        self.url = f'/api/resenas/{self.resena.id}/'
+
+    def test_lectura_publica(self):
+        self.assertEqual(self.client.get(self.url).status_code, status.HTTP_200_OK)
+
+    def test_otro_usuario_no_puede_editar_ni_borrar(self):
+        self.client.force_authenticate(self.otro)
+        self.assertEqual(self.client.patch(self.url, {'comentario': 'x'}).status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(self.client.delete(self.url).status_code, status.HTTP_403_FORBIDDEN)
+        self.assertTrue(Resena.objects.filter(id=self.resena.id).exists())
+
+    def test_autor_y_personal_pueden_modificar(self):
+        self.client.force_authenticate(self.autor)
+        self.assertEqual(self.client.patch(self.url, {'comentario': 'Editado'}).status_code, status.HTTP_200_OK)
+        self.client.force_authenticate(self.empleado)
+        self.assertEqual(self.client.delete(self.url).status_code, status.HTTP_204_NO_CONTENT)

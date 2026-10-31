@@ -115,7 +115,7 @@ export default async function HomePage() {
             </h1>
           </div>
 
-          <p className="max-w-xl text-base text-[#D1D5DB] leading-relaxed">
+          <p className="max-w-xl text-base text-[#FFFFFF] leading-relaxed">
             Ingeniería biomecánica con placa de fibra de carbono de doble
             densidad. Diseñado para atletas que buscan romper su marca en cada
             pasada.

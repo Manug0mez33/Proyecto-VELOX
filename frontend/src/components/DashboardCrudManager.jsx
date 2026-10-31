@@ -180,10 +180,10 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
   const loadVariantes = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.getPaginated("/variantes/");
-      if (res && Array.isArray(res.results) && res.results.length > 0) {
-        setVariantes(res.results);
-      }
+      // page_size=100: sin esto la API devuelve solo las primeras 10 variantes del inventario.
+      const res = await api.getPaginated("/variantes/", { params: { page_size: 100 } });
+      // Los datos de ejemplo quedan solo si la API no responde (catch).
+      setVariantes(res.results);
     } catch (err) {
       console.warn("No se pudo sincronizar inventario con el servidor:", err);
     } finally {
@@ -195,9 +195,9 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
   const loadResenas = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.getPaginated("/resenas/");
+      const res = await api.getPaginated("/resenas/", { params: { page_size: 100 } });
       const items = res?.results || (Array.isArray(res) ? res : []);
-      if (Array.isArray(items) && items.length > 0) {
+      if (Array.isArray(items)) {
         const enriched = items.map((r) => ({
           ...r,
           producto_nombre:
