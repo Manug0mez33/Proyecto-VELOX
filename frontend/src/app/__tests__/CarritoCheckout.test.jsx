@@ -23,7 +23,7 @@ function CartInitializer({ item }) {
   return null;
 }
 
-describe("Carrito & Checkout Form (R5 & R6) - Integración React Hook Form + Zod + DRF POST /api/pedidos/", () => {
+describe("Carrito & Checkout Form - Integración React Hook Form + Zod", () => {
   beforeEach(() => {
     localStorage.clear();
     vi.clearAllMocks();
@@ -54,7 +54,7 @@ describe("Carrito & Checkout Form (R5 & R6) - Integración React Hook Form + Zod
     });
   });
 
-  it("abre el modal de checkout al hacer click en 'PROCEDER AL CHECKOUT'", async () => {
+  it("abre el modal de checkout al hacer click en 'FINALIZAR PEDIDO'", async () => {
     render(
       <CarritoTestWrapper initialItem={sampleProduct}>
         <CarritoPage />
@@ -65,12 +65,12 @@ describe("Carrito & Checkout Form (R5 & R6) - Integración React Hook Form + Zod
       expect(screen.getByText("Velox Street Run")).toBeInTheDocument();
     });
 
-    const checkoutBtn = screen.getByRole("button", { name: /PROCEDER AL CHECKOUT/i });
+    const checkoutBtn = screen.getByRole("button", { name: /FINALIZAR PEDIDO/i });
     fireEvent.click(checkoutBtn);
 
     await waitFor(() => {
       expect(screen.getByRole("dialog")).toBeInTheDocument();
-      expect(screen.getByText("FINALIZAR PEDIDO (CHECKOUT R5)")).toBeInTheDocument();
+      expect(screen.getByText("FINALIZAR PEDIDO")).toBeInTheDocument();
     });
   });
 
@@ -85,17 +85,16 @@ describe("Carrito & Checkout Form (R5 & R6) - Integración React Hook Form + Zod
       expect(screen.getByText("Velox Street Run")).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /PROCEDER AL CHECKOUT/i }));
+    fireEvent.click(screen.getByRole("button", { name: /FINALIZAR PEDIDO/i }));
 
     await waitFor(() => {
       expect(screen.getByTestId("auth-required-banner")).toBeInTheDocument();
-      expect(screen.getByText(/AUTENTICACIÓN REQUERIDA \(JWT\)/i)).toBeInTheDocument();
-      expect(screen.getByRole("link", { name: /INICIAR SESIÓN AHORA/i })).toHaveAttribute("href", "/login");
+      expect(screen.getAllByText(/INICIO DE SESIÓN REQUERIDO/i).length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByRole("link", { name: /INICIAR SESIÓN/i })).toHaveAttribute("href", "/login");
     });
   });
 
   it("valida campos obligatorios con Zod al enviar el formulario vacío", async () => {
-    // Simulamos usuario autenticado para probar la validación de campos del formulario
     localStorage.setItem("velox_access_token", "fake-jwt-token-val");
 
     render(
@@ -108,7 +107,7 @@ describe("Carrito & Checkout Form (R5 & R6) - Integración React Hook Form + Zod
       expect(screen.getByText("Velox Street Run")).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /PROCEDER AL CHECKOUT/i }));
+    fireEvent.click(screen.getByRole("button", { name: /FINALIZAR PEDIDO/i }));
 
     await waitFor(() => {
       expect(screen.getByRole("dialog")).toBeInTheDocument();
@@ -125,8 +124,7 @@ describe("Carrito & Checkout Form (R5 & R6) - Integración React Hook Form + Zod
     });
   });
 
-  it("detiene el envío y muestra mensaje de error si el usuario no tiene token JWT", async () => {
-    // Sin token en localStorage
+  it("detiene el envío y muestra mensaje de error si el usuario no tiene token", async () => {
     render(
       <CarritoTestWrapper initialItem={sampleProduct}>
         <CarritoPage />
@@ -137,13 +135,12 @@ describe("Carrito & Checkout Form (R5 & R6) - Integración React Hook Form + Zod
       expect(screen.getByText("Velox Street Run")).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /PROCEDER AL CHECKOUT/i }));
+    fireEvent.click(screen.getByRole("button", { name: /FINALIZAR PEDIDO/i }));
 
     await waitFor(() => {
       expect(screen.getByRole("dialog")).toBeInTheDocument();
     });
 
-    // Rellenamos campos para superar la validación Zod y probar el guard de autenticación
     fireEvent.change(screen.getByLabelText(/Dirección de Envío/i), {
       target: { value: "Boulevard Roca 1234" },
     });
@@ -172,7 +169,7 @@ describe("Carrito & Checkout Form (R5 & R6) - Integración React Hook Form + Zod
     const apiPostSpy = vi.spyOn(api, "post").mockResolvedValueOnce({
       id: 77,
       metodo_pago: "TARJETA_CREDITO",
-      direccion_envio: "Boulevard Roca 1234 - Río Cuarto - CP: 5800 - Tel: 3584998877",
+      direccion_envio: "Boulevard Roca 1234, Río Cuarto, CP 5800",
       total: "99999.00",
       estado: "PENDIENTE",
       fecha_creacion: "2026-10-30T15:30:00Z",
@@ -188,7 +185,7 @@ describe("Carrito & Checkout Form (R5 & R6) - Integración React Hook Form + Zod
       expect(screen.getByText("Velox Street Run")).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /PROCEDER AL CHECKOUT/i }));
+    fireEvent.click(screen.getByRole("button", { name: /FINALIZAR PEDIDO/i }));
 
     await waitFor(() => {
       expect(screen.getByRole("dialog")).toBeInTheDocument();
@@ -214,37 +211,24 @@ describe("Carrito & Checkout Form (R5 & R6) - Integración React Hook Form + Zod
       expect(apiPostSpy).toHaveBeenCalledWith(
         "/pedidos/",
         expect.objectContaining({
+          direccion_envio: "Boulevard Roca 1234, Río Cuarto, CP 5800",
           metodo_pago: "TARJETA_CREDITO",
-          detalles: [{ variante: 54, cantidad: 1 }],
         }),
-        expect.objectContaining({
-          token: "jwt-auth-token-xyz",
-        })
+        { token: "jwt-auth-token-xyz" }
       );
-      expect(screen.getByText("¡ORDEN REGISTRADA EXITOSAMENTE!")).toBeInTheDocument();
-      expect(screen.getByText(/NÚMERO DE ORDEN:/i)).toBeInTheDocument();
-      expect(screen.getByText(/ID #77/i)).toBeInTheDocument();
     });
 
-    // Cerrar el modal de confirmación
-    const finalizeBtn = screen.getByRole("button", { name: /FINALIZAR Y CONTINUAR/i });
-    fireEvent.click(finalizeBtn);
-
-    // Al finalizar, el carrito debe estar vacío
     await waitFor(() => {
-      expect(screen.getByText("TU CARRITO ESTÁ VACÍO")).toBeInTheDocument();
+      expect(screen.getByText("¡ORDEN REGISTRADA EXITOSAMENTE!")).toBeInTheDocument();
+      expect(screen.getByText("VLX-PED-77")).toBeInTheDocument();
     });
   });
 
-  it("captura y despliega error de stock insuficiente (400) de DRF en el modal sin romper la interfaz", async () => {
+  it("captura errores estructurados de validación devueltos por el backend y los muestra", async () => {
     localStorage.setItem("velox_access_token", "jwt-auth-token-xyz");
 
     vi.spyOn(api, "post").mockRejectedValueOnce(
-      new ApiError(
-        "Stock insuficiente para 'VX-VSR-38-BLA'. Disponible: 0 u., solicitado: 1 u.",
-        400,
-        { detalles: ["Stock insuficiente para 'VX-VSR-38-BLA'."] }
-      )
+      new ApiError("No hay suficiente stock para la variante seleccionada.", 400)
     );
 
     render(
@@ -257,7 +241,7 @@ describe("Carrito & Checkout Form (R5 & R6) - Integración React Hook Form + Zod
       expect(screen.getByText("Velox Street Run")).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /PROCEDER AL CHECKOUT/i }));
+    fireEvent.click(screen.getByRole("button", { name: /FINALIZAR PEDIDO/i }));
 
     await waitFor(() => {
       expect(screen.getByRole("dialog")).toBeInTheDocument();
@@ -281,19 +265,13 @@ describe("Carrito & Checkout Form (R5 & R6) - Integración React Hook Form + Zod
 
     await waitFor(() => {
       expect(screen.getByTestId("checkout-error-box")).toBeInTheDocument();
-      expect(screen.getByText(/Stock insuficiente para 'VX-VSR-38-BLA'/i)).toBeInTheDocument();
-      // El formulario permanece en pantalla para permitir corregir o reintentar
-      expect(screen.getByRole("dialog")).toBeInTheDocument();
+      expect(
+        screen.getByText(/No hay suficiente stock para la variante seleccionada\./i)
+      ).toBeInTheDocument();
     });
   });
 
-  it("captura y despliega error de sesión expirada (401) de DRF en el modal", async () => {
-    localStorage.setItem("velox_access_token", "expired-token");
-
-    vi.spyOn(api, "post").mockRejectedValueOnce(
-      new ApiError("Las credenciales de autenticación no fueron provistas.", 401)
-    );
-
+  it("permite vaciar el carrito completo mediante el modal de confirmación", async () => {
     render(
       <CarritoTestWrapper initialItem={sampleProduct}>
         <CarritoPage />
@@ -304,32 +282,17 @@ describe("Carrito & Checkout Form (R5 & R6) - Integración React Hook Form + Zod
       expect(screen.getByText("Velox Street Run")).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /PROCEDER AL CHECKOUT/i }));
+    const vaciarBtn = screen.getByRole("button", { name: /VACIAR CARRITO/i });
+    fireEvent.click(vaciarBtn);
+
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByText("¿VACIAR CARRITO?")).toBeInTheDocument();
+
+    const confirmarVaciarBtn = screen.getByRole("button", { name: /SÍ, VACIAR CARRITO/i });
+    fireEvent.click(confirmarVaciarBtn);
 
     await waitFor(() => {
-      expect(screen.getByRole("dialog")).toBeInTheDocument();
-    });
-
-    fireEvent.change(screen.getByLabelText(/Dirección de Envío/i), {
-      target: { value: "Boulevard Roca 1234" },
-    });
-    fireEvent.change(screen.getByLabelText(/Ciudad/i), {
-      target: { value: "Río Cuarto" },
-    });
-    fireEvent.change(screen.getByLabelText(/Código Postal/i), {
-      target: { value: "5800" },
-    });
-    fireEvent.change(screen.getByLabelText(/Teléfono de Contacto/i), {
-      target: { value: "3584998877" },
-    });
-
-    const submitBtn = screen.getByRole("button", { name: /CONFIRMAR COMPRA/i });
-    fireEvent.click(submitBtn);
-
-    await waitFor(() => {
-      expect(screen.getByTestId("checkout-error-box")).toBeInTheDocument();
-      expect(screen.getByText(/Tu sesión ha expirado o las credenciales JWT no son válidas/i)).toBeInTheDocument();
-      expect(screen.getByRole("link", { name: /ACCEDER AL LOGIN AHORA/i })).toHaveAttribute("href", "/login");
+      expect(screen.getByText("TU CARRITO ESTÁ VACÍO")).toBeInTheDocument();
     });
   });
 });

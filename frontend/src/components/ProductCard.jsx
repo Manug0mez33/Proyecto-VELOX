@@ -26,18 +26,40 @@ export default function ProductCard({ producto }) {
   const genero = producto.genero || "UNISEX";
   const precioBase = Number(producto.precio_base || producto.precio || 0);
 
-  // Variantes y talles
+  // Variantes y talles deduplicados por número de talle
   const variantes = Array.isArray(producto.variantes) ? producto.variantes : [];
-  const tallesDisponibles =
-    variantes.length > 0
-      ? variantes.map((v) => ({
+  const tallesMap = new Map();
+
+  if (variantes.length > 0) {
+    variantes.forEach((v) => {
+      const numTalle = String(v.talle_detalle?.numero || v.talle?.numero || v.talle || "").trim();
+      if (!numTalle) return;
+      if (!tallesMap.has(numTalle)) {
+        tallesMap.set(numTalle, {
           id: v.id,
           sku: v.sku,
-          talle: v.talle_detalle?.numero || v.talle?.numero || v.talle || "41",
-          stock: v.stock_actual ?? v.stock ?? 5,
+          talle: numTalle,
+          stock: Number(v.stock_actual ?? v.stock ?? 0),
           color: v.color_detalle?.nombre || v.color?.nombre || v.color || "Neón",
           precioAjustado: v.precio_ajustado ? Number(v.precio_ajustado) : null,
-        }))
+          variantePrincipal: v,
+        });
+      } else {
+        const item = tallesMap.get(numTalle);
+        item.stock += Number(v.stock_actual ?? v.stock ?? 0);
+        if (item.stock > 0 && (!item.variantePrincipal?.stock_actual || item.variantePrincipal.stock_actual <= 0)) {
+          item.id = v.id;
+          item.sku = v.sku;
+          item.color = v.color_detalle?.nombre || v.color?.nombre || v.color || item.color;
+          item.variantePrincipal = v;
+        }
+      }
+    });
+  }
+
+  const tallesDisponibles =
+    tallesMap.size > 0
+      ? Array.from(tallesMap.values()).sort((a, b) => Number(a.talle) - Number(b.talle))
       : (producto.talles || ["39", "40", "41", "42"]).map((t, idx) => ({
           id: idx + 1,
           sku: `${producto.sku_referencia || "VLX-PRO"}-${t}`,
@@ -45,6 +67,7 @@ export default function ProductCard({ producto }) {
           stock: producto.stock_total ?? 10,
           color: "Negro/Neón",
           precioAjustado: null,
+          variantePrincipal: null,
         }));
 
   const [talleSeleccionado, setTalleSeleccionado] = useState(

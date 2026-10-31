@@ -14,6 +14,7 @@ class ProductoFilter(django_filters.FilterSet):
 
     precio_min = django_filters.NumberFilter(field_name="precio_base", lookup_expr="gte")
     precio_max = django_filters.NumberFilter(field_name="precio_base", lookup_expr="lte")
+    sku = django_filters.CharFilter(field_name="variantes__sku", lookup_expr="icontains")
 
     class Meta:
         model = Producto

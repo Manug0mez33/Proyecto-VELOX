@@ -1,5 +1,4 @@
 "use client";
-// Client Component ("use client"): Permite la interactividad del atleta en la ficha técnica: conmutar fotos de la galería, seleccionar color y talle en tiempo real, recalcular el SKU activo, verificar stock y despachar la acción addToCart hacia CartContext (R6) junto con la gestión interactiva de reseñas (R3).
 
 import { useState } from "react";
 import Link from "next/link";
@@ -55,11 +54,11 @@ export default function ProductDetailClient({ producto }) {
   const [fotoActiva, setFotoActiva] = useState(0);
   const [agregadoReciente, setAgregadoReciente] = useState(false);
 
-  // Reseñas interactivas (Modelo #12 Resena / ResenaViewSet)
+  // Reseñas de clientes
   const [resenas, setResenas] = useState([
     {
       id: 1,
-      autor: "@manuelgomez",
+      autor: "Manuel G.",
       calificacion: 5,
       fecha: "Hace 2 días",
       comentario:
@@ -67,11 +66,11 @@ export default function ProductDetailClient({ producto }) {
     },
     {
       id: 2,
-      autor: "@valentinocambria",
+      autor: "Valentino C.",
       calificacion: 5,
       fecha: "Hace 1 semana",
       comentario:
-        "El calce en talle 41 AR es perfecto. El drop de 8mm mantiene una postura aerodinámica sin forzar el tendón de Aquiles.",
+        "El calce en talle 41 AR es perfecto. El drop de 8mm mantiene una postura reactiva sin sobrecargar pantorrillas.",
     },
   ]);
 
@@ -126,7 +125,7 @@ export default function ProductDetailClient({ producto }) {
 
     const nueva = {
       id: Date.now(),
-      autor: "@atleta_velox",
+      autor: "Atleta VELOX",
       calificacion: Number(nuevaCalificacion),
       fecha: "Recién",
       comentario: nuevoComentario.trim(),
@@ -142,7 +141,7 @@ export default function ProductDetailClient({ producto }) {
     <div className="space-y-16">
       {/* Sección Superior: Galería y Ficha de Compra */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-        {/* Columna Izquierda: Galería de Fotos (ImagenProducto 1:N) */}
+        {/* Columna Izquierda: Galería de Fotos */}
         <div className="lg:col-span-7 space-y-4">
           <div className="relative flex h-[380px] sm:h-[460px] w-full items-center justify-center rounded-xl bg-[#181818] border border-[#2A2A2A] p-6 overflow-hidden">
             {/* Glow Neón de Fondo */}
@@ -161,8 +160,8 @@ export default function ProductDetailClient({ producto }) {
               </Badge>
             </div>
 
-            <div className="absolute top-4 right-4 z-10 font-mono text-xs text-[#39FF14]">
-              ● TELEMETRÍA EN VIVO
+            <div className="absolute top-4 right-4 z-10 font-heading text-xs font-bold text-[#39FF14]">
+              ● SERIE OFICIAL
             </div>
 
             {/* Render Principal de Calzado */}
@@ -199,14 +198,14 @@ export default function ProductDetailClient({ producto }) {
               />
             </svg>
 
-            <span className="absolute bottom-4 left-4 font-mono text-[11px] text-[#9CA3AF]">
-              Ángulo visual: {fotoActiva === 0 ? "Perspectiva General" : fotoActiva === 1 ? "Perfil Lateral" : "Suela de Carbono"}
+            <span className="absolute bottom-4 left-4 font-heading text-[11px] text-[#9CA3AF]">
+              Vista: {fotoActiva === 0 ? "Perspectiva Frontal" : fotoActiva === 1 ? "Perfil Lateral" : "Suela de Carbono"}
             </span>
           </div>
 
-          {/* Miniaturas de la Galería (ImagenProducto 1:N) */}
+          {/* Miniaturas de la Galería */}
           <div className="grid grid-cols-3 gap-3">
-            {["Foto 1 (Portada)", "Foto 2 (Perfil)", "Foto 3 (Suela de Carbono)"].map(
+            {["Vista Frontal", "Perfil Lateral", "Suela de Carbono"].map(
               (label, idx) => (
                 <button
                   key={label}
@@ -228,8 +227,8 @@ export default function ProductDetailClient({ producto }) {
         {/* Columna Derecha: Panel de Configuración y Compra */}
         <div className="lg:col-span-5 rounded-xl bg-[#2A2A2A] border border-[#383838] p-6 sm:p-8 space-y-6">
           <div className="space-y-1.5 border-b border-[#383838] pb-5">
-            <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#39FF14]">
-              GET /api/productos/{producto.id}/stock_por_talle/ (@action #2)
+            <span className="font-heading text-xs font-bold uppercase tracking-wider text-[#39FF14]">
+              ● DISPONIBILIDAD CONFIRMADA
             </span>
             <h1 className="font-heading text-2xl sm:text-3xl font-extrabold uppercase text-[#FFFFFF]">
               {producto.nombre}
@@ -245,7 +244,7 @@ export default function ProductDetailClient({ producto }) {
             </div>
           </div>
 
-          {/* 1. Selector de Color (codigo_hex) */}
+          {/* 1. Selector de Color */}
           <div className="space-y-2">
             <label className="block text-xs font-bold uppercase tracking-wider text-[#D1D5DB]">
               1. SELECCIONAR COLOR:
@@ -272,12 +271,12 @@ export default function ProductDetailClient({ producto }) {
             </div>
           </div>
 
-          {/* 2. Selector de Talle (VarianteProducto SKU) */}
+          {/* 2. Selector de Talle */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs font-bold uppercase text-[#D1D5DB]">
               <span>2. SELECCIONAR TALLE (AR):</span>
               <span className="text-[#39FF14] font-mono">
-                {stockActual > 0 ? `${stockActual} en stock` : "Agotado"}
+                {stockActual > 0 ? `${stockActual} disponibles` : "Agotado"}
               </span>
             </div>
 
@@ -310,13 +309,13 @@ export default function ProductDetailClient({ producto }) {
             </div>
           </div>
 
-          {/* Caja Informativa de SKU y Telemetría */}
+          {/* Caja Informativa de Referencia */}
           <div className="rounded-lg bg-[#181818] border border-[#383838] p-3.5 space-y-1 text-xs">
-            <p className="font-mono text-[#39FF14]">
-              SKU ACTIVO: <span className="text-[#FFFFFF]">{skuActivo}</span>
+            <p className="font-heading text-[#39FF14]">
+              REFERENCIA: <span className="text-[#FFFFFF]">{skuActivo}</span>
             </p>
             <p className="text-[#9CA3AF]">
-              Disponibilidad física: {stockActual > 0 ? "Verificada en almacén central" : "Sin unidades en este talle"}
+              Disponibilidad: {stockActual > 0 ? "En almacén central para despacho inmediato" : "Sin unidades en este talle actualmente"}
             </p>
           </div>
 
@@ -332,7 +331,7 @@ export default function ProductDetailClient({ producto }) {
                 ? "¡CALZADO AÑADIDO AL CARRITO! ✓"
                 : stockActual === 0
                 ? "VARIANTE AGOTADA"
-                : "AÑADIR VARIANTE AL CARRITO"}
+                : "AÑADIR AL CARRITO"}
             </Button>
 
             <div className="flex gap-2">
@@ -347,18 +346,18 @@ export default function ProductDetailClient({ producto }) {
         </div>
       </div>
 
-      {/* ==================== SECCIÓN DE RESEÑAS DE ATLETAS (ResenaViewSet - CRUD R3) ==================== */}
+      {/* ==================== SECCIÓN DE RESEÑAS ==================== */}
       <section className="rounded-xl bg-[#2A2A2A] border border-[#383838] p-6 sm:p-8 space-y-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#383838] pb-4">
           <div>
-            <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#39FF14]">
-              CRUD RESEÑAS • GET / POST / PATCH / DELETE /api/resenas/
+            <span className="font-heading text-xs font-bold uppercase tracking-wider text-[#39FF14]">
+              VALORACIONES DE ATLETAS
             </span>
             <h2 className="font-heading text-2xl font-bold uppercase text-[#FFFFFF] mt-1">
-              RESEÑAS DE ATLETAS EN PISTA
+              OPINIONES Y EXPERIENCIAS EN PISTA
             </h2>
           </div>
-          <span className="font-mono text-xs text-[#9CA3AF]">
+          <span className="font-heading text-xs text-[#9CA3AF]">
             {resenas.length} opiniones verificadas
           </span>
         </div>
@@ -380,7 +379,7 @@ export default function ProductDetailClient({ producto }) {
                       {r.autor}
                     </span>
                   </div>
-                  <span className="text-[11px] font-mono text-[#9CA3AF]">
+                  <span className="text-[11px] text-[#9CA3AF]">
                     {r.fecha}
                   </span>
                 </div>
@@ -394,12 +393,12 @@ export default function ProductDetailClient({ producto }) {
           {/* Formulario para Publicar Reseña */}
           <div className="lg:col-span-5 rounded-lg bg-[#1E1E1E] border border-[#3A3A3A] p-5 space-y-4">
             <h3 className="font-heading text-sm font-bold uppercase tracking-wider text-[#FFFFFF]">
-              PUBLICAR RESEÑA DE RENDIMIENTO
+              DEJAR TU OPINIÓN
             </h3>
 
             {resenaEnviada && (
               <div className="rounded bg-[#1D2B1A] border border-[#39FF14] p-3 text-xs text-[#39FF14]">
-                ¡Gracias por tu aporte! Tu reseña fue registrada exitosamente.
+                ¡Gracias por tu reseña! Fue publicada correctamente.
               </div>
             )}
 
@@ -416,20 +415,20 @@ export default function ProductDetailClient({ producto }) {
                   <option value="5">★★★★★ (5/5) Rendimiento Excepcional</option>
                   <option value="4">★★★★☆ (4/5) Muy Buen Calzado</option>
                   <option value="3">★★★☆☆ (3/5) Aceptable</option>
-                  <option value="2">★★☆☆☆ (2/5) Mejorable</option>
+                  <option value="2">★★☆☆☆ (2/5) Regular</option>
                   <option value="1">★☆☆☆☆ (1/5) Deficiente</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-[11px] font-bold uppercase text-[#D1D5DB] mb-1">
-                  COMENTARIO (snake_case DRF: comentario):
+                  COMENTARIO:
                 </label>
                 <textarea
                   rows={3}
                   value={nuevoComentario}
                   onChange={(e) => setNuevoComentario(e.target.value)}
-                  placeholder="Describí tu experiencia con la amortiguación, el talle y la propulsión..."
+                  placeholder="Compartí tu experiencia sobre el ajuste, la amortiguación y la respuesta de la suela..."
                   className="w-full rounded-md bg-[#121212] border border-[#3F3F3F] p-3 text-xs text-[#FFFFFF] placeholder-[#666666] focus:outline-none focus:border-[#39FF14]"
                 />
               </div>
@@ -439,7 +438,7 @@ export default function ProductDetailClient({ producto }) {
                 variant="primary"
                 className="w-full text-xs py-2.5"
               >
-                ENVIAR CALIFICACIÓN (POST /api/resenas/)
+                ENVIAR OPINIÓN
               </Button>
             </form>
           </div>

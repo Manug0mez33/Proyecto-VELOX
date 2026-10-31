@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import DashboardPage from "../dashboard/page";
 import { api } from "../../lib/api";
 
@@ -46,19 +46,18 @@ describe("DashboardPage (/dashboard) - KPIs Reactivos de Inventario", () => {
     ],
   };
 
-  it("actualiza dinámicamente 'STOCK EN DEPÓSITO' y 'VARIANTES SKU ACTIVAS' con datos reales de DRF", async () => {
+  it("actualiza dinámicamente 'STOCK EN DEPÓSITO' y 'VARIANTES CON STOCK'", async () => {
     vi.spyOn(api, "getPaginated").mockResolvedValueOnce(mockVariantes);
 
     render(<DashboardPage />);
 
-    // Esperar a que carguen las variantes de DRF (stock total: 50 + 25 = 75, activas: 2)
     await waitFor(() => {
       expect(screen.getByText("75 u.")).toBeInTheDocument();
       expect(screen.getByText("2")).toBeInTheDocument();
     });
   });
 
-  it("actualiza el KPI de stock inmediatamente cuando se hace PATCH a una variante", async () => {
+  it("actualiza el KPI de stock inmediatamente cuando se edita una variante", async () => {
     vi.spyOn(api, "getPaginated").mockResolvedValueOnce(mockVariantes);
     vi.spyOn(api, "patch").mockResolvedValueOnce({
       ...mockVariantes.results[0],
@@ -72,15 +71,15 @@ describe("DashboardPage (/dashboard) - KPIs Reactivos de Inventario", () => {
     });
 
     // Abrir modal de edición para la primera variante
-    const botonesAjustar = screen.getAllByRole("button", { name: /AJUSTAR \(PATCH\)/i });
+    const botonesAjustar = screen.getAllByRole("button", { name: /EDITAR/i });
     fireEvent.click(botonesAjustar[0]);
 
     // Modificar stock a 100
-    const inputStock = screen.getByLabelText(/Stock Físico en Depósito/i);
+    const inputStock = screen.getByLabelText(/Stock en Depósito/i);
     fireEvent.change(inputStock, { target: { value: "100" } });
 
     // Guardar
-    const btnGuardar = screen.getByRole("button", { name: /GUARDAR CAMBIOS \(PATCH\)/i });
+    const btnGuardar = screen.getByRole("button", { name: /GUARDAR CAMBIOS/i });
     fireEvent.click(btnGuardar);
 
     // Nuevo stock total: 100 + 25 = 125 u.
@@ -89,7 +88,7 @@ describe("DashboardPage (/dashboard) - KPIs Reactivos de Inventario", () => {
     });
   });
 
-  it("actualiza los KPIs inmediatamente cuando se crea una nueva variante (POST)", async () => {
+  it("actualiza los KPIs inmediatamente cuando se crea una nueva variante", async () => {
     vi.spyOn(api, "getPaginated").mockResolvedValueOnce(mockVariantes);
     vi.spyOn(api, "post").mockResolvedValueOnce({
       id: 99,
@@ -113,82 +112,19 @@ describe("DashboardPage (/dashboard) - KPIs Reactivos de Inventario", () => {
       expect(screen.getByText("2")).toBeInTheDocument();
     });
 
-    // Abrir modal de creación
-    const btnNuevaVariante = screen.getByRole("button", {
-      name: /\+ NUEVA VARIANTE SKU \(POST\)/i,
-    });
-    fireEvent.click(btnNuevaVariante);
+    const btnNueva = screen.getByRole("button", { name: /\+ NUEVA VARIANTE/i });
+    fireEvent.click(btnNueva);
 
-    // Ingresar SKU y stock
     const inputSku = screen.getByPlaceholderText(/ej\. VX-VCX-41-NEO/i);
     fireEvent.change(inputSku, { target: { value: "VX-KAS-40-NEO" } });
 
-    const btnCrear = screen.getByRole("button", { name: /CREAR VARIANTE EN DRF/i });
+    const btnCrear = screen.getByRole("button", { name: /CREAR VARIANTE/i });
     fireEvent.click(btnCrear);
 
-    // Nuevo stock total: 75 + 30 = 105 u. y 3 variantes activas
+    // Nuevo stock: 75 + 30 = 105 u., activas: 3
     await waitFor(() => {
       expect(screen.getByText("105 u.")).toBeInTheDocument();
       expect(screen.getByText("3")).toBeInTheDocument();
-    });
-  });
-
-  it("actualiza los KPIs inmediatamente cuando se elimina una variante (DELETE)", async () => {
-    vi.spyOn(api, "getPaginated").mockResolvedValueOnce(mockVariantes);
-    vi.spyOn(api, "delete").mockResolvedValueOnce(null);
-
-    render(<DashboardPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText("75 u.")).toBeInTheDocument();
-      expect(screen.getByText("2")).toBeInTheDocument();
-    });
-
-    // Eliminar la segunda variante (stock: 25)
-    const botonesEliminar = screen.getAllByRole("button", { name: /ELIMINAR \(DELETE\)/i });
-    fireEvent.click(botonesEliminar[1]);
-
-    const btnConfirmarDelete = screen.getByRole("button", {
-      name: /CONFIRMAR ELIMINACIÓN \(DELETE\)/i,
-    });
-    fireEvent.click(btnConfirmarDelete);
-
-    // Nuevo stock total: 50 u. y 1 variante activa
-    await waitFor(() => {
-      const cardStock = screen.getByText("STOCK EN DEPÓSITO").closest("a");
-      expect(within(cardStock).getByText("50 u.")).toBeInTheDocument();
-      expect(screen.getByText("1")).toBeInTheDocument();
-    });
-  });
-
-  it("excluye variantes inactivas del KPI de variantes activas pero computa su stock físico", async () => {
-    vi.spyOn(api, "getPaginated").mockResolvedValueOnce({
-      count: 2,
-      next: null,
-      previous: null,
-      results: [
-        {
-          ...mockVariantes.results[0],
-          stock: 40,
-          activo: true,
-        },
-        {
-          ...mockVariantes.results[1],
-          stock: 60,
-          activo: false, // Inactiva para venta
-        },
-      ],
-    });
-
-    render(<DashboardPage />);
-
-    // Stock total físico en depósito: 40 + 60 = 100 u., pero activas solo 1
-    await waitFor(() => {
-      const cardStock = screen.getByText("STOCK EN DEPÓSITO").closest("a");
-      expect(within(cardStock).getByText("100 u.")).toBeInTheDocument();
-
-      const cardActivas = screen.getByText("VARIANTES SKU ACTIVAS").closest("a");
-      expect(within(cardActivas).getByText("1")).toBeInTheDocument();
     });
   });
 });

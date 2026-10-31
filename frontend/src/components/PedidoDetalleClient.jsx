@@ -1,5 +1,4 @@
 "use client";
-// Client Component ("use client"): Ficha completa de orden de compra (R1) con desglose de calzados SKU, dirección de entrega, modal de confirmación y ejecución transaccional de @action cancelar_pedido de DRF.
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
@@ -35,13 +34,12 @@ export default function PedidoDetalleClient({ id }) {
   const [error, setError] = useState(null);
   const [token, setToken] = useState(null);
 
-  // Estados del modal y de la acción cancelar_pedido
+  // Estados del modal y de cancelación
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [actionSuccess, setActionSuccess] = useState(null);
   const [actionError, setActionError] = useState(null);
 
-  // Sincronizar token JWT reactivamente con localStorage y eventos de sesión
   useEffect(() => {
     const syncToken = () => {
       try {
@@ -74,7 +72,7 @@ export default function PedidoDetalleClient({ id }) {
       });
       setPedido(data);
     } catch (err) {
-      setError(err.message || `No se pudo obtener la orden #${id} de Django REST Framework.`);
+      setError(err.message || `No se pudo obtener el pedido #${id}.`);
     } finally {
       setLoading(false);
     }
@@ -84,7 +82,6 @@ export default function PedidoDetalleClient({ id }) {
     fetchPedido();
   }, [fetchPedido]);
 
-  // Ejecución de la acción personalizada @action cancelar_pedido de DRF
   const handleConfirmCancel = async () => {
     setIsCancelling(true);
     setActionError(null);
@@ -100,7 +97,6 @@ export default function PedidoDetalleClient({ id }) {
         { token: currentToken || undefined }
       );
 
-      // Si DRF devuelve el objeto pedido actualizado
       if (response?.pedido) {
         setPedido(response.pedido);
       } else {
@@ -111,12 +107,12 @@ export default function PedidoDetalleClient({ id }) {
 
       setActionSuccess(
         response?.detail ||
-          `Pedido #${id} cancelado correctamente. El stock de los calzados fue restituido a la base de datos.`
+          `Pedido #${id} cancelado correctamente. Las unidades han sido devueltas al inventario.`
       );
       setIsCancelModalOpen(false);
     } catch (err) {
       setActionError(
-        err.message || "Ocurrió un error al intentar cancelar el pedido con DRF."
+        err.message || "Ocurrió un error al intentar cancelar el pedido."
       );
     } finally {
       setIsCancelling(false);
@@ -180,7 +176,7 @@ export default function PedidoDetalleClient({ id }) {
             disabled={loading}
             className="text-xs py-2 px-3"
           >
-            {loading ? "ACTUALIZANDO..." : "↻ RECARGAR"}
+            {loading ? "ACTUALIZANDO..." : "↻ ACTUALIZAR"}
           </Button>
 
           {puedeCancelar && (
@@ -189,7 +185,7 @@ export default function PedidoDetalleClient({ id }) {
               onClick={() => setIsCancelModalOpen(true)}
               className="text-xs py-2 px-4 shadow-[0_0_15px_rgba(239,68,68,0.25)]"
             >
-              CANCELAR PEDIDO (@ACTION)
+              CANCELAR PEDIDO
             </Button>
           )}
         </div>
@@ -206,7 +202,7 @@ export default function PedidoDetalleClient({ id }) {
             onClick={() => setActionSuccess(null)}
             className="text-xs text-[#9CA3AF] hover:text-white"
           >
-            Cerrar
+            ✕
           </button>
         </div>
       )}
@@ -218,7 +214,7 @@ export default function PedidoDetalleClient({ id }) {
             onClick={() => setActionError(null)}
             className="text-xs text-[#9CA3AF] hover:text-white"
           >
-            Cerrar
+            ✕
           </button>
         </div>
       )}
@@ -246,7 +242,7 @@ export default function PedidoDetalleClient({ id }) {
             <Button variant="secondary" href="/dashboard/pedidos" className="text-xs">
               VOLVER AL LISTADO
             </Button>
-            {(!token || (error && error.toLowerCase().includes("autenticación"))) ? (
+            {(!token || (error && error.toLowerCase().includes("sesión"))) ? (
               <Button variant="primary" href="/login" className="text-xs">
                 INICIAR SESIÓN
               </Button>
@@ -262,14 +258,11 @@ export default function PedidoDetalleClient({ id }) {
       {/* 5. Contenido del Pedido */}
       {!loading && pedido && (
         <div className="space-y-6">
-          {/* Banner de estado informativo si está cancelado o no cancelable */}
           {pedido.estado === "CANCELADO" && (
             <div className="rounded-xl bg-[#2A1515] border border-[#EF4444]/60 p-4 text-xs text-[#FCA5A5] flex items-center gap-3">
               <span className="text-base">🚫</span>
               <span>
-                <strong>PEDIDO CANCELADO:</strong> Esta transacción ha sido cancelada.
-                El stock de cada variante ha sido restituido automáticamente en la base de datos
-                de Django REST Framework.
+                <strong>PEDIDO CANCELADO:</strong> Esta compra fue cancelada y los productos regresaron al stock disponible.
               </span>
             </div>
           )}
@@ -278,8 +271,7 @@ export default function PedidoDetalleClient({ id }) {
             <div className="rounded-xl bg-[#1E293B] border border-[#0284C7] p-4 text-xs text-[#38BDF8] flex items-center gap-3">
               <span className="text-base">🚚</span>
               <span>
-                <strong>PEDIDO EN TRÁNSITO:</strong> El paquete está en ruta de entrega.
-                No admite cancelación directa según la política de envíos de VELOX.
+                <strong>PEDIDO EN TRÁNSITO:</strong> El paquete está en camino hacia la dirección de entrega indicada.
               </span>
             </div>
           )}
@@ -298,17 +290,17 @@ export default function PedidoDetalleClient({ id }) {
                 <p>
                   <strong className="text-[#9CA3AF]">Usuario:</strong>{" "}
                   <span className="text-[#FFFFFF] font-mono">
-                    {pedido.usuario?.username || "cliente1"}
+                    {pedido.usuario?.username || "cliente"}
                   </span>
                 </p>
                 <p>
                   <strong className="text-[#9CA3AF]">Email:</strong>{" "}
                   <span className="text-[#FFFFFF]">
-                    {pedido.usuario?.email || "atleta@velox.com"}
+                    {pedido.usuario?.email || "cliente@velox.com.ar"}
                   </span>
                 </p>
                 <p>
-                  <strong className="text-[#9CA3AF]">Rol en VELOX:</strong>{" "}
+                  <strong className="text-[#9CA3AF]">Cuenta:</strong>{" "}
                   <Badge variant="outline" className="text-[10px] ml-1">
                     {pedido.usuario?.rol || "CLIENTE"}
                   </Badge>
@@ -328,11 +320,11 @@ export default function PedidoDetalleClient({ id }) {
                 <p className="leading-relaxed">
                   <strong className="text-[#9CA3AF]">Dirección:</strong>{" "}
                   <span className="text-[#FFFFFF]">
-                    {pedido.direccion_envio || "Retiro en punto central VELOX"}
+                    {pedido.direccion_envio || "Punto de entrega oficial VELOX"}
                   </span>
                 </p>
                 <p>
-                  <strong className="text-[#9CA3AF]">Servicio:</strong> VELOX Express Carbon (24/48hs)
+                  <strong className="text-[#9CA3AF]">Servicio:</strong> VELOX Express (24/48 hs)
                 </p>
               </div>
             </div>
@@ -342,7 +334,7 @@ export default function PedidoDetalleClient({ id }) {
               <div className="flex items-center gap-2 border-b border-[#2A2A2A] pb-3">
                 <span className="text-base">💳</span>
                 <h3 className="font-heading text-xs font-bold uppercase tracking-wider text-[#FFFFFF]">
-                  TRANSACCIÓN DRF
+                  INFORMACIÓN DE PAGO
                 </h3>
               </div>
               <div className="text-xs space-y-1.5 text-[#D1D5DB]">
@@ -353,13 +345,13 @@ export default function PedidoDetalleClient({ id }) {
                   </span>
                 </p>
                 <p>
-                  <strong className="text-[#9CA3AF]">Fecha de emisión:</strong>{" "}
+                  <strong className="text-[#9CA3AF]">Fecha de compra:</strong>{" "}
                   <span className="text-[#FFFFFF]">
                     {formatFecha(pedido.fecha_creacion)}
                   </span>
                 </p>
                 <p>
-                  <strong className="text-[#9CA3AF]">Última actualización:</strong>{" "}
+                  <strong className="text-[#9CA3AF]">Actualizado:</strong>{" "}
                   <span className="text-[#FFFFFF]">
                     {formatFecha(pedido.actualizado_en || pedido.fecha_creacion)}
                   </span>
@@ -368,13 +360,13 @@ export default function PedidoDetalleClient({ id }) {
             </div>
           </div>
 
-          {/* Desglose de Calzados (SKU) */}
+          {/* Desglose de Artículos */}
           <div className="rounded-xl bg-[#1E1E1E] border border-[#2A2A2A] overflow-hidden space-y-4">
             <div className="border-b border-[#2A2A2A] px-6 py-4 bg-[#181818] flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-[#39FF14]" />
                 <h3 className="font-heading text-xs font-bold uppercase tracking-wider text-[#FFFFFF]">
-                  DESGLOSE DE ARTÍCULOS EN ORDEN (NESTED SERIALIZER #2)
+                  DESGLOSE DE ARTÍCULOS EN LA ORDEN
                 </h3>
               </div>
               <span className="text-xs text-[#9CA3AF]">
@@ -387,8 +379,8 @@ export default function PedidoDetalleClient({ id }) {
                 <thead className="border-b border-[#2A2A2A] text-[11px] font-heading font-bold uppercase text-[#9CA3AF]">
                   <tr>
                     <th className="pb-3 pr-4">Calzado & Modelo</th>
-                    <th className="pb-3 px-4">SKU Físico</th>
-                    <th className="pb-3 px-4">Talle</th>
+                    <th className="pb-3 px-4">Referencia SKU</th>
+                    <th className="pb-3 px-4">Talle AR</th>
                     <th className="pb-3 px-4">Color</th>
                     <th className="pb-3 px-4 text-center">Cantidad</th>
                     <th className="pb-3 px-4 text-right">Precio Unitario</th>
@@ -418,45 +410,37 @@ export default function PedidoDetalleClient({ id }) {
                           <span>{det.color_nombre || "Estándar"}</span>
                         </div>
                       </td>
-                      <td className="py-3.5 px-4 text-center font-bold text-[#FFFFFF]">
+                      <td className="py-3.5 px-4 text-center font-bold text-white">
                         {det.cantidad}
                       </td>
-                      <td className="py-3.5 px-4 text-right font-mono text-[#D1D5DB]">
+                      <td className="py-3.5 px-4 text-right font-mono text-white">
                         {formatARS(det.precio_unitario)}
                       </td>
-                      <td className="py-3.5 pl-4 text-right font-mono font-bold text-[#FFFFFF]">
-                        {formatARS(det.subtotal)}
+                      <td className="py-3.5 pl-4 text-right font-mono font-bold text-[#39FF14]">
+                        {formatARS(det.subtotal || det.precio_unitario * det.cantidad)}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+            </div>
 
-              {/* Total y Cierre Financiero */}
-              <div className="mt-6 border-t border-[#2A2A2A] pt-4 flex flex-col sm:flex-row items-end sm:items-center justify-between gap-4">
-                <div className="text-xs text-[#9CA3AF]">
-                  <p>✓ Transacción respaldada en base de datos con ACID</p>
-                  <p>✓ Restitución automática disponible mediante @action</p>
-                </div>
-
-                <div className="space-y-1 text-right">
-                  <div className="text-xs text-[#9CA3AF]">
-                    Envío: <span className="text-[#39FF14] font-bold">GRATIS</span>
-                  </div>
-                  <div className="font-heading text-xl sm:text-2xl font-extrabold text-[#FFFFFF]">
-                    TOTAL: <span className="text-[#39FF14]">{formatARS(pedido.total)}</span>
-                  </div>
-                </div>
-              </div>
+            <div className="border-t border-[#2A2A2A] bg-[#141414] px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm">
+              <span className="font-heading text-xs font-bold uppercase text-[#9CA3AF]">
+                Total de la Compra
+              </span>
+              <span className="font-heading text-2xl font-extrabold text-[#39FF14]">
+                {formatARS(pedido.total)}
+              </span>
             </div>
           </div>
         </div>
       )}
 
-      {/* 6. Modal Accesible de Confirmación para @action cancelar_pedido */}
+      {/* Modal de Confirmación de Cancelación */}
       <Modal
         isOpen={isCancelModalOpen}
-        onClose={() => !isCancelling && setIsCancelModalOpen(false)}
+        onClose={() => setIsCancelModalOpen(false)}
         title={`CANCELAR PEDIDO #${id}`}
         size="md"
         footer={
@@ -475,7 +459,7 @@ export default function PedidoDetalleClient({ id }) {
               disabled={isCancelling}
               className="text-xs py-2 px-4"
             >
-              {isCancelling ? "CANCELANDO EN DRF..." : "SÍ, CANCELAR PEDIDO"}
+              {isCancelling ? "CANCELANDO..." : "SÍ, CANCELAR PEDIDO"}
             </Button>
           </>
         }
@@ -483,7 +467,7 @@ export default function PedidoDetalleClient({ id }) {
         <div className="space-y-4">
           {actionError && (
             <div className="rounded-lg bg-[#2A1515] border border-[#EF4444] p-3 text-xs text-[#FCA5A5] leading-relaxed">
-              ⚠️ <strong>Error al cancelar:</strong> {actionError}
+              ⚠️ <strong>Error:</strong> {actionError}
             </div>
           )}
           <p className="text-sm text-[#D1D5DB] leading-relaxed">
@@ -491,24 +475,9 @@ export default function PedidoDetalleClient({ id }) {
             <strong className="text-white font-mono">#{id}</strong>?
           </p>
 
-          <div className="rounded-lg bg-[#2A1515] border border-[#EF4444] p-3 text-xs text-[#FCA5A5] space-y-1.5">
-            <p className="font-bold uppercase tracking-wider text-white">
-              EFECTO TÉCNICO EN DJANGO REST FRAMEWORK:
-            </p>
-            <ul className="list-disc list-inside space-y-1 text-[11px]">
-              <li>
-                Invoca la acción semántica{" "}
-                <code className="text-[#39FF14] font-mono">
-                  POST /api/pedidos/{id}/cancelar_pedido/
-                </code>
-              </li>
-              <li>Actualiza el estado de la cabecera a <strong>CANCELADO</strong>.</li>
-              <li>
-                <strong>Restituye atómicamente</strong> las unidades físicas al stock de cada{" "}
-                <code className="text-[#39FF14] font-mono">VarianteProducto</code> mediante{" "}
-                <code className="text-white font-mono">transaction.atomic()</code>.
-              </li>
-            </ul>
+          <div className="rounded-lg bg-[#2A1515] border border-[#EF4444]/60 p-3 text-xs text-[#FCA5A5] space-y-1">
+            <p className="font-bold text-white">Aviso:</p>
+            <p>Al cancelar la orden, el estado pasará a Cancelado y los productos reservados volverán a estar disponibles en inventario.</p>
           </div>
         </div>
       </Modal>
