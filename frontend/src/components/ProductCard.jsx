@@ -41,16 +41,20 @@ export default function ProductCard({ producto }) {
           talle: numTalle,
           stock: Number(v.stock_actual ?? v.stock ?? 0),
           color: v.color_detalle?.nombre || v.color?.nombre || v.color || "Neón",
-          precioAjustado: v.precio_ajustado ? Number(v.precio_ajustado) : null,
+          precioAjustado: Number(v.precio_final ?? v.precio_ajustado) || null,
           variantePrincipal: v,
         });
       } else {
         const item = tallesMap.get(numTalle);
-        item.stock += Number(v.stock_actual ?? v.stock ?? 0);
-        if (item.stock > 0 && (!item.variantePrincipal?.stock_actual || item.variantePrincipal.stock_actual <= 0)) {
+        const stockVariante = Number(v.stock_actual ?? v.stock ?? 0);
+        const stockPrincipal = Number(item.variantePrincipal?.stock_actual ?? item.variantePrincipal?.stock ?? 0);
+        item.stock += stockVariante;
+        // La compra rápida usa el color con más stock de ese talle (nunca uno agotado si hay otro).
+        if (stockVariante > stockPrincipal) {
           item.id = v.id;
           item.sku = v.sku;
           item.color = v.color_detalle?.nombre || v.color?.nombre || v.color || item.color;
+          item.precioAjustado = Number(v.precio_final ?? v.precio_ajustado) || null;
           item.variantePrincipal = v;
         }
       }
@@ -59,7 +63,8 @@ export default function ProductCard({ producto }) {
 
   const tallesDisponibles =
     tallesMap.size > 0
-      ? Array.from(tallesMap.values()).sort((a, b) => Number(a.talle) - Number(b.talle))
+      // parseFloat: los talles llegan como "40 AR" y Number() daría NaN.
+      ? Array.from(tallesMap.values()).sort((a, b) => parseFloat(a.talle) - parseFloat(b.talle))
       : (producto.talles || ["39", "40", "41", "42"]).map((t, idx) => ({
           id: idx + 1,
           sku: `${producto.sku_referencia || "VLX-PRO"}-${t}`,

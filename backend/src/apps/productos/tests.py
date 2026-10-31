@@ -159,3 +159,24 @@ class CatalogoApiTests(TestCase):
         response = self.client.get("/api/productos/?sku=NK-4")
         self.assertEqual([p["id"] for p in response.data["results"]], [self.pegasus.id])
         self.assertEqual(response.data["results"][0]["stock_total"], 10)
+
+    def test_borrar_variante_con_pedidos_responde_409(self):
+        """Una variante que figura en pedidos no se borra (PROTECT) y la API explica por qué."""
+        from apps.pedidos.models import DetallePedido, Pedido
+
+        variante = VarianteProducto.objects.get(sku="NK-41-NEG")
+        pedido = Pedido.objects.create(usuario=self.cliente, total=190000)
+        DetallePedido.objects.create(pedido=pedido, variante=variante, cantidad=1, precio_unitario=190000, subtotal=190000)
+
+        self.client.force_authenticate(self.empleado)
+        response = self.client.delete("/api/variantes/NK-41-NEG/")
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+        self.assertIn("1 detalle de pedido", response.data["detail"])
+        self.assertTrue(VarianteProducto.objects.filter(sku="NK-41-NEG").exists())
+
+    def test_borrar_marca_con_productos_responde_409(self):
+        """El mismo manejo aplica a cualquier borrado protegido, por ejemplo una marca con productos."""
+        self.client.force_authenticate(self.empleado)
+        response = self.client.delete(f"/api/marcas/{self.nike.id}/")
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+        self.assertIn("producto", response.data["detail"])

@@ -156,6 +156,8 @@ REST_FRAMEWORK = {
         'rest_framework.filters.OrderingFilter',
     ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    # Borrados bloqueados por PROTECT -> 409 con mensaje claro (ver nucleo/excepciones.py).
+    'EXCEPTION_HANDLER': 'nucleo.excepciones.manejador_excepciones_velox',
 }
 
 SIMPLE_JWT = {

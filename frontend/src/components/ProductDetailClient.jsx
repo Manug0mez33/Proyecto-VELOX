@@ -27,36 +27,24 @@ export default function ProductDetailClient({ producto }) {
         { id: 105, sku: `${producto.sku_referencia || "VLX-PRO"}-44-BLK`, talle: "44", stock: 0, color: "Carbón", color_hex: "#121212" },
       ];
 
-  const coloresDisponibles = Array.from(
-    new Map(
-      variantes.map((v) => [
-        v.color_hex || (v.color?.toLowerCase().includes("neón") ? "#39FF14" : "#2E2E2E"),
-        {
-          nombre: v.color || "Color Estándar",
-          hex: v.color_hex || (v.color?.toLowerCase().includes("neón") ? "#39FF14" : "#2E2E2E"),
-        },
-      ])
-    ).values()
-  );
+  // La API manda el color como "codigo_hex"; los datos de ejemplo usan "color_hex".
+  const hexDe = (v) => v?.codigo_hex || v?.color_hex || "#2E2E2E";
 
-  const [colorActivo, setColorActivo] = useState(
-    coloresDisponibles[0]?.hex || "#39FF14"
-  );
-
-  // Filtrar variantes disponibles según el color activo
-  const variantesFiltradasPorColor = variantes.filter((v) => {
-    const hex = v.color_hex || (v.color?.toLowerCase().includes("neón") ? "#39FF14" : "#2E2E2E");
-    return hex === colorActivo;
+  // Un botón por talle, con el stock sumado de todos sus colores.
+  const tallesDisponibles = [];
+  variantes.forEach((v) => {
+    const existente = tallesDisponibles.find((t) => t.talle === v.talle);
+    if (existente) existente.stock += Number(v.stock) || 0;
+    else tallesDisponibles.push({ talle: v.talle, stock: Number(v.stock) || 0 });
   });
 
-  const tallesDisponibles =
-    variantesFiltradasPorColor.length > 0
-      ? variantesFiltradasPorColor
-      : variantes;
-
   const [talleSeleccionado, setTalleSeleccionado] = useState(
-    tallesDisponibles.find((v) => v.stock > 0)?.talle || tallesDisponibles[0]?.talle || "42"
+    tallesDisponibles.find((t) => t.stock > 0)?.talle || tallesDisponibles[0]?.talle
   );
+  const [varianteElegidaId, setVarianteElegidaId] = useState(null);
+
+  // Colores disponibles para el talle elegido (cada uno es una variante con su SKU).
+  const coloresDelTalle = variantes.filter((v) => v.talle === talleSeleccionado);
 
   const [fotoActiva, setFotoActiva] = useState(0);
   const [agregadoReciente, setAgregadoReciente] = useState(false);
@@ -119,9 +107,20 @@ export default function ProductDetailClient({ producto }) {
     cargarResenas();
   }, [cargarResenas]);
 
+  // Si todavía no se eligió color, se toma el primero con stock de ese talle.
   const varianteSeleccionada =
-    tallesDisponibles.find((v) => v.talle === talleSeleccionado) ||
-    tallesDisponibles[0];
+    coloresDelTalle.find((v) => v.id === varianteElegidaId) ||
+    coloresDelTalle.find((v) => v.stock > 0) ||
+    coloresDelTalle[0];
+
+  // Al cambiar de talle se conserva el color elegido, si ese talle lo tiene.
+  const handleElegirTalle = (talle) => {
+    const mismoColor = variantes.find(
+      (v) => v.talle === talle && v.color === varianteSeleccionada?.color && v.stock > 0
+    );
+    setTalleSeleccionado(talle);
+    setVarianteElegidaId(mismoColor?.id ?? null);
+  };
 
   const stockActual = varianteSeleccionada?.stock ?? 0;
   const skuActivo =
@@ -129,8 +128,9 @@ export default function ProductDetailClient({ producto }) {
     producto.sku_referencia ||
     `VLX-${producto.id}-${talleSeleccionado}`;
   const precioBase = Number(producto.precio_base || 0);
+  // precio_final ya resuelve en el backend si la variante tiene precio ajustado.
   const precioFinal = Number(
-    varianteSeleccionada?.precio_ajustado || precioBase
+    varianteSeleccionada?.precio_final || varianteSeleccionada?.precio_ajustado || precioBase
   );
 
   const handleAgregarAlCarrito = () => {
@@ -260,7 +260,7 @@ export default function ProductDetailClient({ producto }) {
               <ellipse cx="240" cy="235" rx="200" ry="12" fill="#090909" />
               <path
                 d="M30 190 Q150 205 300 195 Q405 188 455 162 Q468 178 452 198 Q390 222 250 222 Q105 222 25 208 Z"
-                fill={colorActivo === "#39FF14" ? "#39FF14" : "#444444"}
+                fill={hexDe(varianteSeleccionada) === "#39FF14" ? "#39FF14" : "#444444"}
               />
               <path
                 d="M45 188 L85 95 Q125 80 165 108 L255 65 Q285 58 305 85 L395 132 Q445 142 452 162 Q355 194 195 195 Q95 195 45 188 Z"
@@ -331,52 +331,25 @@ export default function ProductDetailClient({ producto }) {
             </div>
           </div>
 
-          {/* 1. Selector de Color */}
-          <div className="space-y-2">
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#D1D5DB]">
-              1. SELECCIONAR COLOR:
-            </label>
-            <div className="flex items-center gap-3">
-              {coloresDisponibles.map((c) => {
-                const activo = colorActivo === c.hex;
-                return (
-                  <button
-                    key={c.hex}
-                    type="button"
-                    onClick={() => setColorActivo(c.hex)}
-                    style={{ backgroundColor: c.hex }}
-                    className={`h-8 w-8 rounded-full border-2 transition-transform ${
-                      activo
-                        ? "border-[#FFFFFF] scale-110 shadow-[0_0_12px_rgba(255,255,255,0.4)]"
-                        : "border-[#444444] hover:scale-105"
-                    }`}
-                    aria-label={`Color ${c.nombre}`}
-                    title={c.nombre}
-                  />
-                );
-              })}
-            </div>
-          </div>
-
-          {/* 2. Selector de Talle */}
+          {/* 1. Selector de Talle: un botón por talle */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs font-bold uppercase text-[#D1D5DB]">
-              <span>2. SELECCIONAR TALLE (AR):</span>
+              <span>1. SELECCIONAR TALLE (AR):</span>
               <span className="text-[#39FF14] font-mono">
                 {stockActual > 0 ? `${stockActual} disponibles` : "Agotado"}
               </span>
             </div>
 
             <div className="grid grid-cols-4 gap-2">
-              {tallesDisponibles.map((v) => {
-                const activo = v.talle === talleSeleccionado;
-                const sinStock = v.stock === 0;
+              {tallesDisponibles.map((t) => {
+                const activo = t.talle === talleSeleccionado;
+                const sinStock = t.stock === 0;
 
                 return (
                   <button
-                    key={v.sku || v.talle}
+                    key={t.talle}
                     type="button"
-                    onClick={() => setTalleSeleccionado(v.talle)}
+                    onClick={() => handleElegirTalle(t.talle)}
                     disabled={sinStock}
                     className={`flex flex-col items-center justify-center rounded-lg py-2.5 px-2 border font-heading transition-all ${
                       activo
@@ -386,11 +359,43 @@ export default function ProductDetailClient({ producto }) {
                         : "bg-[#121212] text-[#FFFFFF] border-[#3F3F3F] hover:border-[#39FF14]"
                     }`}
                   >
-                    <span className="text-sm font-extrabold">{v.talle}</span>
+                    <span className="text-sm font-extrabold">{t.talle}</span>
                     <span className="text-[10px] font-mono">
-                      {sinStock ? "Agotado" : `${v.stock} u.`}
+                      {sinStock ? "Agotado" : `${t.stock} u.`}
                     </span>
                   </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 2. Selector de Color: los colores del talle elegido */}
+          <div className="space-y-2">
+            <label className="block text-xs font-bold uppercase tracking-wider text-[#D1D5DB]">
+              2. SELECCIONAR COLOR:{" "}
+              <span className="text-[#FFFFFF]">{varianteSeleccionada?.color}</span>
+            </label>
+            <div className="flex flex-wrap items-center gap-3">
+              {coloresDelTalle.map((v) => {
+                const activo = v.id === varianteSeleccionada?.id;
+                const sinStock = v.stock === 0;
+                return (
+                  <button
+                    key={v.id}
+                    type="button"
+                    onClick={() => setVarianteElegidaId(v.id)}
+                    disabled={sinStock}
+                    style={{ backgroundColor: hexDe(v) }}
+                    className={`h-8 w-8 rounded-full border-2 transition-transform ${
+                      activo
+                        ? "border-[#39FF14] scale-110 shadow-[0_0_12px_rgba(57,255,20,0.5)]"
+                        : sinStock
+                        ? "border-[#444444] opacity-30 cursor-not-allowed"
+                        : "border-[#666666] hover:scale-105"
+                    }`}
+                    aria-label={`Color ${v.color}${sinStock ? " (agotado)" : ""}`}
+                    title={`${v.color} — ${sinStock ? "agotado" : `${v.stock} u.`}`}
+                  />
                 );
               })}
             </div>
