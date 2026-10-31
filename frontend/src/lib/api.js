@@ -143,8 +143,10 @@ export async function fetchApi(endpoint, options = {}) {
     if (error instanceof ApiError) {
       throw error;
     }
+    // fetch() solo lanza TypeError ("Failed to fetch") cuando no hubo respuesta: servidor
+    // caído o despertando (Render free) u origen bloqueado por CORS.
     throw new ApiError(
-      error.message || "Error de red al conectar con el servidor VELOX",
+      "No se pudo conectar con el servidor de VELOX. Si estaba inactivo puede tardar hasta un minuto en responder: volvé a intentar.",
       0,
       null
     );

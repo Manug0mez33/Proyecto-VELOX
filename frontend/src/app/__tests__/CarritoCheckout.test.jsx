@@ -213,9 +213,12 @@ describe("Carrito & Checkout Form - Integración React Hook Form + Zod", () => {
         expect.objectContaining({
           direccion_envio: "Boulevard Roca 1234, Río Cuarto, CP 5800",
           metodo_pago: "TARJETA_CREDITO",
+          // PedidoCreateSerializer espera "detalles"; con "items" el backend responde 400.
+          detalles: [expect.objectContaining({ variante: expect.anything(), cantidad: expect.any(Number) })],
         }),
         { token: "jwt-auth-token-xyz" }
       );
+      expect(apiPostSpy.mock.calls[0][1]).not.toHaveProperty("items");
     });
 
     await waitFor(() => {

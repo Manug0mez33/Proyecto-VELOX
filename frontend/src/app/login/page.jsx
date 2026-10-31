@@ -13,7 +13,7 @@ import Badge from "../../components/Badge";
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectPath = searchParams.get("redirect") || "/dashboard";
+  const redirectParam = searchParams.get("redirect");
 
   const [serverError, setServerError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -55,8 +55,11 @@ function LoginForm() {
 
       setLoginSuccess(true);
 
+      // Sin destino explícito: el personal va al dashboard y los clientes al catálogo.
+      const destino = redirectParam || (result.es_personal_tienda ? "/dashboard" : "/productos");
+
       setTimeout(() => {
-        router.push(redirectPath);
+        router.push(destino);
         router.refresh();
       }, 600);
     } catch (err) {

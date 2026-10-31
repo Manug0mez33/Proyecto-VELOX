@@ -9,7 +9,7 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from rest_framework.response import Response
 
 from apps.pedidos.models import Pedido, Resena
-from apps.pedidos.permissions import EsPropietarioOStaff
+from apps.pedidos.permissions import EsAutorOStaffOSoloLectura, EsPropietarioOStaff
 from apps.pedidos.serializers import (
     PedidoCreateSerializer,
     PedidoListSerializer,
@@ -92,12 +92,12 @@ class PedidoViewSet(viewsets.ModelViewSet):
 class ResenaViewSet(viewsets.ModelViewSet):
     """
     ViewSet para la consulta y creación de reseñas de calzado (ViewSet #8 de los 8 obligatorios).
-    Permite lectura pública y escritura autenticada.
+    Permite lectura pública y escritura autenticada; editar o borrar queda para el autor o el personal.
     """
 
     queryset = Resena.objects.all().select_related('usuario', 'producto')
     serializer_class = ResenaSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly, EsAutorOStaffOSoloLectura]
     filterset_fields = ['producto', 'calificacion']
     search_fields = ['comentario', 'usuario__username', 'producto__nombre']
     ordering_fields = ['creado_en', 'calificacion']

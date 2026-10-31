@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --color-base: #121212;
+  /* No usar "base": Tailwind generaría text-base como color y pisaría el tamaño de fuente text-base. */
+  --color-fondo: #121212;
   --color-surface: #2A2A2A;
   --color-accent: #39FF14;
   --color-text-primary: #FFFFFF;

@@ -5,12 +5,14 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCart } from "../context/CartContext";
+import { logoutAction } from "../app/actions";
+import { esPersonalTienda } from "../lib/jwt";
 
 const NAV_LINKS = [
   { href: "/", label: "INICIO" },
   { href: "/productos", label: "CATÁLOGO" },
   { href: "/tecnologia", label: "TECNOLOGÍA" },
-  { href: "/dashboard", label: "DASHBOARD" },
+  { href: "/dashboard", label: "DASHBOARD", soloPersonal: true },
 ];
 
 export default function Navbar() {
@@ -18,6 +20,7 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { totalItems: cartCount } = useCart();
   const [currentUser, setCurrentUser] = useState(null);
+  const [esPersonal, setEsPersonal] = useState(false);
 
   useEffect(() => {
     const syncAuth = () => {
@@ -25,8 +28,10 @@ export default function Navbar() {
         const token = localStorage.getItem("velox_access_token");
         const user = localStorage.getItem("velox_username");
         setCurrentUser(token && user ? user : null);
+        setEsPersonal(Boolean(token) && esPersonalTienda(token));
       } catch {
         setCurrentUser(null);
+        setEsPersonal(false);
       }
     };
 
@@ -40,7 +45,16 @@ export default function Navbar() {
     };
   }, []);
 
-  const handleLogout = () => {
+  // El dashboard solo se ofrece a ADMIN y EMPLEADO (el proxy igual lo bloquea por URL).
+  const linksVisibles = NAV_LINKS.filter((link) => !link.soloPersonal || esPersonal);
+
+  const handleLogout = async () => {
+    // Borra las Cookies HTTP-Only: sin esto el proxy seguía dejando entrar a /dashboard.
+    try {
+      await logoutAction();
+    } catch {
+      // Si falla, igual se limpia la sesión local y se redirige
+    }
     try {
       localStorage.removeItem("velox_access_token");
       localStorage.removeItem("velox_refresh_token");
@@ -71,7 +85,7 @@ export default function Navbar() {
           className="hidden md:flex items-center gap-8"
           aria-label="Navegación principal"
         >
-          {NAV_LINKS.map((link) => {
+          {linksVisibles.map((link) => {
             const isActive =
               link.href === "/"
                 ? pathname === "/"
@@ -146,7 +160,7 @@ export default function Navbar() {
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-[#2A2A2A] bg-[#121212] px-6 py-4 space-y-3">
           <div className="flex flex-col space-y-2">
-            {NAV_LINKS.map((link) => {
+            {linksVisibles.map((link) => {
               const isActive =
                 link.href === "/"
                   ? pathname === "/"

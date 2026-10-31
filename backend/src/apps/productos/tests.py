@@ -139,3 +139,23 @@ class CatalogoApiTests(TestCase):
         self.assertEqual(self.client.get("/api/proveedores/").status_code, status.HTTP_403_FORBIDDEN)
         self.client.force_authenticate(self.empleado)
         self.assertEqual(self.client.get("/api/proveedores/").status_code, status.HTTP_200_OK)
+
+    def test_paginacion_de_6_por_pagina(self):
+        """El catálogo pagina de a 6 y acepta ?page_size= (el dashboard pide más)."""
+        for i in range(5):
+            Producto.objects.create(
+                marca=self.nike, categoria=self.running, proveedor=self.proveedor,
+                nombre=f"Extra {i}", precio_base="1000.00",
+            )
+        primera = self.client.get("/api/productos/").data
+        self.assertEqual(primera["count"], 7)
+        self.assertEqual(len(primera["results"]), 6)
+        self.assertIsNotNone(primera["next"])
+        self.assertEqual(len(self.client.get("/api/productos/?page=2").data["results"]), 1)
+        self.assertEqual(len(self.client.get("/api/productos/?page_size=100").data["results"]), 7)
+
+    def test_filtro_sku_no_duplica_stock(self):
+        """?sku= filtra por variantes sin multiplicar el stock_total anotado."""
+        response = self.client.get("/api/productos/?sku=NK-4")
+        self.assertEqual([p["id"] for p in response.data["results"]], [self.pegasus.id])
+        self.assertEqual(response.data["results"][0]["stock_total"], 10)

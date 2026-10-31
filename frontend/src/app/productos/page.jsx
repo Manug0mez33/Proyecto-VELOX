@@ -240,20 +240,19 @@ const MOCK_CATEGORIAS = [
   { id: 4, nombre: "Trail" },
 ];
 
-const ITEMS_PER_PAGE = 10;
+// Debe coincidir con PaginacionCatalogo del backend (se envía como page_size).
+const ITEMS_PER_PAGE = 6;
 
 async function getCatalogo(params = {}) {
   try {
-    const data = await api.getPaginated("/productos/", {
-      params,
+    // Un resultado vacío (ej. un filtro sin coincidencias) es una respuesta válida:
+    // se muestra tal cual y no se reemplaza por el catálogo de ejemplo.
+    return await api.getPaginated("/productos/", {
+      params: { ...params, page_size: ITEMS_PER_PAGE },
       next: { revalidate: 30 },
     });
-
-    if (data && Array.isArray(data.results) && data.results.length > 0) {
-      return data;
-    }
   } catch (error) {
-    // Si la API no responde o da 404 por página, se usa el catálogo local
+    // Solo si la API no responde (o la página pedida no existe) se usa el catálogo local
   }
 
   // Filtrado en memoria sobre el mock

@@ -108,10 +108,11 @@ export default function CarritoPage() {
       const drfPayload = {
         direccion_envio: direccionCompleta,
         metodo_pago: formData.metodo_pago,
-        items: items.map((item) => ({
+        // "detalles" es el campo que espera PedidoCreateSerializer. El precio no se envía:
+        // lo calcula el backend desde la variante para que no se pueda manipular.
+        detalles: items.map((item) => ({
           variante: item.variante_id || item.id,
           cantidad: item.cantidad,
-          precio_unitario: Number(item.precio_final || item.precio_base || 0),
         })),
       };
 
