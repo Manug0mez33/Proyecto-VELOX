@@ -65,3 +65,14 @@ export function isTokenExpired(token) {
 export function esPersonalTienda(token) {
   return Boolean(parseJwt(token)?.es_personal_tienda);
 }
+
+/**
+ * Indica si el token pertenece a un administrador (rol ADMIN o superusuario).
+ * Solo ellos acceden a la gestión de usuarios y roles del dashboard.
+ *
+ * @param {string} token - Token JWT
+ * @returns {boolean} true si el usuario es administrador
+ */
+export function esAdministrador(token) {
+  return Boolean(parseJwt(token)?.es_administrador);
+}

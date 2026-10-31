@@ -115,4 +115,6 @@ class TokenVeloxSerializer(TokenObtainPairSerializer):
         token['rol'] = user.rol
         # Superusuarios cuentan como personal aunque su rol por defecto sea CLIENTE.
         token['es_personal_tienda'] = user.es_personal_tienda
+        # Solo los administradores gestionan usuarios y roles desde el dashboard.
+        token['es_administrador'] = user.es_administrador
         return token

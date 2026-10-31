@@ -37,3 +37,47 @@ describe("proxy.js — protección de /dashboard por sesión y rol", () => {
     expect(res.headers.get("location")).toBeNull();
   });
 });
+
+describe("proxy.js — /mis-pedidos solo para clientes", () => {
+  const pedirMisPedidos = (token) =>
+    proxy(
+      new NextRequest("http://localhost:3000/mis-pedidos", {
+        headers: token ? { cookie: `velox_access_token=${token}` } : {},
+      })
+    );
+
+  it("sin sesión pide iniciar sesión", () => {
+    expect(pedirMisPedidos(null).headers.get("location")).toBe(
+      "http://localhost:3000/login?redirect=%2Fmis-pedidos"
+    );
+  });
+
+  it("un CLIENTE puede entrar", () => {
+    const res = pedirMisPedidos(crearToken({ rol: "CLIENTE", es_personal_tienda: false, exp: vigente() }));
+    expect(res.headers.get("location")).toBeNull();
+  });
+
+  it("el personal es enviado a la gestión de pedidos del dashboard", () => {
+    const res = pedirMisPedidos(crearToken({ rol: "ADMIN", es_personal_tienda: true, exp: vigente() }));
+    expect(res.headers.get("location")).toBe("http://localhost:3000/dashboard/pedidos");
+  });
+});
+
+describe("proxy.js — /dashboard/usuarios solo para ADMIN", () => {
+  const pedirUsuarios = (payload) =>
+    proxy(
+      new NextRequest("http://localhost:3000/dashboard/usuarios", {
+        headers: { cookie: `velox_access_token=${crearToken({ exp: vigente(), ...payload })}` },
+      })
+    );
+
+  it("un EMPLEADO vuelve al resumen del dashboard", () => {
+    const res = pedirUsuarios({ rol: "EMPLEADO", es_personal_tienda: true, es_administrador: false });
+    expect(res.headers.get("location")).toBe("http://localhost:3000/dashboard");
+  });
+
+  it("un ADMIN puede entrar", () => {
+    const res = pedirUsuarios({ rol: "ADMIN", es_personal_tienda: true, es_administrador: true });
+    expect(res.headers.get("location")).toBeNull();
+  });
+});

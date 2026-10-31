@@ -1,15 +1,19 @@
+// Server Component: layout anidado de /dashboard; lee el rol desde la Cookie HTTP-Only en el servidor para mostrar las secciones de administración sin JavaScript extra en el cliente.
 import Link from "next/link";
 import Badge from "../../components/Badge";
 import LogoutButton from "../../components/LogoutButton";
+import { esAdministrador, getServerToken } from "../../lib/auth";
 
 const DASHBOARD_LINKS = [
   { href: "/dashboard", label: "RESUMEN EJECUTIVO", icon: "📊" },
-  { href: "/productos", label: "CATÁLOGO & STOCK", icon: "👟" },
   { href: "/dashboard/pedidos", label: "GESTIÓN DE PEDIDOS", icon: "📦" },
-  { href: "/tecnologia", label: "LABORATORIO & RENDIMIENTO", icon: "⚡" },
+  { href: "/dashboard/usuarios", label: "GESTIÓN DE USUARIOS", icon: "👥", soloAdmin: true },
 ];
 
-export default function DashboardLayout({ children }) {
+export default async function DashboardLayout({ children }) {
+  const esAdmin = esAdministrador(await getServerToken());
+  const links = DASHBOARD_LINKS.filter((link) => !link.soloAdmin || esAdmin);
+
   return (
     <div className="mx-auto max-w-[1440px] px-6 lg:px-20 py-8">
       {/* Barra superior de contexto de Dashboard */}
@@ -41,7 +45,7 @@ export default function DashboardLayout({ children }) {
               MÓDULOS DE GESTIÓN
             </p>
             <nav className="mt-3 flex flex-col space-y-1.5" aria-label="Navegación del Dashboard">
-              {DASHBOARD_LINKS.map((link) => (
+              {links.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}

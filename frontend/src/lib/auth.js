@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { isTokenExpired, parseJwt } from "./jwt";
 
 // Se re-exportan para mantener los imports existentes desde "lib/auth".
-export { esPersonalTienda, isTokenExpired, parseJwt } from "./jwt";
+export { esAdministrador, esPersonalTienda, isTokenExpired, parseJwt } from "./jwt";
 
 export const AUTH_COOKIE_NAME = "velox_access_token";
 export const REFRESH_COOKIE_NAME = "velox_refresh_token";

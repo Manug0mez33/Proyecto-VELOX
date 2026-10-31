@@ -16,6 +16,11 @@ function formatPrecioARS(valor) {
   return `$${numero.toLocaleString("es-AR", { maximumFractionDigits: 0 })}`;
 }
 
+// CartContext guarda el precio unitario en "precio"; precio_final/precio_base quedan como respaldo.
+function precioUnitario(item) {
+  return Number(item.precio ?? item.precio_final ?? item.precio_base) || 0;
+}
+
 export default function CarritoPage() {
   const {
     items,
@@ -238,13 +243,20 @@ export default function CarritoPage() {
 
                   <div className="space-y-1">
                     <p className="text-[11px] font-bold uppercase tracking-wider text-[#9CA3AF]">
-                      {item.marca} • TALLE {item.talle} AR • COLOR {item.color}
+                      {/* La API ya envía el talle como "41 AR"; se evita repetir el sistema */}
+                      {item.marca} • TALLE {String(item.talle).replace(/\s*AR$/i, "")} AR • COLOR {item.color}
                     </p>
                     <h3 className="font-heading text-lg font-bold text-[#FFFFFF]">
                       {item.nombre}
                     </h3>
                     <p className="font-heading text-xs text-[#39FF14]">
                       REF: {item.sku}
+                    </p>
+                    <p className="text-xs text-[#D1D5DB]">
+                      Precio unitario:{" "}
+                      <span className="font-heading font-bold text-[#FFFFFF]">
+                        {formatPrecioARS(precioUnitario(item))}
+                      </span>
                     </p>
                   </div>
                 </div>
@@ -273,12 +285,13 @@ export default function CarritoPage() {
                     </button>
                   </div>
 
-                  {/* Subtotal del Ítem */}
+                  {/* Subtotal del Ítem (precio unitario x cantidad) */}
                   <div className="text-right min-w-[90px]">
-                    <span className="font-heading text-base font-extrabold text-[#FFFFFF]">
-                      {formatPrecioARS(
-                        (item.precio_final || item.precio_base) * item.cantidad
-                      )}
+                    <span className="block font-heading text-base font-extrabold text-[#FFFFFF]">
+                      {formatPrecioARS(precioUnitario(item) * item.cantidad)}
+                    </span>
+                    <span className="block text-[11px] text-[#9CA3AF]">
+                      {item.cantidad} × {formatPrecioARS(precioUnitario(item))}
                     </span>
                   </div>
 
@@ -417,16 +430,26 @@ export default function CarritoPage() {
         }
         footer={
           orderConfirmedData ? (
-            <Button
-              variant="primary"
-              onClick={() => {
-                setOrderConfirmedData(null);
-                setIsCheckoutModalOpen(false);
-              }}
-              className="px-6 py-2.5 text-xs tracking-wider"
-            >
-              FINALIZAR Y CONTINUAR →
-            </Button>
+            <>
+              {/* Lleva al seguimiento del pedido recién creado */}
+              <Button
+                variant="secondary"
+                href="/mis-pedidos"
+                className="px-6 py-2.5 text-xs tracking-wider"
+              >
+                VER MIS PEDIDOS
+              </Button>
+              <Button
+                variant="primary"
+                onClick={() => {
+                  setOrderConfirmedData(null);
+                  setIsCheckoutModalOpen(false);
+                }}
+                className="px-6 py-2.5 text-xs tracking-wider"
+              >
+                FINALIZAR Y CONTINUAR →
+              </Button>
+            </>
           ) : null
         }
       >
@@ -495,7 +518,7 @@ export default function CarritoPage() {
                           </span>
                         </span>
                         <span className="font-heading text-white flex-shrink-0">
-                          {formatPrecioARS(item.precio_final * item.cantidad)}
+                          {formatPrecioARS(precioUnitario(item) * item.cantidad)}
                         </span>
                       </div>
                     ))}

@@ -54,6 +54,22 @@ describe("Carrito & Checkout Form - Integración React Hook Form + Zod", () => {
     });
   });
 
+  it("muestra el precio unitario y el subtotal de cada ítem", async () => {
+    render(
+      <CarritoTestWrapper initialItem={{ ...sampleProduct, talle: "38 AR" }}>
+        <CarritoPage />
+      </CarritoTestWrapper>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText(/Precio unitario:/i)).toBeInTheDocument();
+    });
+    // Antes el subtotal de la línea salía $0 porque leía un campo que el carrito no guarda.
+    expect(screen.getByText("1 × $99.999")).toBeInTheDocument();
+    // El talle de la API ya trae "AR": no debe repetirse.
+    expect(screen.queryByText(/38 AR AR/)).not.toBeInTheDocument();
+  });
+
   it("abre el modal de checkout al hacer click en 'FINALIZAR PEDIDO'", async () => {
     render(
       <CarritoTestWrapper initialItem={sampleProduct}>

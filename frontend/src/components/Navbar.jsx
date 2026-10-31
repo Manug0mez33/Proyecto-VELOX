@@ -12,6 +12,7 @@ const NAV_LINKS = [
   { href: "/", label: "INICIO" },
   { href: "/productos", label: "CATÁLOGO" },
   { href: "/tecnologia", label: "TECNOLOGÍA" },
+  { href: "/mis-pedidos", label: "MIS PEDIDOS", soloCliente: true },
   { href: "/dashboard", label: "DASHBOARD", soloPersonal: true },
 ];
 
@@ -45,8 +46,13 @@ export default function Navbar() {
     };
   }, []);
 
-  // El dashboard solo se ofrece a ADMIN y EMPLEADO (el proxy igual lo bloquea por URL).
-  const linksVisibles = NAV_LINKS.filter((link) => !link.soloPersonal || esPersonal);
+  // El dashboard solo se ofrece a ADMIN y EMPLEADO, y "Mis pedidos" solo a clientes logueados
+  // (el proxy igual bloquea ambas rutas por URL).
+  const linksVisibles = NAV_LINKS.filter((link) => {
+    if (link.soloPersonal) return esPersonal;
+    if (link.soloCliente) return Boolean(currentUser) && !esPersonal;
+    return true;
+  });
 
   const handleLogout = async () => {
     // Borra las Cookies HTTP-Only: sin esto el proxy seguía dejando entrar a /dashboard.
