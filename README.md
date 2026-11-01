@@ -4,31 +4,74 @@ Repositorio oficial del Examen Final Integrador (EFI 2026) — **ITEC Río Cuart
 - **Ingeniería de Software (Backend Django 6 + DRF)** — Prof. Facundo Lemo
 - **Programación III (Frontend Next.js App Router)** — Prof. Valentino Arballo
 
-## 👥 Integrantes del Equipo
-- **Manuel Gómez** — Backend 1 (Core, Usuarios, Auth Dual JWT/Session, Pedidos, Reseñas y Deploy)
-- **Valentino Cambria** — Backend 2 (Catálogo de 8 Modelos, Variantes SKU, ViewSets y Filtros)
-- **Juan Falco** — Frontend 1 (UI Kit VELOX, Home, Catálogo, Ficha Dinámica y Autenticación JWT)
-- **Tomás Benavidez** — Frontend 2 (CartContext, Schemas Zod, Checkout, Dashboard CRUD y Tests Vitest)
+---
 
-## 📂 Estructura del Monorepo
-- `backend/`: API RESTful en Django + Django REST Framework gestionada con `uv` y Docker.
-- `frontend/`: Aplicación web en Next.js 16 (App Router) + React 19 + Tailwind CSS v4.
-- `docs/`: Documentación de arquitectura, manual de marca VELOX, plantillas de Figma y bitácora de defensa.
+## 🏃 Temática e Identidad del Sistema
+
+**VELOX** es una plataforma de comercio electrónico de alto rendimiento especializada en calzado deportivo técnico para atletas y corredores de competición. El sistema refleja una identidad visual moderna basada en una paleta de alto contraste en modo oscuro (`#0A0A0A`, `#141414`, `#1F1F1F`) con resplandor verde neón (`#39FF14`) representativo de la energía reactiva de la placa de fibra de carbono.
+
+La arquitectura del proyecto está desacoplada: una aplicación frontend moderna en **Next.js 16 (App Router)** que consume de forma nativa la **API RESTful de Ingeniería de Software** construida en **Django 6 + Django REST Framework**, soportando autenticación JWT con Cookies HTTP-Only, cálculo y validación de inventario en tiempo real, gestión transaccional de órdenes de compra con restitución de stock y administración completa de roles y usuarios.
+
+### 🔗 Enlaces Principales del Proyecto
+
+| Recurso | Enlace de Producción | Descripción |
+| :--- | :--- | :--- |
+| **🌐 Frontend Desplegado** | [proyecto-velox.vercel.app](https://proyecto-velox.vercel.app/) | Aplicación web completa en producción en Vercel |
+| **☁️ API REST Desplegada** | [velox-backend-smxi.onrender.com/api/](https://velox-backend-smxi.onrender.com/api/) | Backend Django 6 + DRF en producción en Render |
+| **📘 Documentación Swagger UI** | [velox-backend-smxi.onrender.com/api/docs/](https://velox-backend-smxi.onrender.com/api/docs/) | Interfaz interactiva OpenAPI 3 con prueba de endpoints JWT |
+| **📑 Documentación ReDoc** | [velox-backend-smxi.onrender.com/api/redoc/](https://velox-backend-smxi.onrender.com/api/redoc/) | Especificación técnica de contratos, tipos y esquemas |
+| **📌 Tablero Kanban (Trello)** | [trello.com/b/frG8yKLI/proyecto-velox](https://trello.com/b/frG8yKLI/proyecto-velox) | Tablero ágil oficial con flujo de trabajo y tareas del equipo |
 
 ---
 
-## ⚛️ Ejecución y Configuración del Frontend (`frontend/`)
+## 👥 Integrantes del Equipo
+
+- **Manuel Gómez** — Backend 1 (Core, Usuarios, Auth Dual JWT/Session, Pedidos, Reseñas y Deploy en Render)
+- **Valentino Cambria** — Backend 2 (Catálogo de 8 Modelos, Variantes SKU, ViewSets, Filtros y Documentación OpenAPI)
+- **Juan Falco** — Frontend 1 (UI Kit VELOX, Home, Catálogo Paginado, Ficha Dinámica y Autenticación JWT)
+- **Tomás Benavidez** — Frontend 2 (CartContext, Schemas Zod, Checkout Transaccional, Dashboard CRUD y Tests Vitest)
+
+---
+
+## 📋 Metodología Ágil y Organización del Trabajo (Kanban en Trello)
+
+Para asegurar la coordinación continua entre los 4 integrantes del equipo durante el desarrollo tanto del Backend como del Frontend, se implementó la metodología ágil **Kanban** utilizando la plataforma **Trello**:
+
+- **Enlace al Tablero Oficial:** [https://trello.com/b/frG8yKLI/proyecto-velox](https://trello.com/b/frG8yKLI/proyecto-velox)
+- **Estructura de Columnas:**
+  1. `📋 Backlog`: Requisitos de la consigna y requerimientos técnicos desglosados en tarjetas atómicas con fecha límite y responsables asignados.
+  2. `📌 Sprint Actual`: Tareas priorizadas para el ciclo de entrega inmediato.
+  3. `🔨 En Desarrollo`: Tareas en curso asignadas a ramas específicas `feature/*`.
+  4. `👀 Code Review / Testing`: Tareas finalizadas en espera de revisión obligatoria de código (Pull Request con al menos 3 aprobaciones del resto del equipo antes de fusionar a `develop`).
+  5. `✅ Done`: Tareas completadas con fecha de vencimiento marcada en verde, tests automatizados verificados y documentación viva actualizada (`README.md` y `docs/bitacora_defensa.md`).
+
+![Tablero Kanban en Trello](docs/capturas/trello_kanban.jpg)
+
+---
+
+## 📂 Estructura del Monorepo
+
+- `frontend/`: Aplicación web moderna en Next.js 16 (App Router) + React 19 + Tailwind CSS v4 con Vitest y Testing Library.
+- `backend/`: API RESTful en Django 6 + Django REST Framework gestionada con `uv` y Docker (PostgreSQL / SQLite).
+- `docs/`: Documentación técnica de arquitectura, manual de identidad VELOX, consignas del EFI, bitácora de defensa oral (`docs/bitacora_defensa.md`) y capturas de pantalla de verificación.
+
+---
+
+## ⚛️ Frontend — Next.js 16 App Router (Programación III)
 
 ### 1. Variables de Entorno
-Copiar el archivo `.env.example` hacia `.env.local` dentro de `frontend/`:
+Copiar la plantilla `.env.example` hacia `.env.local` dentro del directorio `frontend/`:
 
 ```bash
 cd frontend
 cp .env.example .env.local
 ```
 
-Variables requeridas:
-- `NEXT_PUBLIC_API_URL=http://localhost:8000/api` (URL base del Backend en Django REST Framework).
+Variables de entorno configuradas:
+
+| Variable | Valor de Desarrollo | Valor de Producción | Descripción |
+| :--- | :--- | :--- | :--- |
+| `NEXT_PUBLIC_API_URL` | `http://localhost:8000/api` | `https://velox-backend-smxi.onrender.com/api` | URL base del Backend en Django REST Framework |
 
 ### 2. Instalación y Servidor de Desarrollo
 ```bash
@@ -36,54 +79,107 @@ cd frontend
 npm install
 npm run dev
 ```
-La aplicación estará disponible en `http://localhost:3000` y en producción en `https://proyecto-velox.vercel.app/`.
+La aplicación estará disponible localmente en `http://localhost:3000` y en producción en [https://proyecto-velox.vercel.app/](https://proyecto-velox.vercel.app/).
 
-### 3. Rutas y Componentes Implementados (Sprint 1 & Sprint 2)
-- **Rutas y Layouts (R1):**
-  - `/` (`src/app/page.jsx`): Landing Page y Hero Section con resplandor verde neón (`#39FF14`) y consumo de `GET /api/productos/destacados/` con fallback seguro.
-  - `/tecnologia` (`src/app/tecnologia/page.jsx`): Manifiesto técnico e ingeniería biomecánica VELOX.
-  - `/productos` (`src/app/productos/page.jsx`): Catálogo general paginado con Server Component que procesa el sobre paginado de DRF (`{ count, next, previous, results }`), sincronización bidireccional con query params y fallback completo en memoria.
-  - `/productos/[id]` (`src/app/productos/[id]/page.jsx`): Ficha técnica dinámica de calzado deportivo con Server Component para SEO y metadata, e hidratación de `ProductDetailClient.jsx` para galería interactiva de fotos (1:N), selector de talles AR y colores SKU con verificación de stock en tiempo real y módulo de reseñas de atletas.
-  - `/dashboard` (`src/app/dashboard/layout.jsx` y `page.jsx`): Layout anidado y panel administrativo con KPIs en tiempo real del catálogo, variantes SKU y el módulo interactivo `DashboardCrudManager.jsx` con cobertura completa de las 4 operaciones CRUD (`GET`, `POST`, `PATCH`, `DELETE`) sobre inventario de variantes SKU y reseñas de calzado.
-  - `/dashboard/pedidos` (`src/app/dashboard/pedidos/page.jsx`): Ruta anidada (R1) con listado reactivo de pedidos consumiendo `GET /api/pedidos/` de DRF mediante JWT, filtros dinámicos por estado (`TODOS`, `PENDIENTE`, `PAGADO`, `ENVIADO`, `ENTREGADO`, `CANCELADO`), badges de estado, buscador en vivo y empty state.
-  - `/dashboard/pedidos/[id]` (`src/app/dashboard/pedidos/[id]/page.jsx` y `src/components/PedidoDetalleClient.jsx`): 2da ruta dinámica obligatoria de la EFI (R1) con ficha completa de orden de compra (`GET /api/pedidos/{id}/`), desglose de calzados (SKU, modelo, talle AR, color, cantidad, subtotal), datos de cliente, destino y botón para ejecutar la acción transaccional `@action` de DRF `POST /api/pedidos/{id}/cancelar_pedido/` con confirmación en `Modal.jsx`, feedback visual y restitución atómica de stock en la base de datos.
-  - `/login` (`src/app/login/page.jsx`): Formulario interactivo con React Hook Form + Zod (`authSchema.js`) y manejo estructurado de errores DRF.
-  - `/dashboard` (`src/app/dashboard/layout.jsx` y `page.jsx`): Layout anidado y panel administrativo con KPIs en tiempo real del catálogo y variantes SKU.
-  - `/login` (`src/app/login/page.jsx`): Formulario interactivo con React Hook Form + Zod (`loginSchema R5`) conectado a Server Action (`loginAction R4`) para almacenamiento de tokens en Cookies HTTP-Only y `localStorage`, auto-completado de credenciales y redirección dinámica.
-  - `/carrito` (`src/app/carrito/page.jsx`): Carrito de compras interactivo conectado al estado global `CartContext` y al endpoint transaccional real `POST /api/pedidos/` de Django REST Framework con autenticación JWT (`Authorization: Bearer <token>`), selector de cantidades, botón rápido con variantes reales del catálogo (IDs 54, 49, 55, 44 del fixture), validación RHF + Zod (`checkoutFormSchema` y `orderSchema`), modal de orden confirmada con datos devueltos por DRF y captura de errores estructurados (stock insuficiente 400 y sesión expirada 401).
-  - Estados globales App Router: `src/app/layout.jsx` (Layout raíz con `CartProvider`), `src/app/loading.jsx`, `src/app/error.jsx` y `src/app/not-found.jsx`.
+### 3. Rutas y Páginas Implementadas (App Router)
+- **Rutas Principales, Anidadas y Dinámicas (R1):**
+  - `/` (`src/app/page.jsx`): Landing Page y Hero Section con estética cyberpunk/atlética, estadísticas de producto y consumo de `GET /api/productos/destacados/`.
+  - `/tecnologia` (`src/app/tecnologia/page.jsx`): Manifiesto técnico e ingeniería biomecánica (placa de carbono de doble densidad, drop aerodinámico y retorno de energía reactiva).
+  - `/productos` (`src/app/productos/page.jsx`): Catálogo general de calzado con Server Component que consume el sobre paginado de DRF (`{ count, next, previous, results }`), sincronización bidireccional con query params y fallback completo.
+  - `/productos/[id]` (`src/app/productos/[id]/page.jsx`): 1ra ruta dinámica obligatoria con Server Component para SEO y metadata, e hidratación del Client Component `ProductDetailClient.jsx` para galería de fotos (1:N), selector interactivo de talles AR y colores SKU con validación de stock en tiempo real y módulo de reseñas.
+  - `/carrito` (`src/app/carrito/page.jsx`): Carrito de compras y checkout interactivo conectado al estado global `CartContext` y al endpoint transaccional `POST /api/pedidos/` con autenticación JWT, selector de cantidades, validación RHF + Zod (`checkoutFormSchema` y `orderSchema`), confirmación modal y captura de errores estructurados.
+  - `/login` (`src/app/login/page.jsx`): Formulario de inicio de sesión con React Hook Form + Zod (`loginSchema`), conectado a Server Action (`loginAction`) para persistencia en Cookies HTTP-Only y `localStorage`, con botones de acceso rápido para la defensa (`admin` y `cliente1`).
+  - `/register` (`src/app/register/page.jsx`): Formulario de registro público de clientes con React Hook Form + Zod (`registerSchema`), conectado al endpoint `POST /api/usuarios/` con auto-login posterior.
+  - `/mis-pedidos` (`src/app/mis-pedidos/page.jsx`): Vista exclusiva para clientes autenticados (`rol="CLIENTE"`) con listado de compras propias, estados en tiempo real y acceso a detalle.
+  - `/dashboard` (`src/app/dashboard/layout.jsx` y `page.jsx`): Layout anidado exclusivo para personal (`ADMIN` / `EMPLEADO`) con KPIs en tiempo real del catálogo (stock en depósito, variantes activas, valor de inventario) y módulo interactivo de 4 operaciones CRUD (`DashboardCrudManager.jsx`).
+  - `/dashboard/pedidos` (`src/app/dashboard/pedidos/page.jsx`): Listado reactivo de órdenes consumiendo `GET /api/pedidos/` con JWT, pestañas de filtrado por estado (`TODOS`, `PENDIENTES`, `PAGADOS`, `ENVIADOS`, `ENTREGADOS`, `CANCELADOS`), badges visuales y buscador en vivo.
+  - `/dashboard/pedidos/[id]` (`src/app/dashboard/pedidos/[id]/page.jsx`): 2da ruta dinámica obligatoria con ficha completa de la orden (`GET /api/pedidos/{id}/`), desglose de artículos (SKU, talle, color, cantidad, subtotal), datos del cliente y botón transaccional para ejecutar la `@action` `POST /api/pedidos/{id}/cancelar_pedido/` con confirmación en modal y restitución de stock atómica en base de datos.
+  - `/dashboard/usuarios` (`src/app/dashboard/usuarios/page.jsx`): Panel exclusivo para `ADMIN` para auditoría de usuarios y modificación interactiva de roles (`ADMIN`, `EMPLEADO`, `CLIENTE`).
+  - **Manejo Global de Estados de Carga y Error:** `src/app/layout.jsx` (Layout raíz con `CartProvider`), `src/app/loading.jsx` (esqueletos de carga animados), `src/app/error.jsx` (recuperación declarativa de errores en runtime) y `src/app/not-found.jsx` (página 404 personalizada con enlace de retorno).
+
 - **Componentes Reutilizables Base (R2):**
-  - `src/components/DashboardCrudManager.jsx` (`Client Component` — módulo interactivo para las 4 operaciones CRUD: `GET` listados paginados de variantes/reseñas, `POST` alta de variantes SKU y reseñas, `PATCH` ajuste interactivo de stock/precio y edición de comentarios, y `DELETE` eliminación con confirmación modal)
-  - `src/components/PedidoDetalleClient.jsx` (`Client Component` — ficha técnica de pedido con desglose de calzados, cálculo de totales, modal de confirmación y llamada a la acción `@action` `cancelar_pedido` de DRF)
-  - `src/components/ProductCard.jsx` (`Client Component` — tarjeta de producto con selector de talle AR interactivo en vivo, recálculo de SKU/precio y compra directa a `CartContext`)
-  - `src/components/FilterBar.jsx` (`Client Component` — barra de filtrado declarativa por búsqueda, marca, categoría, género, pills de talles AR y ordenamiento sincronizada con la URL)
-  - `src/components/ProductDetailClient.jsx` (`Client Component` — isla interactiva de ficha técnica con galería de fotos, variantes SKU, stock y reseñas)
-  - `src/components/Navbar.jsx` (`Client Component` — sincronizado reactivamente con `useCart()`)
-  - `src/components/Footer.jsx` (`Server Component`)
-  - `src/components/Button.jsx` (`Client Component`)
-  - `src/components/Badge.jsx` (`Server Component`)
-  - `src/components/SkeletonCard.jsx` (`Server Component`)
-  - `src/components/Modal.jsx` (`Client Component` — accesibilidad con tecla Escape, clic en backdrop y bloqueo de scroll)
-  - `src/components/LogoutButton.jsx` (`Client Component` — cierre de sesión conectado a Server Action `logoutAction()` y limpieza de sesión)
-- **Autenticación JWT y Server Actions (R4):**
-  - `src/app/actions.js` (`Server Actions` con `"use server"`: `loginAction`, `logoutAction`, `getAuthSessionAction` y `revalidateProductsAction` gestionando persistencia en Cookies HTTP-Only).
-  - `src/lib/auth.js` (`Módulo de autenticación`: helpers `parseJwt`, `isTokenExpired`, `getServerToken` y guard `requireAuth`).
-  - `src/middleware.js` (`Middleware`: protección perimetral de rutas `/dashboard` con redirección automática al login si no existe token en cookies).
+  - `src/components/DashboardCrudManager.jsx` (`Client Component` — módulo interactivo para las 4 operaciones CRUD: `GET` paginado de variantes/reseñas, `POST` alta de variantes y reseñas, `PATCH` ajuste reactivo de stock/precio y `DELETE` con confirmación modal).
+  - `src/components/PedidoDetalleClient.jsx` (`Client Component` — ficha técnica de pedido con desglose de calzados, cálculo de totales, modal accesible y ejecución de `@action` `cancelar_pedido`).
+  - `src/components/ProductCard.jsx` (`Client Component` — tarjeta de calzado con selector en vivo de talle AR, recálculo dinámico de SKU/precio y compra directa a `CartContext`).
+  - `src/components/FilterBar.jsx` (`Client Component` — barra de filtrado declarativa por búsqueda de texto, marcas, categorías, géneros, pills de talles AR y ordenamiento por precio o fecha).
+  - `src/components/ProductDetailClient.jsx` (`Client Component` — isla interactiva de ficha técnica con galería de imágenes, variantes SKU, verificación de stock y módulo de reseñas).
+  - `src/components/Navbar.jsx` (`Client Component` — cabecera con navegación, selector de rutas por rol y contador reactivo de carrito vía `useCart()`).
+  - `src/components/Footer.jsx` (`Server Component` — pie de página informativo con enlaces semánticos y políticas de marca).
+  - `src/components/Button.jsx` (`Client Component` — botón polimórfico con variantes estilizadas `primary`, `secondary`, `danger`, `ghost` y soporte de estados `disabled` y `loading`).
+  - `src/components/Badge.jsx` (`Server Component` — etiqueta visual de estado y categorías con variantes de color semánticas).
+  - `src/components/SkeletonCard.jsx` (`Server Component` — marcador de posición animado para carga progresiva de tarjetas de calzado).
+  - `src/components/Modal.jsx` (`Client Component` — diálogo modal con accesibilidad completa: cierre con tecla Escape, clic en backdrop, bloqueo de scroll en el body y foco accesible).
+  - `src/components/LogoutButton.jsx` (`Client Component` — botón de cierre de sesión conectado a Server Action `logoutAction()` y limpieza local de almacenamiento).
+
+- **Autenticación JWT, Server Actions y Proxy Perimetral (R4):**
+  - `src/app/actions.js`: Server Actions con `"use server"` (`loginAction`, `logoutAction`, `getAuthSessionAction`, `revalidateProductsAction`) para gestión segura de tokens en Cookies HTTP-Only.
+  - `src/lib/auth.js` y `src/lib/jwt.js`: Módulos de decodificación y verificación de tokens JWT (`parseJwt`, `isTokenExpired`, `esAdministrador`, `esPersonalTienda`, `getServerToken`).
+  - `src/proxy.js`: Proxy perimetral de Next.js 16 para protección de rutas sensibles por sesión y rol (redirige al login recordando el destino solicitado; restringe `/dashboard` solo a personal y `/dashboard/usuarios` exclusivamente al rol `ADMIN`).
+
 - **Estado Global con Context API (R6):**
-  - `src/context/CartContext.jsx`: Proveedor `CartProvider` y hook `useCart()` con métodos `addToCart()`, `removeFromCart()`, `updateQuantity()`, `clearCart()`, preservación de `variante_id`, totales memorizados y persistencia bidireccional en `localStorage` (`velox_cart`) con soporte de sincronización multi-pestaña vía evento `storage`.
+  - `src/context/CartContext.jsx`: Proveedor `CartProvider` y hook `useCart()` con métodos `addToCart()`, `removeFromCart()`, `updateQuantity()`, `clearCart()`, cálculo memorizado de subtotal, total e impuestos, preservación de `variante_id` para la API y persistencia bidireccional en `localStorage` (`velox_cart`) con sincronización multi-pestaña mediante evento `storage`.
+
 - **Validaciones Zod en `snake_case` (R5):**
-  - `src/validations/authSchema.js`: Esquemas `loginSchema` y `registerSchema` alineados a `RegistroUsuarioSerializer`.
-  - `src/validations/orderSchema.js`: Esquemas `checkoutFormSchema`, `checkoutSchema` y `orderItemSchema` alineados exactamente a `Pedido.MetodoPago` (`TARJETA_CREDITO`, `TARJETA_DEBITO`, `TRANSFERENCIA`, `EFECTIVO`) y `PedidoCreateSerializer`.
-- **Cliente API REST y CRUD Completo (R3):**
-  - `src/lib/api.js`: Helper de peticiones HTTP con soporte para el sobre paginado de DRF `{ count, next, previous, results }`, clase `ApiError` y métodos CRUD completos (`get`, `getPaginated`, `post`, `put`, `patch`, `delete`).
+  - `src/validations/authSchema.js`: Esquemas `loginSchema` y `registerSchema` alineados a los serializadores del backend (`RegistroUsuarioSerializer`).
+  - `src/validations/orderSchema.js`: Esquemas `checkoutFormSchema`, `checkoutSchema` y `orderItemSchema` alineados exactamente a las opciones de `Pedido.MetodoPago` (`TARJETA_CREDITO`, `TARJETA_DEBITO`, `TRANSFERENCIA`, `EFECTIVO`) y `PedidoCreateSerializer`.
+
+- **Cliente API REST y Manejo de Errores (R3):**
+  - `src/lib/api.js`: Cliente HTTP centralizado con procesamiento de sobre paginado DRF `{ count, next, previous, results }`, clase personalizada `ApiError` con captura de códigos HTTP (400, 401, 403, 404, 500) y métodos CRUD completos (`get`, `getPaginated`, `post`, `put`, `patch`, `delete`).
 
 ### 4. Ejecución de Tests Unitarios (R7)
-Ejecutar la suite completa de tests unitarios en Vitest con Testing Library y JSDOM:
+Ejecutar la suite completa de pruebas unitarias automatizadas con Vitest, Testing Library y JSDOM:
+
 ```bash
 cd frontend
 npm run test
 ```
-*Cobertura: 11 suites de prueba y 82 tests unitarios verificando al 100%: `CartContext` (incluyendo sincronización multi-pestaña y preservación de `variante_id`), esquemas de Zod (`authSchema`, `orderSchema`), métodos CRUD y formateo recursivo de errores anidados DRF en `api.js`, componente `Modal`, componente `ProductCard` (renderizado, selector dinámico de talles AR, stock y despacho al carrito), checkout transaccional de `/carrito` conectado a DRF con JWT, listado reactivo de pedidos `/dashboard/pedidos` con filtros por estado y buscador, ficha técnica de la 2da ruta dinámica `/dashboard/pedidos/[id]` con ejecución de `@action` `cancelar_pedido`, módulo interactivo de 4 operaciones CRUD (`DashboardCrudManager`) con feedback de error en modales y sincronización reactiva de KPIs en `/dashboard` (`DashboardPage.test.jsx`).*
+
+*Resultado de verificación:* **17 suites de prueba y 106 tests unitarios ejecutados exitosamente al 100%**, cubriendo:
+- `CartContext`: agregados, eliminaciones, actualización de cantidades, vaciado, totales y sincronización multi-pestaña.
+- Esquemas de validación Zod: `authSchema` (login y registro) y `orderSchema` (ítems, métodos de pago y totales).
+- Cliente HTTP `api.js`: métodos CRUD (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`), sobre paginado DRF y formateo recursivo de errores anidados.
+- Componentes UI: `Modal`, `ProductCard` (renderizado, selector dinámico de talles AR, stock y despacho a CartContext).
+- Páginas y vistas integradas: checkout transaccional de `/carrito`, listado reactivo de pedidos `/dashboard/pedidos`, ficha dinámica `/dashboard/pedidos/[id]` con ejecución de `@action` `cancelar_pedido`, módulo CRUD interactivo (`DashboardCrudManager`), gestión de usuarios y roles (`GestionUsuarios.test.jsx`), vista de clientes (`MisPedidos.test.jsx`), KPIs del dashboard (`DashboardPage.test.jsx`), Server Actions (`authActions.test.js`) y Proxy perimetral de protección (`proxy.test.js`).
+
+---
+
+## 📸 Frontend — Capturas de la Aplicación en Funcionamiento (Vercel)
+
+Tomadas directamente sobre la aplicación desplegada en producción en [https://proyecto-velox.vercel.app/](https://proyecto-velox.vercel.app/) consumiendo la API de Render:
+
+| Vista de Inicio / Landing (`/`) | Catálogo General de Calzados (`/productos`) |
+| :---: | :---: |
+| ![Inicio Vercel](docs/capturas/front_01_home.png) | ![Catálogo Vercel](docs/capturas/front_02_catalogo.png) |
+| **Ficha Técnica Dinámica con Talles/Stock (`/productos/[id]`)** | **Bolsa de Compras y Checkout con Zod (`/carrito`)** |
+| ![Ficha Producto Vercel](docs/capturas/front_03_ficha_producto.png) | ![Carrito Vercel](docs/capturas/front_04_carrito_checkout.png) |
+| **Inicio de Sesión JWT (`/login`)** | **Registro de Nuevos Clientes (`/register`)** |
+| ![Login Vercel](docs/capturas/front_05_login.png) | ![Registro Vercel](docs/capturas/front_06_registro.png) |
+| **Panel Administrativo KPIs (`/dashboard`)** | **Módulo CRUD de Inventario y Reseñas (`/dashboard`)** |
+| ![Dashboard KPIs Vercel](docs/capturas/front_07_dashboard_kpis.png) | ![Dashboard CRUD Vercel](docs/capturas/front_08_dashboard_crud.png) |
+| **Monitoreo Reactivo de Pedidos (`/dashboard/pedidos`)** | **Ficha de Pedido y Cancelación Atómica (`/dashboard/pedidos/[id]`)** |
+| ![Listado Pedidos Vercel](docs/capturas/front_09_pedidos_listado.png) | ![Detalle Pedido Vercel](docs/capturas/front_10_pedidos_detalle.png) |
+| **Gestión de Usuarios y Roles (`/dashboard/usuarios`)** | **Manifiesto Biomecánico e Innovación (`/tecnologia`)** |
+| ![Usuarios y Roles Vercel](docs/capturas/front_11_usuarios_roles.png) | ![Tecnología Vercel](docs/capturas/front_12_tecnologia.png) |
+
+---
+
+## ✅ Frontend — Cumplimiento de la Consigna (Programación III)
+
+Auditoría de requisitos obligatorios del Examen Final Integrador realizada sobre el frontend Next.js:
+
+| Requisito | Estado | Evidencia en el Código |
+| :--- | :---: | :--- |
+| **R1. Enrutamiento y Layouts** (6+ rutas, anidada, 2+ dinámicas, layout anidado, loading/error/not-found) | CUMPLE (12 rutas) | 12 rutas en `src/app/`: `/`, `/tecnologia`, `/productos`, `/productos/[id]`, `/carrito`, `/login`, `/register`, `/mis-pedidos`, `/dashboard`, `/dashboard/pedidos`, `/dashboard/pedidos/[id]`, `/dashboard/usuarios`. Layout anidado en `src/app/dashboard/layout.jsx`. `loading.jsx`, `error.jsx`, `not-found.jsx`. |
+| **R2. Arquitectura de Componentes** (8+ componentes reutilizables con justificación Server vs Client) | CUMPLE (12 componentes) | 12 componentes en `src/components/` con comentarios explicativos de paradigma: `DashboardCrudManager`, `PedidoDetalleClient`, `ProductCard`, `FilterBar`, `ProductDetailClient`, `Navbar`, `Footer`, `Button`, `Badge`, `SkeletonCard`, `Modal`, `LogoutButton`. |
+| **R3. Integración con la API y CRUD Completo** (4 operaciones CRUD sobre recurso principal, listado con búsqueda y filtros, estados de carga/error) | CUMPLE | Cliente centralizado en `src/lib/api.js`. 4 operaciones CRUD (`GET`, `POST`, `PATCH`, `DELETE`) en `DashboardCrudManager.jsx` sobre variantes de calzado y reseñas. Filtros reactivos y búsqueda sincronizados en `FilterBar.jsx`. |
+| **R4. Autenticación** (Login con token JWT, logout, rutas protegidas por sesión y rol) | CUMPLE | `src/app/login/page.jsx`, Server Actions en `src/app/actions.js`, decodificación en `src/lib/jwt.js` y protección perimetral con `src/proxy.js` (rutas `/dashboard` y `/mis-pedidos`). |
+| **R5. Formularios y Validaciones** (React Hook Form + Zod, mensajes en español, errores de API) | CUMPLE | Formularios controlados con RHF y resolver Zod en `/login` (`loginSchema`), `/register` (`registerSchema`), `/carrito` (`checkoutFormSchema`) y en `DashboardCrudManager.jsx`. |
+| **R6. Estado Global con Context API** (createContext/useContext con persistencia) | CUMPLE | `src/context/CartContext.jsx` con `CartProvider`, `useCart()`, persistencia en `localStorage` (`velox_cart`) y sincronización multi-pestaña con evento `storage`. |
+| **R7. Testing Unitario** (Vitest con 4+ tests passing) | CUMPLE (106 tests) | 17 suites de prueba con 106 tests unitarios pasando exitosamente en Vitest (`src/app/__tests__/`). |
+| **R8. Despliegue en Producción** (Aplicación desplegada conectada a API pública) | CUMPLE | Desplegado en Vercel: `https://proyecto-velox.vercel.app/` conectado a la API en Render: `https://velox-backend-smxi.onrender.com/api`. |
+
+---
+
 ## 🚀 Backend — Puesta en marcha local (`uv`)
 
 Requisitos: Python 3.12+ y [`uv`](https://docs.astral.sh/uv/).
@@ -218,7 +314,6 @@ App Django con los **8 modelos del catálogo** (normalizados en 3FN) y su panel 
 **Datos de prueba (seed):** `fixtures/catalogo_velox.json` carga 5 marcas, 5 categorías, 3 proveedores, 7 talles, 5 colores, 7 calzados, 58 variantes con SKU y 21 imágenes.
 
 Panel de administración: `/admin/productos/` (los productos permiten cargar variantes e imágenes en la misma ficha; el stock de cada SKU se edita directamente desde el listado de variantes).
-
 
 ### Endpoints del Catálogo (`apps/productos`)
 
