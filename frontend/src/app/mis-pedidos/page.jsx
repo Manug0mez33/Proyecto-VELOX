@@ -4,8 +4,10 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { api } from "../../lib/api";
-import Badge from "../../components/Badge";
+import { formatARS, formatFecha } from "../../lib/formatters";
+import { useAuthToken } from "../../lib/useAuthToken";
 import Button from "../../components/Button";
+import OrderStatusBadge from "../../components/OrderStatusBadge";
 
 // Recorrido normal de un pedido; CANCELADO se muestra aparte.
 const PASOS_SEGUIMIENTO = [
@@ -17,18 +19,6 @@ const PASOS_SEGUIMIENTO = [
 
 // Mismas reglas que la @action cancelar_pedido del backend.
 const ESTADOS_CANCELABLES = ["PENDIENTE", "PAGADO"];
-
-function formatARS(valor) {
-  const num = Number(valor) || 0;
-  return `$${num.toLocaleString("es-AR", { maximumFractionDigits: 0 })}`;
-}
-
-function formatFecha(fechaStr) {
-  const d = fechaStr ? new Date(fechaStr) : null;
-  return d && !isNaN(d.getTime())
-    ? d.toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" })
-    : "";
-}
 
 function Seguimiento({ estado }) {
   if (estado === "CANCELADO") {
@@ -64,7 +54,7 @@ function Seguimiento({ estado }) {
 }
 
 export default function MisPedidosPage() {
-  const [token, setToken] = useState(null);
+  const { token, refreshAuth } = useAuthToken();
   const [pedidos, setPedidos] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
@@ -89,19 +79,13 @@ export default function MisPedidosPage() {
   }, []);
 
   useEffect(() => {
-    let stored = null;
-    try {
-      stored = localStorage.getItem("velox_access_token");
-    } catch {
-      // Navegador sin localStorage disponible
-    }
-    setToken(stored);
+    const stored = refreshAuth();
     if (stored) {
       cargarPedidos(stored);
     } else {
       setCargando(false);
     }
-  }, [cargarPedidos]);
+  }, [cargarPedidos, refreshAuth]);
 
   const handleCancelar = async (id) => {
     setMensaje("");
@@ -175,11 +159,14 @@ export default function MisPedidosPage() {
                 <h2 className="font-heading text-lg font-extrabold text-[#FFFFFF]">
                   PEDIDO VLX-PED-{pedido.id}
                 </h2>
-                <p className="text-xs text-[#9CA3AF]">Realizado el {formatFecha(pedido.fecha_creacion)}</p>
+                <p className="text-xs text-[#9CA3AF]">
+                  Realizado el {formatFecha(pedido.fecha_creacion, { month: "short", fallback: "" })}
+                </p>
               </div>
-              <Badge variant={pedido.estado === "CANCELADO" ? "danger" : "outline"}>
-                {pedido.estado_display || pedido.estado}
-              </Badge>
+              <OrderStatusBadge
+                estado={pedido.estado}
+                estadoDisplay={pedido.estado_display}
+              />
             </div>
 
             <Seguimiento estado={pedido.estado} />

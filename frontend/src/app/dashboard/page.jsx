@@ -1,4 +1,5 @@
 "use client";
+// Client Component: página principal del dashboard que sincroniza en vivo los KPIs con el estado del inventario.
 
 import { useState, useCallback, useMemo } from "react";
 import Link from "next/link";

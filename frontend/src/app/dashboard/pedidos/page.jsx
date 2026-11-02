@@ -1,10 +1,13 @@
 "use client";
+// Client Component ("use client"): Listado administrativo reactivo de órdenes de compra con filtrado por estado, buscador instantáneo y lectura de sesión JWT.
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { api, ApiError } from "../../../lib/api";
-import Badge from "../../../components/Badge";
+import { formatARS, formatFecha } from "../../../lib/formatters";
+import { useAuthToken } from "../../../lib/useAuthToken";
 import Button from "../../../components/Button";
+import OrderStatusBadge from "../../../components/OrderStatusBadge";
 
 const ESTADOS_FILTRO = [
   { id: "TODOS", label: "TODOS" },
@@ -15,57 +18,13 @@ const ESTADOS_FILTRO = [
   { id: "CANCELADO", label: "CANCELADOS" },
 ];
 
-function formatARS(valor) {
-  const num = Number(valor) || 0;
-  return `$${num.toLocaleString("es-AR", { maximumFractionDigits: 0 })}`;
-}
-
-function formatFecha(fechaStr) {
-  if (!fechaStr) return "Reciente";
-  try {
-    const d = new Date(fechaStr);
-    return d.toLocaleDateString("es-AR", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return fechaStr;
-  }
-}
-
 export default function PedidosPage() {
   const [pedidos, setPedidos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filtroEstado, setFiltroEstado] = useState("TODOS");
   const [searchQuery, setSearchQuery] = useState("");
-  const [token, setToken] = useState(null);
-  const [username, setUsername] = useState(null);
-
-  useEffect(() => {
-    const syncToken = () => {
-      try {
-        const storedToken = localStorage.getItem("velox_access_token");
-        const storedUser = localStorage.getItem("velox_username");
-        setToken(storedToken || null);
-        setUsername(storedUser || null);
-      } catch {
-        setToken(null);
-        setUsername(null);
-      }
-    };
-
-    syncToken();
-    window.addEventListener("velox-auth-changed", syncToken);
-    window.addEventListener("storage", syncToken);
-    return () => {
-      window.removeEventListener("velox-auth-changed", syncToken);
-      window.removeEventListener("storage", syncToken);
-    };
-  }, []);
+  const { token } = useAuthToken();
 
   const fetchPedidos = useCallback(async () => {
     setLoading(true);
@@ -126,31 +85,6 @@ export default function PedidosPage() {
     });
     return counts;
   }, [pedidos]);
-
-  const renderBadgeEstado = (estado, estadoDisplay) => {
-    const label = estadoDisplay || estado;
-    switch (estado) {
-      case "ENTREGADO":
-        return <Badge variant="neon">{label}</Badge>;
-      case "PAGADO":
-        return <Badge variant="outline">{label}</Badge>;
-      case "ENVIADO":
-        return (
-          <span className="inline-flex items-center justify-center rounded px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider bg-[#1E293B] text-[#38BDF8] border border-[#0284C7]">
-            {label}
-          </span>
-        );
-      case "CANCELADO":
-        return <Badge variant="danger">{label}</Badge>;
-      case "PENDIENTE":
-      default:
-        return (
-          <span className="inline-flex items-center justify-center rounded px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider bg-[#332510] text-[#FBBF24] border border-[#B45309]">
-            {label}
-          </span>
-        );
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -302,7 +236,7 @@ export default function PedidosPage() {
                       #{pedido.id}
                     </td>
                     <td className="py-3.5 px-4 text-[#D1D5DB]">
-                      {formatFecha(pedido.fecha_creacion)}
+                      {formatFecha(pedido.fecha_creacion, { includeTime: true, month: "short" })}
                     </td>
                     <td className="py-3.5 px-4">
                       <p className="font-medium text-white">
@@ -322,7 +256,10 @@ export default function PedidosPage() {
                       </p>
                     </td>
                     <td className="py-3.5 px-4">
-                      {renderBadgeEstado(pedido.estado, pedido.estado_display)}
+                      <OrderStatusBadge
+                        estado={pedido.estado}
+                        estadoDisplay={pedido.estado_display}
+                      />
                     </td>
                     <td className="py-3.5 px-4 text-right font-mono font-bold text-white">
                       {formatARS(pedido.total)}

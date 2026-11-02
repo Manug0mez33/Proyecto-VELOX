@@ -1,63 +1,27 @@
 "use client";
+// Client Component ("use client"): Gestiona la vista interactiva del detalle de orden de compra, lectura de token JWT y la acción personalizada cancelar_pedido con confirmación modal.
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { api, ApiError } from "../lib/api";
+import { api } from "../lib/api";
+import { formatARS, formatFecha } from "../lib/formatters";
+import { useAuthToken } from "../lib/useAuthToken";
 import Badge from "./Badge";
 import Button from "./Button";
 import Modal from "./Modal";
-
-function formatARS(valor) {
-  const num = Number(valor) || 0;
-  return `$${num.toLocaleString("es-AR", { maximumFractionDigits: 0 })}`;
-}
-
-function formatFecha(fechaStr) {
-  if (!fechaStr) return "Reciente";
-  try {
-    const d = new Date(fechaStr);
-    return d.toLocaleDateString("es-AR", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return fechaStr;
-  }
-}
+import OrderStatusBadge from "./OrderStatusBadge";
 
 export default function PedidoDetalleClient({ id }) {
   const [pedido, setPedido] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [token, setToken] = useState(null);
+  const { token } = useAuthToken();
 
   // Estados del modal y de cancelación
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [actionSuccess, setActionSuccess] = useState(null);
   const [actionError, setActionError] = useState(null);
-
-  useEffect(() => {
-    const syncToken = () => {
-      try {
-        const storedToken = localStorage.getItem("velox_access_token");
-        setToken(storedToken || null);
-      } catch {
-        setToken(null);
-      }
-    };
-
-    syncToken();
-    window.addEventListener("velox-auth-changed", syncToken);
-    window.addEventListener("storage", syncToken);
-    return () => {
-      window.removeEventListener("velox-auth-changed", syncToken);
-      window.removeEventListener("storage", syncToken);
-    };
-  }, []);
 
   const fetchPedido = useCallback(async () => {
     setLoading(true);
@@ -119,31 +83,6 @@ export default function PedidoDetalleClient({ id }) {
     }
   };
 
-  const renderBadgeEstado = (estado, estadoDisplay) => {
-    const label = estadoDisplay || estado;
-    switch (estado) {
-      case "ENTREGADO":
-        return <Badge variant="neon">{label}</Badge>;
-      case "PAGADO":
-        return <Badge variant="outline">{label}</Badge>;
-      case "ENVIADO":
-        return (
-          <span className="inline-flex items-center justify-center rounded px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider bg-[#1E293B] text-[#38BDF8] border border-[#0284C7]">
-            {label}
-          </span>
-        );
-      case "CANCELADO":
-        return <Badge variant="danger">{label}</Badge>;
-      case "PENDIENTE":
-      default:
-        return (
-          <span className="inline-flex items-center justify-center rounded px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider bg-[#332510] text-[#FBBF24] border border-[#B45309]">
-            {label}
-          </span>
-        );
-    }
-  };
-
   const puedeCancelar =
     pedido &&
     pedido.estado !== "CANCELADO" &&
@@ -165,7 +104,12 @@ export default function PedidoDetalleClient({ id }) {
             <h2 className="font-heading text-2xl sm:text-3xl font-extrabold uppercase text-[#FFFFFF]">
               ORDEN DE COMPRA #{id}
             </h2>
-            {pedido && renderBadgeEstado(pedido.estado, pedido.estado_display)}
+            {pedido && (
+              <OrderStatusBadge
+                estado={pedido.estado}
+                estadoDisplay={pedido.estado_display}
+              />
+            )}
           </div>
         </div>
 
@@ -347,13 +291,13 @@ export default function PedidoDetalleClient({ id }) {
                 <p>
                   <strong className="text-[#9CA3AF]">Fecha de compra:</strong>{" "}
                   <span className="text-[#FFFFFF]">
-                    {formatFecha(pedido.fecha_creacion)}
+                    {formatFecha(pedido.fecha_creacion, { includeTime: true, month: "long" })}
                   </span>
                 </p>
                 <p>
                   <strong className="text-[#9CA3AF]">Actualizado:</strong>{" "}
                   <span className="text-[#FFFFFF]">
-                    {formatFecha(pedido.actualizado_en || pedido.fecha_creacion)}
+                    {formatFecha(pedido.actualizado_en || pedido.fecha_creacion, { includeTime: true, month: "long" })}
                   </span>
                 </p>
               </div>
