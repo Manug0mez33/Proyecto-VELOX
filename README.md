@@ -19,7 +19,6 @@ La arquitectura del proyecto está desacoplada: una aplicación frontend moderna
 | **🌐 Frontend Desplegado** | [proyecto-velox.vercel.app](https://proyecto-velox.vercel.app/) | Aplicación web completa en producción en Vercel |
 | **☁️ API REST Desplegada** | [velox-backend-smxi.onrender.com/api/](https://velox-backend-smxi.onrender.com/api/) | Backend Django 6 + DRF en producción en Render |
 | **📘 Documentación Swagger UI** | [velox-backend-smxi.onrender.com/api/docs/](https://velox-backend-smxi.onrender.com/api/docs/) | Interfaz interactiva OpenAPI 3 con prueba de endpoints JWT |
-| **📑 Documentación ReDoc** | [velox-backend-smxi.onrender.com/api/redoc/](https://velox-backend-smxi.onrender.com/api/redoc/) | Especificación técnica de contratos, tipos y esquemas |
 | **📌 Tablero Kanban (Trello)** | [trello.com/b/frG8yKLI/proyecto-velox](https://trello.com/b/frG8yKLI/proyecto-velox) | Tablero ágil oficial con flujo de trabajo y tareas del equipo |
 
 ---
@@ -53,7 +52,7 @@ Para asegurar la coordinación continua entre los 4 integrantes del equipo duran
 
 - `frontend/`: Aplicación web moderna en Next.js 16 (App Router) + React 19 + Tailwind CSS v4 con Vitest y Testing Library.
 - `backend/`: API RESTful en Django 6 + Django REST Framework gestionada con `uv` y Docker (PostgreSQL / SQLite).
-- `docs/`: Documentación técnica de arquitectura, manual de identidad VELOX, consignas del EFI, bitácora de defensa oral (`docs/bitacora_defensa.md`) y capturas de pantalla de verificación.
+- `docs/`: Documentación técnica de arquitectura, manual de identidad VELOX, consignas del EFI y capturas de pantalla de verificación.
 
 ---
 
