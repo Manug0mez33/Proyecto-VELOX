@@ -1,71 +1,11 @@
+// Server Component: Landing page principal que obtiene los calzados destacados directamente en el servidor para optimizar SEO y First Contentful Paint (FCP).
+
 import Link from "next/link";
 import Button from "../components/Button";
 import Badge from "../components/Badge";
 import ProductCard from "../components/ProductCard";
-
-const FALLBACK_DESTACADOS = [
-  {
-    id: 1,
-    nombre: "VELOX AERO NITRO ELITE",
-    marca_detalle: { nombre: "VELOX LAB" },
-    categoria_detalle: { nombre: "COMPETICIÓN" },
-    genero: "UNISEX",
-    precio_base: "189500.00",
-    sku_referencia: "VLX-AER-41-NEO",
-    stock_total: 14,
-    es_destacado: true,
-    descripcion:
-      "Suela de carbono propulsiva y malla ultraligera para récords en asfalto.",
-    talles: ["39", "40", "41", "42"],
-    talle_activo: "41",
-    variantes: [
-      { id: 101, sku: "VLX-AER-39-NEO", talle: "39", stock: 3, color: "Negro/Neón" },
-      { id: 102, sku: "VLX-AER-40-NEO", talle: "40", stock: 4, color: "Negro/Neón" },
-      { id: 103, sku: "VLX-AER-41-NEO", talle: "41", stock: 5, color: "Negro/Neón" },
-      { id: 104, sku: "VLX-AER-42-NEO", talle: "42", stock: 2, color: "Negro/Neón" },
-    ],
-  },
-  {
-    id: 2,
-    nombre: "VELOX VORTEX PRO X2",
-    marca_detalle: { nombre: "VELOX LAB" },
-    categoria_detalle: { nombre: "MARATÓN" },
-    genero: "MARATÓN",
-    precio_base: "214000.00",
-    sku_referencia: "VLX-VOR-42",
-    stock_total: 8,
-    es_destacado: true,
-    descripcion:
-      "Doble cámara de nitrógeno inyectado y agarre reactivo en pista húmeda.",
-    talles: ["40", "41", "42", "43"],
-    talle_activo: "42",
-    variantes: [
-      { id: 201, sku: "VLX-VOR-40", talle: "40", stock: 1, color: "Titanio/Neón" },
-      { id: 202, sku: "VLX-VOR-41", talle: "41", stock: 3, color: "Titanio/Neón" },
-      { id: 203, sku: "VLX-VOR-42", talle: "42", stock: 4, color: "Titanio/Neón" },
-    ],
-  },
-  {
-    id: 3,
-    nombre: "VELOX TERRA GRIP GT",
-    marca_detalle: { nombre: "VELOX TRAIL" },
-    categoria_detalle: { nombre: "TRAIL PRO" },
-    genero: "MONTAÑA",
-    precio_base: "198000.00",
-    sku_referencia: "VLX-TER-43",
-    stock_total: 3,
-    es_destacado: false,
-    descripcion:
-      "Tacos multidireccionales de 5mm y membrana hidrofóbica de alta tracción.",
-    talles: ["41", "42", "43", "44"],
-    talle_activo: "43",
-    variantes: [
-      { id: 301, sku: "VLX-TER-41", talle: "41", stock: 1, color: "Gris/Verde" },
-      { id: 302, sku: "VLX-TER-42", talle: "42", stock: 1, color: "Gris/Verde" },
-      { id: 303, sku: "VLX-TER-43", talle: "43", stock: 1, color: "Gris/Verde" },
-    ],
-  },
-];
+import SneakerGraphic from "../components/SneakerGraphic";
+import { FALLBACK_DESTACADOS } from "../lib/mockCatalog";
 
 async function getProductosDestacados() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -179,46 +119,10 @@ export default async function HomePage() {
               <div className="pointer-events-none absolute inset-x-4 top-2 border-t border-dashed border-[#2A2A2A]" />
               <div className="pointer-events-none absolute inset-x-4 bottom-2 border-t border-dashed border-[#2A2A2A]" />
 
-              <svg
-                viewBox="0 0 470 250"
-                className="relative z-10 w-full max-w-[430px] drop-shadow-[0_12px_28px_rgba(57,255,20,0.22)]"
-                role="img"
-                aria-label="Silueta VELOX Hyperion Carbon X"
-              >
-                <defs>
-                  <linearGradient id="shoeBody" x1="0" y1="0" x2="1" y2="0.4">
-                    <stop offset="0%" stopColor="#383838" />
-                    <stop offset="50%" stopColor="#1F1F1F" />
-                    <stop offset="100%" stopColor="#121212" />
-                  </linearGradient>
-                </defs>
-                <ellipse cx="230" cy="230" rx="195" ry="14" fill="#090909" />
-                <path
-                  d="M20 190 Q140 205 290 195 Q395 188 445 162 Q458 178 442 198 Q380 222 240 222 Q95 222 15 208 Z"
-                  fill="#39FF14"
-                />
-                <path
-                  d="M35 188 L75 95 Q115 80 155 108 L245 65 Q275 58 295 85 L385 132 Q435 142 442 162 Q345 194 185 195 Q85 195 35 188 Z"
-                  fill="url(#shoeBody)"
-                  stroke="#4A4A4A"
-                  strokeWidth="2"
-                />
-                <path
-                  d="M125 145 L285 115 L265 135 L110 162 Z"
-                  fill="#39FF14"
-                />
-                <path
-                  d="M175 168 L335 142 L322 156 L165 178 Z"
-                  fill="#39FF14"
-                  fillOpacity="0.75"
-                />
-                <path
-                  d="M82 95 Q115 62 152 68 L175 102 Z"
-                  fill="#2A2A2A"
-                  stroke="#39FF14"
-                  strokeWidth="1.5"
-                />
-              </svg>
+              <SneakerGraphic
+                variant="hero"
+                label="Silueta VELOX Hyperion Carbon X"
+              />
             </div>
 
             <div className="relative z-10 flex flex-col sm:flex-row sm:items-end justify-between gap-4 pt-2">

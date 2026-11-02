@@ -5,7 +5,9 @@ import Link from "next/link";
 import { useState } from "react";
 import Badge from "./Badge";
 import Button from "./Button";
+import SneakerGraphic from "./SneakerGraphic";
 import { useCart } from "../context/CartContext";
+import { formatARS } from "../lib/formatters";
 
 export default function ProductCard({ producto }) {
   const { addToCart } = useCart();
@@ -88,6 +90,7 @@ export default function ProductCard({ producto }) {
   const skuActivo = varianteActiva?.sku || producto.sku_referencia || `VLX-${id}`;
   const precioFinal = varianteActiva?.precioAjustado || precioBase;
   const esDestacado = Boolean(producto.es_destacado);
+  const imagenPortada = producto.imagen_portada || producto.imagenes?.[0]?.url;
 
   const handleAgregarAlCarrito = (e) => {
     e.preventDefault();
@@ -103,7 +106,7 @@ export default function ProductCard({ producto }) {
         color: varianteActiva?.color || "Neón",
         precio_base: precioFinal,
         precio_final: precioFinal,
-        imagen_portada: producto.imagen_portada || producto.imagenes?.[0]?.url,
+        imagen_portada: imagenPortada,
       },
       1
     );
@@ -154,33 +157,12 @@ export default function ProductCard({ producto }) {
               </Badge>
             </div>
 
-            {/* Silueta vectorial de calzado VELOX */}
-            <svg
-              viewBox="0 0 340 160"
-              className="relative z-10 w-64 drop-shadow-[0_8px_16px_rgba(0,0,0,0.6)] transition-transform duration-300 group-hover:scale-105"
-              aria-hidden="true"
-            >
-              <ellipse cx="170" cy="148" rx="140" ry="8" fill="#0A0A0A" />
-              <path
-                d="M45 125 L80 65 L150 72 L215 45 L285 88 L300 120 L45 125 Z"
-                fill="#242424"
-                stroke={esDestacado ? "#FFFFFF" : "#39FF14"}
-                strokeWidth="2"
-              />
-              <path
-                d="M100 95 L190 75 L175 90 L85 110 Z"
-                fill="#39FF14"
-                fillOpacity="0.8"
-              />
-              <rect
-                x="40"
-                y="122"
-                width="265"
-                height="13"
-                rx="6"
-                fill="#39FF14"
-              />
-            </svg>
+            <SneakerGraphic
+              variant="card"
+              imagenUrl={imagenPortada}
+              esDestacado={esDestacado}
+              label={nombre}
+            />
           </div>
         </Link>
 
@@ -251,7 +233,7 @@ export default function ProductCard({ producto }) {
               esDestacado ? "text-[#39FF14]" : "text-[#FFFFFF]"
             }`}
           >
-            ${precioFinal.toLocaleString("es-AR", { maximumFractionDigits: 0 })}
+            {formatARS(precioFinal)}
           </span>
         </div>
 

@@ -97,12 +97,20 @@ La aplicación estará disponible localmente en `http://localhost:3000` y en pro
   - `/dashboard/usuarios` (`src/app/dashboard/usuarios/page.jsx`): Panel exclusivo para `ADMIN` para auditoría de usuarios y modificación interactiva de roles (`ADMIN`, `EMPLEADO`, `CLIENTE`).
   - **Manejo Global de Estados de Carga y Error:** `src/app/layout.jsx` (Layout raíz con `CartProvider`), `src/app/loading.jsx` (esqueletos de carga animados), `src/app/error.jsx` (recuperación declarativa de errores en runtime) y `src/app/not-found.jsx` (página 404 personalizada con enlace de retorno).
 
-- **Componentes Reutilizables Base (R2):**
-  - `src/components/DashboardCrudManager.jsx` (`Client Component` — módulo interactivo para las 4 operaciones CRUD: `GET` paginado de variantes/reseñas, `POST` alta de variantes y reseñas, `PATCH` ajuste reactivo de stock/precio y `DELETE` con confirmación modal).
+- **Componentes Reutilizables Base y Modulares (R2 — 20 componentes en `src/components/`):**
+  - `src/components/SneakerGraphic.jsx` (`Server Component` — componente visual híbrido y sin estado que renderiza la fotografía real de la base de datos cuando existe una URL válida no-placeholder, o genera dinámicamente la silueta vectorial SVG de VELOX según `variant="hero" | "card" | "detail" | "thumb"`, `accentColor` y `viewAngle`).
+  - `src/components/OrderStatusBadge.jsx` (`Server Component` — etiqueta semántica unificada para estados de pedidos `PENDIENTE`, `PAGADO`, `ENVIADO`, `ENTREGADO` y `CANCELADO`).
+  - `src/components/DashboardCrudManager.jsx` (`Client Component` — contenedor orquestador de pestañas para las 4 operaciones CRUD de inventario y reseñas).
+  - `src/components/VariantesCrudTab.jsx` (`Client Component` — pestaña interactiva de gestión de variantes SKU con buscador en vivo y modales de alta, edición y eliminación).
+  - `src/components/ResenasCrudTab.jsx` (`Client Component` — pestaña interactiva de moderación y publicación de reseñas con control por rol `ADMIN` / `EMPLEADO`).
   - `src/components/PedidoDetalleClient.jsx` (`Client Component` — ficha técnica de pedido con desglose de calzados, cálculo de totales, modal accesible y ejecución de `@action` `cancelar_pedido`).
-  - `src/components/ProductCard.jsx` (`Client Component` — tarjeta de calzado con selector en vivo de talle AR, recálculo dinámico de SKU/precio y compra directa a `CartContext`).
+  - `src/components/ProductCard.jsx` (`Client Component` — tarjeta de calzado con `SneakerGraphic`, selector en vivo de talle AR, recálculo dinámico de SKU/precio y compra directa a `CartContext`).
   - `src/components/FilterBar.jsx` (`Client Component` — barra de filtrado declarativa por búsqueda de texto, marcas, categorías, géneros, pills de talles AR y ordenamiento por precio o fecha).
-  - `src/components/ProductDetailClient.jsx` (`Client Component` — isla interactiva de ficha técnica con galería de imágenes, variantes SKU, verificación de stock y módulo de reseñas).
+  - `src/components/PaginationControls.jsx` (`Server Component` — barra de paginación declarativa que preserva los filtros activos de la URL sobre el sobre paginado de DRF).
+  - `src/components/ProductDetailClient.jsx` (`Client Component` — isla interactiva de ficha técnica con visor `SneakerGraphic`, variantes SKU y verificación de stock en tiempo real).
+  - `src/components/ProductReviewsSection.jsx` (`Client Component` — módulo interactivo de reseñas de atletas dentro de la ficha de producto con alta, edición y baja autenticada).
+  - `src/components/CartItemRow.jsx` (`Client Component` — fila interactiva de artículo en el carrito con miniatura `SneakerGraphic`, control de cantidades y subtotal).
+  - `src/components/CheckoutModal.jsx` (`Client Component` — diálogo modal de confirmación de compra con formulario React Hook Form + Zod `checkoutFormSchema`, banner de sesión JWT y resumen de orden creada).
   - `src/components/Navbar.jsx` (`Client Component` — cabecera con navegación, selector de rutas por rol y contador reactivo de carrito vía `useCart()`).
   - `src/components/Footer.jsx` (`Server Component` — pie de página informativo con enlaces semánticos y políticas de marca).
   - `src/components/Button.jsx` (`Client Component` — botón polimórfico con variantes estilizadas `primary`, `secondary`, `danger`, `ghost` y soporte de estados `disabled` y `loading`).
@@ -110,6 +118,11 @@ La aplicación estará disponible localmente en `http://localhost:3000` y en pro
   - `src/components/SkeletonCard.jsx` (`Server Component` — marcador de posición animado para carga progresiva de tarjetas de calzado).
   - `src/components/Modal.jsx` (`Client Component` — diálogo modal con accesibilidad completa: cierre con tecla Escape, clic en backdrop, bloqueo de scroll en el body y foco accesible).
   - `src/components/LogoutButton.jsx` (`Client Component` — botón de cierre de sesión conectado a Server Action `logoutAction()` y limpieza local de almacenamiento).
+
+- **Utilidades Compartidas (`src/lib/`):**
+  - `src/lib/formatters.js`: Formateadores centralizados `formatARS`, `formatFecha` y `getPrecioUnitario` para moneda en pesos argentinos (`es-AR`) y fechas ISO.
+  - `src/lib/useAuthToken.js`: Hook personalizado `useAuthToken()` para sincronización reactiva de sesión JWT (`velox_access_token`, `velox_username`, rol y payload) entre pestañas y componentes cliente.
+  - `src/lib/mockCatalog.js`: Catálogo de contingencia unificado y alineado al fixture `catalogo_velox.json` del backend.
 
 - **Autenticación JWT, Server Actions y Proxy Perimetral (R4):**
   - `src/app/actions.js`: Server Actions con `"use server"` (`loginAction`, `logoutAction`, `getAuthSessionAction`, `revalidateProductsAction`) para gestión segura de tokens en Cookies HTTP-Only.
@@ -134,12 +147,12 @@ cd frontend
 npm run test
 ```
 
-*Resultado de verificación:* **17 suites de prueba y 106 tests unitarios ejecutados exitosamente al 100%**, cubriendo:
+*Resultado de verificación:* **18 suites de prueba y 114 tests unitarios ejecutados exitosamente al 100%**, cubriendo:
 - `CartContext`: agregados, eliminaciones, actualización de cantidades, vaciado, totales y sincronización multi-pestaña.
 - Esquemas de validación Zod: `authSchema` (login y registro) y `orderSchema` (ítems, métodos de pago y totales).
 - Cliente HTTP `api.js`: métodos CRUD (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`), sobre paginado DRF y formateo recursivo de errores anidados.
-- Componentes UI: `Modal`, `ProductCard` (renderizado, selector dinámico de talles AR, stock y despacho a CartContext).
-- Páginas y vistas integradas: checkout transaccional de `/carrito`, listado reactivo de pedidos `/dashboard/pedidos`, ficha dinámica `/dashboard/pedidos/[id]` con ejecución de `@action` `cancelar_pedido`, módulo CRUD interactivo (`DashboardCrudManager`), gestión de usuarios y roles (`GestionUsuarios.test.jsx`), vista de clientes (`MisPedidos.test.jsx`), KPIs del dashboard (`DashboardPage.test.jsx`), Server Actions (`authActions.test.js`) y Proxy perimetral de protección (`proxy.test.js`).
+- Componentes UI y Utilidades: `Modal`, `ProductCard`, `SneakerGraphic` (lógica híbrida imagen real vs SVG vectorial), `OrderStatusBadge` y formateadores (`formatARS`, `formatFecha`, `getPrecioUnitario`).
+- Páginas y vistas integradas: checkout transaccional de `/carrito`, listado reactivo de pedidos `/dashboard/pedidos`, ficha dinámica `/dashboard/pedidos/[id]` con ejecución de `@action` `cancelar_pedido`, módulo CRUD interactivo (`DashboardCrudManager`, `VariantesCrudTab`, `ResenasCrudTab`), gestión de usuarios y roles (`GestionUsuarios.test.jsx`), vista de clientes (`MisPedidos.test.jsx`), KPIs del dashboard (`DashboardPage.test.jsx`), Server Actions (`authActions.test.js`) y Proxy perimetral de protección (`proxy.test.js`).
 
 ---
 
@@ -170,12 +183,12 @@ Auditoría de requisitos obligatorios del Examen Final Integrador realizada sobr
 | Requisito | Estado | Evidencia en el Código |
 | :--- | :---: | :--- |
 | **R1. Enrutamiento y Layouts** (6+ rutas, anidada, 2+ dinámicas, layout anidado, loading/error/not-found) | CUMPLE (12 rutas) | 12 rutas en `src/app/`: `/`, `/tecnologia`, `/productos`, `/productos/[id]`, `/carrito`, `/login`, `/register`, `/mis-pedidos`, `/dashboard`, `/dashboard/pedidos`, `/dashboard/pedidos/[id]`, `/dashboard/usuarios`. Layout anidado en `src/app/dashboard/layout.jsx`. `loading.jsx`, `error.jsx`, `not-found.jsx`. |
-| **R2. Arquitectura de Componentes** (8+ componentes reutilizables con justificación Server vs Client) | CUMPLE (12 componentes) | 12 componentes en `src/components/` con comentarios explicativos de paradigma: `DashboardCrudManager`, `PedidoDetalleClient`, `ProductCard`, `FilterBar`, `ProductDetailClient`, `Navbar`, `Footer`, `Button`, `Badge`, `SkeletonCard`, `Modal`, `LogoutButton`. |
-| **R3. Integración con la API y CRUD Completo** (4 operaciones CRUD sobre recurso principal, listado con búsqueda y filtros, estados de carga/error) | CUMPLE | Cliente centralizado en `src/lib/api.js`. 4 operaciones CRUD (`GET`, `POST`, `PATCH`, `DELETE`) en `DashboardCrudManager.jsx` sobre variantes de calzado y reseñas. Filtros reactivos y búsqueda sincronizados en `FilterBar.jsx`. |
+| **R2. Arquitectura de Componentes** (8+ componentes reutilizables con justificación Server vs Client) | CUMPLE (20 componentes) | 20 componentes en `src/components/` con comentarios explicativos de paradigma: `SneakerGraphic`, `OrderStatusBadge`, `DashboardCrudManager`, `VariantesCrudTab`, `ResenasCrudTab`, `PedidoDetalleClient`, `ProductCard`, `FilterBar`, `PaginationControls`, `ProductDetailClient`, `ProductReviewsSection`, `CartItemRow`, `CheckoutModal`, `Navbar`, `Footer`, `Button`, `Badge`, `SkeletonCard`, `Modal`, `LogoutButton`. |
+| **R3. Integración con la API y CRUD Completo** (4 operaciones CRUD sobre recurso principal, listado con búsqueda y filtros, estados de carga/error) | CUMPLE | Cliente centralizado en `src/lib/api.js`. 4 operaciones CRUD (`GET`, `POST`, `PATCH`, `DELETE`) en `DashboardCrudManager.jsx` (`VariantesCrudTab` y `ResenasCrudTab`) sobre variantes de calzado y reseñas. Filtros reactivos y búsqueda sincronizados en `FilterBar.jsx`. |
 | **R4. Autenticación** (Login con token JWT, logout, rutas protegidas por sesión y rol) | CUMPLE | `src/app/login/page.jsx`, Server Actions en `src/app/actions.js`, decodificación en `src/lib/jwt.js` y protección perimetral con `src/proxy.js` (rutas `/dashboard` y `/mis-pedidos`). |
-| **R5. Formularios y Validaciones** (React Hook Form + Zod, mensajes en español, errores de API) | CUMPLE | Formularios controlados con RHF y resolver Zod en `/login` (`loginSchema`), `/register` (`registerSchema`), `/carrito` (`checkoutFormSchema`) y en `DashboardCrudManager.jsx`. |
+| **R5. Formularios y Validaciones** (React Hook Form + Zod, mensajes en español, errores de API) | CUMPLE | Formularios controlados con RHF y resolver Zod en `/login` (`loginSchema`), `/register` (`registerSchema`), `/carrito` (`CheckoutModal` con `checkoutFormSchema`) y en `DashboardCrudManager.jsx`. |
 | **R6. Estado Global con Context API** (createContext/useContext con persistencia) | CUMPLE | `src/context/CartContext.jsx` con `CartProvider`, `useCart()`, persistencia en `localStorage` (`velox_cart`) y sincronización multi-pestaña con evento `storage`. |
-| **R7. Testing Unitario** (Vitest con 4+ tests passing) | CUMPLE (106 tests) | 17 suites de prueba con 106 tests unitarios pasando exitosamente en Vitest (`src/app/__tests__/`). |
+| **R7. Testing Unitario** (Vitest con 4+ tests passing) | CUMPLE (114 tests) | 18 suites de prueba con 114 tests unitarios pasando exitosamente en Vitest (`src/app/__tests__/`). |
 | **R8. Despliegue en Producción** (Aplicación desplegada conectada a API pública) | CUMPLE | Desplegado en Vercel: `https://proyecto-velox.vercel.app/` conectado a la API en Render: `https://velox-backend-smxi.onrender.com/api`. |
 
 ---
