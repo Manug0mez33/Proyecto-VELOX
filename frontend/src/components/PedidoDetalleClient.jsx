@@ -15,7 +15,7 @@ export default function PedidoDetalleClient({ id }) {
   const [pedido, setPedido] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { token } = useAuthToken();
+  const { token, refreshAuth } = useAuthToken();
 
   // Estados del modal y de cancelación
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
@@ -27,8 +27,7 @@ export default function PedidoDetalleClient({ id }) {
     setLoading(true);
     setError(null);
 
-    const currentToken =
-      token || (typeof window !== "undefined" ? localStorage.getItem("velox_access_token") : null);
+    const currentToken = refreshAuth();
 
     try {
       const data = await api.get(`/pedidos/${id}/`, {
@@ -40,7 +39,7 @@ export default function PedidoDetalleClient({ id }) {
     } finally {
       setLoading(false);
     }
-  }, [id, token]);
+  }, [id, refreshAuth]);
 
   useEffect(() => {
     fetchPedido();

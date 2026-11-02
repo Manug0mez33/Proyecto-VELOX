@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import { api } from "../lib/api";
+import { formatFecha } from "../lib/formatters";
 import { PRODUCTOS_CATALOGO } from "../lib/mockCatalog";
 import Badge from "./Badge";
 import Button from "./Button";
@@ -187,7 +188,7 @@ export default function ResenasCrudTab({
 
             <div className="border-t border-[#2A2A2A] pt-3 flex items-center justify-between">
               <span className="text-[10px] text-[#6B7280]">
-                {r.creado_en ? new Date(r.creado_en).toLocaleDateString("es-AR") : "Reciente"}
+                {formatFecha(r.creado_en)}
               </span>
 
               <div className="flex items-center gap-2">

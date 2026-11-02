@@ -29,6 +29,15 @@ export default function SneakerGraphic({
   label = "Silueta de calzado VELOX",
   className = "",
 }) {
+  const angleTransform =
+    variant === "detail"
+      ? viewAngle === 1
+        ? "scale(-1, 1)"
+        : viewAngle === 2
+        ? "rotate(-4deg)"
+        : undefined
+      : undefined;
+
   // 1. Enfoque Híbrido: Si la base de datos provee una imagen real (no placehold.co), la mostramos
   if (isRealProductImage(imagenUrl)) {
     const sizeClasses =
@@ -36,13 +45,14 @@ export default function SneakerGraphic({
         ? "h-12 w-12 object-contain"
         : variant === "card"
         ? "relative z-10 h-40 w-64 object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.6)] transition-transform duration-300 group-hover:scale-105"
-        : "relative z-10 max-h-[240px] w-full max-w-[420px] object-contain drop-shadow-[0_16px_32px_rgba(0,0,0,0.8)]";
+        : "relative z-10 max-h-[240px] w-full max-w-[420px] object-contain drop-shadow-[0_16px_32px_rgba(0,0,0,0.8)] transition-transform duration-300";
 
     return (
       <img
         src={imagenUrl}
         alt={label}
         className={`${sizeClasses} ${className}`.trim()}
+        style={angleTransform ? { transform: angleTransform } : undefined}
         loading="lazy"
       />
     );
@@ -93,12 +103,6 @@ export default function SneakerGraphic({
 
   if (variant === "detail") {
     const soleColor = accentColor === "#39FF14" ? "#39FF14" : "#444444";
-    const angleTransform =
-      viewAngle === 1
-        ? "scale(-1, 1)"
-        : viewAngle === 2
-        ? "rotate(-4)"
-        : undefined;
 
     return (
       <svg

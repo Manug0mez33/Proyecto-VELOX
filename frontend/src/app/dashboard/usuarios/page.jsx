@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { api } from "../../../lib/api";
-import { parseJwt } from "../../../lib/jwt";
+import { useAuthToken } from "../../../lib/useAuthToken";
 import { ROLES_USUARIO, usuarioAdminSchema } from "../../../validations/usuarioSchema";
 import Badge from "../../../components/Badge";
 import Button from "../../../components/Button";
@@ -24,8 +24,7 @@ const inputClass =
   "w-full h-10 rounded-md bg-[#121212] border border-[#3F3F3F] px-3 text-xs text-[#FFFFFF] placeholder-[#666666] focus:outline-none focus:border-[#39FF14]";
 
 export default function GestionUsuariosPage() {
-  const [token, setToken] = useState(null);
-  const [miId, setMiId] = useState(null);
+  const { token, userId: miId, refreshAuth } = useAuthToken();
   const [usuarios, setUsuarios] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [feedback, setFeedback] = useState(null);
@@ -53,17 +52,10 @@ export default function GestionUsuariosPage() {
   }, []);
 
   useEffect(() => {
-    let stored = null;
-    try {
-      stored = localStorage.getItem("velox_access_token");
-    } catch {
-      // Navegador sin localStorage disponible
-    }
-    setToken(stored);
-    setMiId(parseJwt(stored)?.user_id ?? null);
+    const stored = refreshAuth();
     if (stored) cargarUsuarios(stored);
     else setCargando(false);
-  }, [cargarUsuarios]);
+  }, [cargarUsuarios, refreshAuth]);
 
   const onCrearUsuario = async (datos) => {
     setFeedback(null);

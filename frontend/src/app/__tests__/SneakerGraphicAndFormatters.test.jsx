@@ -25,8 +25,8 @@ describe("SneakerGraphic (Enfoque Híbrido: Imagen Real BD vs SVG Vectorial)", (
     expect(container.querySelector("img")).toBeNull();
   });
 
-  it("3. Renderiza etiqueta <img> con la URL de la BD cuando recibe una foto real válida", () => {
-    render(
+  it("3. Renderiza etiqueta <img> con la URL de la BD cuando recibe una foto real válida y aplica viewAngle en variant detail", () => {
+    const { rerender } = render(
       <SneakerGraphic
         variant="detail"
         imagenUrl="https://cdn.velox.com.ar/calzado/velox-carbon.jpg"
@@ -37,13 +37,28 @@ describe("SneakerGraphic (Enfoque Híbrido: Imagen Real BD vs SVG Vectorial)", (
     const img = screen.getByRole("img", { name: "Velox Carbon X" });
     expect(img).toBeInTheDocument();
     expect(img).toHaveAttribute("src", "https://cdn.velox.com.ar/calzado/velox-carbon.jpg");
+
+    rerender(
+      <SneakerGraphic
+        variant="detail"
+        imagenUrl="https://cdn.velox.com.ar/calzado/velox-carbon.jpg"
+        label="Velox Carbon X"
+        viewAngle={2}
+      />
+    );
+    expect(screen.getByRole("img", { name: "Velox Carbon X" }).style.transform).toBe("rotate(-4deg)");
   });
 
-  it("4. Renderiza variantes vectoriales hero, detail y thumb con transformaciones según viewAngle", () => {
+  it("4. Renderiza variantes vectoriales hero, detail y thumb con transformaciones CSS válidas según viewAngle", () => {
     const { container, rerender } = render(
       <SneakerGraphic variant="detail" viewAngle={2} accentColor="#39FF14" />
     );
-    expect(container.querySelector("svg")).not.toBeNull();
+    const svg = container.querySelector("svg");
+    expect(svg).not.toBeNull();
+    expect(svg.style.transform).toBe("rotate(-4deg)");
+
+    rerender(<SneakerGraphic variant="detail" viewAngle={1} accentColor="#39FF14" />);
+    expect(container.querySelector("svg").style.transform).toBe("scale(-1, 1)");
 
     rerender(<SneakerGraphic variant="thumb" accentColor="#2563EB" />);
     expect(container.querySelector("svg")).not.toBeNull();

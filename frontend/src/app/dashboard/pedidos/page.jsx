@@ -24,14 +24,13 @@ export default function PedidosPage() {
   const [error, setError] = useState(null);
   const [filtroEstado, setFiltroEstado] = useState("TODOS");
   const [searchQuery, setSearchQuery] = useState("");
-  const { token } = useAuthToken();
+  const { token, refreshAuth } = useAuthToken();
 
   const fetchPedidos = useCallback(async () => {
     setLoading(true);
     setError(null);
 
-    const currentToken =
-      token || (typeof window !== "undefined" ? localStorage.getItem("velox_access_token") : null);
+    const currentToken = refreshAuth();
 
     if (!currentToken) {
       setLoading(false);
@@ -50,7 +49,7 @@ export default function PedidosPage() {
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, [refreshAuth]);
 
   useEffect(() => {
     fetchPedidos();

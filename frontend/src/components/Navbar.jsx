@@ -1,12 +1,12 @@
 "use client";
 // Client Component ("use client"): Utiliza usePathname, useState y lectura reactiva del carrito para resaltar la ruta activa, abrir el menú móvil y mostrar el contador de items en tiempo real.
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCart } from "../context/CartContext";
 import { logoutAction } from "../app/actions";
-import { esPersonalTienda } from "../lib/jwt";
+import { useAuthToken } from "../lib/useAuthToken";
 
 const NAV_LINKS = [
   { href: "/", label: "INICIO" },
@@ -20,31 +20,8 @@ export default function Navbar() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { totalItems: cartCount } = useCart();
-  const [currentUser, setCurrentUser] = useState(null);
-  const [esPersonal, setEsPersonal] = useState(false);
-
-  useEffect(() => {
-    const syncAuth = () => {
-      try {
-        const token = localStorage.getItem("velox_access_token");
-        const user = localStorage.getItem("velox_username");
-        setCurrentUser(token && user ? user : null);
-        setEsPersonal(Boolean(token) && esPersonalTienda(token));
-      } catch {
-        setCurrentUser(null);
-        setEsPersonal(false);
-      }
-    };
-
-    syncAuth();
-    window.addEventListener("velox-auth-changed", syncAuth);
-    window.addEventListener("storage", syncAuth);
-
-    return () => {
-      window.removeEventListener("velox-auth-changed", syncAuth);
-      window.removeEventListener("storage", syncAuth);
-    };
-  }, []);
+  const { token, username, esPersonal } = useAuthToken();
+  const currentUser = token && username ? username : null;
 
   // El dashboard solo se ofrece a ADMIN y EMPLEADO, y "Mis pedidos" solo a clientes logueados
   // (el proxy igual bloquea ambas rutas por URL).
