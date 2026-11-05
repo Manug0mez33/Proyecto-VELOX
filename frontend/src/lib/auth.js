@@ -15,7 +15,6 @@ export const USER_COOKIE_NAME = "velox_username";
 
 /**
  * Obtiene el token JWT desde las Cookies en Server Components o Server Actions.
- * Compatible con la convención del profesor (getToken).
  */
 export async function getServerToken() {
   try {
@@ -26,7 +25,7 @@ export async function getServerToken() {
   }
 }
 
-// Alias para mantener la misma nomenclatura del profesor: import { getToken } from "@/lib/auth"
+// Alias utilitario para obtener token
 export const getToken = getServerToken;
 
 /**
@@ -49,5 +48,5 @@ export async function requireAuth(redirectTo = "/login") {
   return { token, user: parseJwt(token) };
 }
 
-// Alias para compatibilidad con la convención del profesor: requireToken()
+// Alias utilitario para requerir token
 export const requireToken = async () => (await requireAuth()).token;
