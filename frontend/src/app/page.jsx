@@ -5,6 +5,27 @@ import ProductCard from "../components/ProductCard";
 
 const FALLBACK_DESTACADOS = [
   {
+    id: 4,
+    nombre: "VELOX HYPERION CARBON X",
+    marca_detalle: { nombre: "VELOX LAB" },
+    categoria_detalle: { nombre: "COMPETICIÓN" },
+    genero: "UNISEX",
+    precio_base: "219900.00",
+    sku_referencia: "VLX-HYP-42-NEO",
+    stock_total: 11,
+    es_destacado: true,
+    descripcion:
+      "Placa de fibra de carbono de doble densidad para romper tu marca en cada pasada.",
+    talles: ["40", "41", "42", "43"],
+    talle_activo: "42",
+    variantes: [
+      { id: 401, sku: "VLX-HYP-40-NEO", talle: "40", stock: 2, color: "Negro/Neón" },
+      { id: 402, sku: "VLX-HYP-41-NEO", talle: "41", stock: 3, color: "Negro/Neón" },
+      { id: 403, sku: "VLX-HYP-42-NEO", talle: "42", stock: 4, color: "Negro/Neón" },
+      { id: 404, sku: "VLX-HYP-43-NEO", talle: "43", stock: 2, color: "Negro/Neón" },
+    ],
+  },
+  {
     id: 1,
     nombre: "VELOX AERO NITRO ELITE",
     marca_detalle: { nombre: "VELOX LAB" },
@@ -67,6 +88,28 @@ const FALLBACK_DESTACADOS = [
   },
 ];
 
+function formatPrecioARS(valor) {
+  const numero = Number(valor) || 0;
+  return `$${numero.toLocaleString("es-AR", { maximumFractionDigits: 0 })}`;
+}
+
+// Normaliza el producto del hero: la API manda marca/categoria anidadas y el fallback usa *_detalle.
+function datosHero(producto) {
+  const stock = Number(producto.stock_total ?? 0);
+  return {
+    id: producto.id,
+    nombre: producto.nombre || "Calzado VELOX",
+    marca: producto.marca?.nombre || producto.marca_detalle?.nombre || "VELOX LAB",
+    categoria:
+      producto.categoria?.nombre || producto.categoria_detalle?.nombre || "COMPETICIÓN",
+    genero: producto.genero_display || producto.genero || "UNISEX",
+    precio: formatPrecioARS(producto.precio_base),
+    referencia:
+      producto.sku_referencia || producto.variantes?.[0]?.sku || `VLX-${producto.id}`,
+    stock,
+  };
+}
+
 async function getProductosDestacados() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   if (!apiUrl) return FALLBACK_DESTACADOS;
@@ -79,7 +122,8 @@ async function getProductosDestacados() {
     const data = await res.json();
     const items = Array.isArray(data) ? data : data?.results;
     if (Array.isArray(items) && items.length > 0) {
-      return items.slice(0, 3);
+      // 1 para el hero + 3 para la grilla de destacados.
+      return items.slice(0, 4);
     }
     return FALLBACK_DESTACADOS;
   } catch {
@@ -88,7 +132,8 @@ async function getProductosDestacados() {
 }
 
 export default async function HomePage() {
-  const destacados = await getProductosDestacados();
+  const [productoHero, ...destacados] = await getProductosDestacados();
+  const hero = datosHero(productoHero);
 
   return (
     <div className="mx-auto max-w-[1440px] px-6 lg:px-20 py-10 space-y-20">
@@ -165,9 +210,11 @@ export default async function HomePage() {
           <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-[#1E1E1E] to-[#141414] border border-[#2A2A2A] p-6 sm:p-8">
             <div className="relative z-10 flex items-center justify-between">
               <span className="rounded-md bg-[#2A2A2A] px-3 py-1.5 font-heading text-[11px] font-bold tracking-wider text-[#39FF14]">
-                REF: VLX-HYP-42-NEO
+                REF: {hero.referencia}
               </span>
-              <Badge variant="outline">DISPONIBLE</Badge>
+              <Badge variant={hero.stock > 3 ? "outline" : "danger"}>
+                {hero.stock > 3 ? "DISPONIBLE" : `ÚLTIMAS ${hero.stock}`}
+              </Badge>
             </div>
 
             <div className="relative my-8 flex h-[240px] sm:h-[260px] items-center justify-center">
@@ -183,7 +230,7 @@ export default async function HomePage() {
                 viewBox="0 0 470 250"
                 className="relative z-10 w-full max-w-[430px] drop-shadow-[0_12px_28px_rgba(57,255,20,0.22)]"
                 role="img"
-                aria-label="Silueta VELOX Hyperion Carbon X"
+                aria-label={`Silueta ${hero.nombre}`}
               >
                 <defs>
                   <linearGradient id="shoeBody" x1="0" y1="0" x2="1" y2="0.4">
@@ -223,15 +270,17 @@ export default async function HomePage() {
 
             <div className="relative z-10 flex flex-col sm:flex-row sm:items-end justify-between gap-4 pt-2">
               <div>
-                <h2 className="font-heading text-xl sm:text-2xl font-bold text-[#FFFFFF]">
-                  VELOX HYPERION CARBON X
-                </h2>
+                <Link href={`/productos/${hero.id}`}>
+                  <h2 className="font-heading text-xl sm:text-2xl font-bold uppercase text-[#FFFFFF] hover:text-[#39FF14] transition-colors">
+                    {hero.nombre}
+                  </h2>
+                </Link>
                 <p className="text-xs sm:text-sm text-[#D1D5DB]">
-                  Categoría: Competición / Maratón • Placa Fibra de Carbono
+                  Categoría: {hero.categoria} • {hero.marca} • {hero.genero}
                 </p>
               </div>
               <p className="font-heading text-2xl sm:text-3xl font-bold text-[#39FF14]">
-                $219.900
+                {hero.precio}
               </p>
             </div>
           </div>
