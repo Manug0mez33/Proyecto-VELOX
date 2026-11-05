@@ -133,12 +133,12 @@ cd frontend
 npm run test
 ```
 
-*Resultado de verificación:* **17 suites de prueba y 106 tests unitarios ejecutados exitosamente al 100%**, cubriendo:
-- `CartContext`: agregados, eliminaciones, actualización de cantidades, vaciado, totales y sincronización multi-pestaña.
-- Esquemas de validación Zod: `authSchema` (login y registro) y `orderSchema` (ítems, métodos de pago y totales).
-- Cliente HTTP `api.js`: métodos CRUD (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`), sobre paginado DRF y formateo recursivo de errores anidados.
-- Componentes UI: `Modal`, `ProductCard` (renderizado, selector dinámico de talles AR, stock y despacho a CartContext).
-- Páginas y vistas integradas: checkout transaccional de `/carrito`, listado reactivo de pedidos `/dashboard/pedidos`, ficha dinámica `/dashboard/pedidos/[id]` con ejecución de `@action` `cancelar_pedido`, módulo CRUD interactivo (`DashboardCrudManager`), gestión de usuarios y roles (`GestionUsuarios.test.jsx`), vista de clientes (`MisPedidos.test.jsx`), KPIs del dashboard (`DashboardPage.test.jsx`), Server Actions (`authActions.test.js`) y Proxy perimetral de protección (`proxy.test.js`).
+*Resultado de verificación:* **5 suites de prueba pasando exitosamente al 100%**, cubriendo:
+- `LoginPage.test.jsx`: Prueba de integración de formulario y página con mocks de Next.js router y Server Action (`useRouter`, `fireEvent`, `waitFor`).
+- `ProductCard.test.jsx`: Prueba de componente interactivo (R2) con selector reactivo de talles y actualización de precio/SKU.
+- `CartContext.test.jsx`: Prueba de estado global con Context API (R6) para agregado de productos, cálculo de total y subtotal.
+- `authSchema.test.js`: Prueba de esquemas de validación Zod (R5) para credenciales de acceso.
+- `api.test.js`: Prueba de utilidades del cliente API REST (R3) y normalización de sobre paginado DRF.
 
 ---
 
@@ -174,7 +174,7 @@ Auditoría de requisitos obligatorios del Examen Final Integrador realizada sobr
 | **R4. Autenticación** (Login con token JWT, logout, rutas protegidas por sesión y rol) | CUMPLE | `src/app/login/page.jsx`, Server Actions en `src/app/actions.js`, decodificación en `src/lib/jwt.js` y protección perimetral con `src/proxy.js` (rutas `/dashboard` y `/mis-pedidos`). |
 | **R5. Formularios y Validaciones** (React Hook Form + Zod, mensajes en español, errores de API) | CUMPLE | Formularios controlados con RHF y resolver Zod en `/login` (`loginSchema`), `/register` (`registerSchema`), `/carrito` (`checkoutFormSchema`) y en `DashboardCrudManager.jsx`. |
 | **R6. Estado Global con Context API** (createContext/useContext con persistencia) | CUMPLE | `src/context/CartContext.jsx` con `CartProvider`, `useCart()`, persistencia en `localStorage` (`velox_cart`) y sincronización multi-pestaña con evento `storage`. |
-| **R7. Testing Unitario** (Vitest con 4+ tests passing) | CUMPLE (106 tests) | 17 suites de prueba con 106 tests unitarios pasando exitosamente en Vitest (`src/app/__tests__/`). |
+| **R7. Testing Unitario** (Vitest con 4+ tests passing) | CUMPLE (5 tests) | 5 suites de prueba pasando exitosamente en Vitest (`src/app/__tests__/`) cubriendo componentes, formularios, esquemas Zod, Context API y utilidades de API. |
 | **R8. Despliegue en Producción** (Aplicación desplegada conectada a API pública) | CUMPLE | Desplegado en Vercel: `https://proyecto-velox.vercel.app/` conectado a la API en Render: `https://velox-backend-smxi.onrender.com/api`. |
 
 ---

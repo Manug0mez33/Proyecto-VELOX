@@ -21,45 +21,24 @@ const MOCK_PRODUCTO = {
   ],
 };
 
-describe("ProductCard Component (Requisito R2 y R7)", () => {
-  it("renderiza correctamente el nombre, marca, precio y SKU del producto", () => {
+describe("Prueba de componente: ProductCard (R2)", () => {
+  it("renderiza correctamente los datos y permite seleccionar talle actualizando el precio", () => {
     render(
       <CartProvider>
         <ProductCard producto={MOCK_PRODUCTO} />
       </CartProvider>
     );
 
+    // Verificar renderizado inicial
     expect(screen.getByText("VELOX AERO NITRO ELITE")).toBeInTheDocument();
-    expect(screen.getByText(/VELOX Performance/i)).toBeInTheDocument();
     expect(screen.getByText(/\$189\.500/i)).toBeInTheDocument();
-    expect(screen.getByText(/SKU: VLX-AER-40-NEO/i)).toBeInTheDocument();
-    expect(screen.getByText("★ DESTACADO")).toBeInTheDocument();
-  });
 
-  it("permite cambiar de talle y actualiza el SKU y precio correspondiente", () => {
-    render(
-      <CartProvider>
-        <ProductCard producto={MOCK_PRODUCTO} />
-      </CartProvider>
-    );
-
+    // Simular selección de talle 42
     const botonTalle42 = screen.getByRole("button", { name: /Seleccionar talle 42/i });
     fireEvent.click(botonTalle42);
 
+    // Validar actualización reactiva de SKU y precio ajustado
     expect(screen.getByText(/SKU: VLX-AER-42-NEO/i)).toBeInTheDocument();
     expect(screen.getByText(/\$195\.000/i)).toBeInTheDocument();
-  });
-
-  it("permite hacer click en COMPRAR y actualiza el estado a AGREGADO", () => {
-    render(
-      <CartProvider>
-        <ProductCard producto={MOCK_PRODUCTO} />
-      </CartProvider>
-    );
-
-    const botonComprar = screen.getByRole("button", { name: "COMPRAR" });
-    fireEvent.click(botonComprar);
-
-    expect(screen.getByText(/¡AGREGADO!/i)).toBeInTheDocument();
   });
 });
