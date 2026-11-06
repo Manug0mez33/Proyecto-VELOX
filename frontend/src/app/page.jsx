@@ -2,138 +2,41 @@ import Link from "next/link";
 import Button from "../components/Button";
 import Badge from "../components/Badge";
 import ProductCard from "../components/ProductCard";
-
-const FALLBACK_DESTACADOS = [
-  {
-    id: 4,
-    nombre: "VELOX HYPERION CARBON X",
-    marca_detalle: { nombre: "VELOX LAB" },
-    categoria_detalle: { nombre: "COMPETICIÓN" },
-    genero: "UNISEX",
-    precio_base: "219900.00",
-    sku_referencia: "VLX-HYP-42-NEO",
-    stock_total: 11,
-    es_destacado: true,
-    descripcion:
-      "Placa de fibra de carbono de doble densidad para romper tu marca en cada pasada.",
-    talles: ["40", "41", "42", "43"],
-    talle_activo: "42",
-    variantes: [
-      { id: 401, sku: "VLX-HYP-40-NEO", talle: "40", stock: 2, color: "Negro/Neón" },
-      { id: 402, sku: "VLX-HYP-41-NEO", talle: "41", stock: 3, color: "Negro/Neón" },
-      { id: 403, sku: "VLX-HYP-42-NEO", talle: "42", stock: 4, color: "Negro/Neón" },
-      { id: 404, sku: "VLX-HYP-43-NEO", talle: "43", stock: 2, color: "Negro/Neón" },
-    ],
-  },
-  {
-    id: 1,
-    nombre: "VELOX AERO NITRO ELITE",
-    marca_detalle: { nombre: "VELOX LAB" },
-    categoria_detalle: { nombre: "COMPETICIÓN" },
-    genero: "UNISEX",
-    precio_base: "189500.00",
-    sku_referencia: "VLX-AER-41-NEO",
-    stock_total: 14,
-    es_destacado: true,
-    descripcion:
-      "Suela de carbono propulsiva y malla ultraligera para récords en asfalto.",
-    talles: ["39", "40", "41", "42"],
-    talle_activo: "41",
-    variantes: [
-      { id: 101, sku: "VLX-AER-39-NEO", talle: "39", stock: 3, color: "Negro/Neón" },
-      { id: 102, sku: "VLX-AER-40-NEO", talle: "40", stock: 4, color: "Negro/Neón" },
-      { id: 103, sku: "VLX-AER-41-NEO", talle: "41", stock: 5, color: "Negro/Neón" },
-      { id: 104, sku: "VLX-AER-42-NEO", talle: "42", stock: 2, color: "Negro/Neón" },
-    ],
-  },
-  {
-    id: 2,
-    nombre: "VELOX VORTEX PRO X2",
-    marca_detalle: { nombre: "VELOX LAB" },
-    categoria_detalle: { nombre: "MARATÓN" },
-    genero: "MARATÓN",
-    precio_base: "214000.00",
-    sku_referencia: "VLX-VOR-42",
-    stock_total: 8,
-    es_destacado: true,
-    descripcion:
-      "Doble cámara de nitrógeno inyectado y agarre reactivo en pista húmeda.",
-    talles: ["40", "41", "42", "43"],
-    talle_activo: "42",
-    variantes: [
-      { id: 201, sku: "VLX-VOR-40", talle: "40", stock: 1, color: "Titanio/Neón" },
-      { id: 202, sku: "VLX-VOR-41", talle: "41", stock: 3, color: "Titanio/Neón" },
-      { id: 203, sku: "VLX-VOR-42", talle: "42", stock: 4, color: "Titanio/Neón" },
-    ],
-  },
-  {
-    id: 3,
-    nombre: "VELOX TERRA GRIP GT",
-    marca_detalle: { nombre: "VELOX TRAIL" },
-    categoria_detalle: { nombre: "TRAIL PRO" },
-    genero: "MONTAÑA",
-    precio_base: "198000.00",
-    sku_referencia: "VLX-TER-43",
-    stock_total: 3,
-    es_destacado: false,
-    descripcion:
-      "Tacos multidireccionales de 5mm y membrana hidrofóbica de alta tracción.",
-    talles: ["41", "42", "43", "44"],
-    talle_activo: "43",
-    variantes: [
-      { id: 301, sku: "VLX-TER-41", talle: "41", stock: 1, color: "Gris/Verde" },
-      { id: 302, sku: "VLX-TER-42", talle: "42", stock: 1, color: "Gris/Verde" },
-      { id: 303, sku: "VLX-TER-43", talle: "43", stock: 1, color: "Gris/Verde" },
-    ],
-  },
-];
+import { api } from "../lib/api";
 
 function formatPrecioARS(valor) {
   const numero = Number(valor) || 0;
   return `$${numero.toLocaleString("es-AR", { maximumFractionDigits: 0 })}`;
 }
 
-// Normaliza el producto del hero: la API manda marca/categoria anidadas y el fallback usa *_detalle.
 function datosHero(producto) {
-  const stock = Number(producto.stock_total ?? 0);
   return {
     id: producto.id,
-    nombre: producto.nombre || "Calzado VELOX",
-    marca: producto.marca?.nombre || producto.marca_detalle?.nombre || "VELOX LAB",
-    categoria:
-      producto.categoria?.nombre || producto.categoria_detalle?.nombre || "COMPETICIÓN",
-    genero: producto.genero_display || producto.genero || "UNISEX",
+    nombre: producto.nombre,
+    marca: producto.marca?.nombre || "",
+    categoria: producto.categoria?.nombre || "",
+    genero: producto.genero_display || producto.genero,
     precio: formatPrecioARS(producto.precio_base),
-    referencia:
-      producto.sku_referencia || producto.variantes?.[0]?.sku || `VLX-${producto.id}`,
-    stock,
+    referencia: producto.variantes?.[0]?.sku || "—",
+    stock: Number(producto.stock_total ?? 0),
   };
 }
 
+// GET /api/productos/destacados/: 1 producto para el hero + 3 para la grilla.
+// Si la API falla, la home se muestra sin productos en vez de inventarlos.
 async function getProductosDestacados() {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  if (!apiUrl) return FALLBACK_DESTACADOS;
-
   try {
-    const res = await fetch(`${apiUrl}/productos/destacados/`, {
-      next: { revalidate: 30 },
-    });
-    if (!res.ok) return FALLBACK_DESTACADOS;
-    const data = await res.json();
+    const data = await api.get("/productos/destacados/", { next: { revalidate: 30 } });
     const items = Array.isArray(data) ? data : data?.results;
-    if (Array.isArray(items) && items.length > 0) {
-      // 1 para el hero + 3 para la grilla de destacados.
-      return items.slice(0, 4);
-    }
-    return FALLBACK_DESTACADOS;
+    return Array.isArray(items) ? items.slice(0, 4) : [];
   } catch {
-    return FALLBACK_DESTACADOS;
+    return [];
   }
 }
 
 export default async function HomePage() {
   const [productoHero, ...destacados] = await getProductosDestacados();
-  const hero = datosHero(productoHero);
+  const hero = productoHero ? datosHero(productoHero) : null;
 
   return (
     <div className="mx-auto max-w-[1440px] px-6 lg:px-20 py-10 space-y-20">
@@ -207,6 +110,7 @@ export default async function HomePage() {
 
         {/* Columna Derecha: Showcase Zapatilla */}
         <div className="lg:col-span-6">
+          {hero ? (
           <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-[#1E1E1E] to-[#141414] border border-[#2A2A2A] p-6 sm:p-8">
             <div className="relative z-10 flex items-center justify-between">
               <span className="rounded-md bg-[#2A2A2A] px-3 py-1.5 font-heading text-[11px] font-bold tracking-wider text-[#39FF14]">
@@ -276,7 +180,7 @@ export default async function HomePage() {
                   </h2>
                 </Link>
                 <p className="text-xs sm:text-sm text-[#D1D5DB]">
-                  Categoría: {hero.categoria} • {hero.marca} • {hero.genero}
+                  {[hero.categoria, hero.marca, hero.genero].filter(Boolean).join(" • ")}
                 </p>
               </div>
               <p className="font-heading text-2xl sm:text-3xl font-bold text-[#39FF14]">
@@ -284,6 +188,11 @@ export default async function HomePage() {
               </p>
             </div>
           </div>
+          ) : (
+            <div className="flex h-full min-h-[240px] items-center justify-center rounded-xl bg-[#1E1E1E] border border-[#2A2A2A] p-8 text-center text-sm text-[#9CA3AF]">
+              No hay lanzamientos disponibles en este momento.
+            </div>
+          )}
         </div>
       </section>
 
@@ -310,11 +219,17 @@ export default async function HomePage() {
         </div>
 
         {/* Grilla interactiva con selección de talles y compra directa */}
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {destacados.map((producto, idx) => (
-            <ProductCard key={producto.id || idx} producto={producto} />
-          ))}
-        </div>
+        {destacados.length > 0 ? (
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {destacados.map((producto) => (
+              <ProductCard key={producto.id} producto={producto} />
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-[#9CA3AF]">
+            No hay calzados destacados para mostrar en este momento.
+          </p>
+        )}
       </section>
 
       {/* ==================== 3. INNOVACIÓN BIOMECÁNICA VELOX ==================== */}

@@ -16,19 +16,12 @@ function formatearFecha(iso) {
 export default function ProductDetailClient({ producto }) {
   const { addToCart } = useCart();
 
-  // Variantes SKU del producto
-  const variantes = Array.isArray(producto.variantes) && producto.variantes.length > 0
-    ? producto.variantes
-    : [
-        { id: 101, sku: `${producto.sku_referencia || "VLX-PRO"}-40`, talle: "40", stock: 3, color: "Titanio", color_hex: "#2E2E2E" },
-        { id: 102, sku: `${producto.sku_referencia || "VLX-PRO"}-41`, talle: "41", stock: 6, color: "Titanio", color_hex: "#2E2E2E" },
-        { id: 103, sku: `${producto.sku_referencia || "VLX-PRO"}-42-NEO`, talle: "42", stock: 8, color: "Neón", color_hex: "#39FF14" },
-        { id: 104, sku: `${producto.sku_referencia || "VLX-PRO"}-43-NEO`, talle: "43", stock: 2, color: "Neón", color_hex: "#39FF14" },
-        { id: 105, sku: `${producto.sku_referencia || "VLX-PRO"}-44-BLK`, talle: "44", stock: 0, color: "Carbón", color_hex: "#121212" },
-      ];
+  // Variantes SKU reales del producto (sin variantes no se puede comprar).
+  const variantes = Array.isArray(producto.variantes) ? producto.variantes : [];
+  const marcaNombre = producto.marca?.nombre || "";
+  const categoriaNombre = producto.categoria?.nombre || "";
 
-  // La API manda el color como "codigo_hex"; los datos de ejemplo usan "color_hex".
-  const hexDe = (v) => v?.codigo_hex || v?.color_hex || "#2E2E2E";
+  const hexDe = (v) => v?.codigo_hex || "#2E2E2E";
 
   // Un botón por talle, con el stock sumado de todos sus colores.
   const tallesDisponibles = [];
@@ -123,35 +116,26 @@ export default function ProductDetailClient({ producto }) {
   };
 
   const stockActual = varianteSeleccionada?.stock ?? 0;
-  const skuActivo =
-    varianteSeleccionada?.sku ||
-    producto.sku_referencia ||
-    `VLX-${producto.id}-${talleSeleccionado}`;
+  const skuActivo = varianteSeleccionada?.sku || "—";
   const precioBase = Number(producto.precio_base || 0);
   // precio_final ya resuelve en el backend si la variante tiene precio ajustado.
-  const precioFinal = Number(
-    varianteSeleccionada?.precio_final || varianteSeleccionada?.precio_ajustado || precioBase
-  );
+  const precioFinal = Number(varianteSeleccionada?.precio_final || precioBase);
 
   const handleAgregarAlCarrito = () => {
-    if (stockActual === 0) return;
+    if (!varianteSeleccionada || stockActual === 0) return;
 
     addToCart(
       {
         id: producto.id,
-        variante_id: varianteSeleccionada?.id || producto.id,
-        sku: skuActivo,
+        variante_id: varianteSeleccionada.id,
+        sku: varianteSeleccionada.sku,
         nombre: producto.nombre,
-        marca: producto.marca_detalle?.nombre || producto.marca || "VELOX LAB",
-        categoria:
-          producto.categoria_detalle?.nombre ||
-          producto.categoria ||
-          "COMPETICIÓN",
+        marca: marcaNombre,
+        categoria: categoriaNombre,
         talle: talleSeleccionado,
-        color: varianteSeleccionada?.color || "Neón",
-        precio_base: precioFinal,
+        color: varianteSeleccionada.color,
         precio_final: precioFinal,
-        imagen_portada: producto.imagen_portada || producto.imagenes?.[0]?.url,
+        imagen_portada: producto.imagen_portada,
       },
       1
     );
@@ -239,11 +223,9 @@ export default function ProductDetailClient({ producto }) {
 
             {/* Badges superiores */}
             <div className="absolute top-4 left-4 z-10 flex gap-2">
-              <Badge variant="neon">
-                {producto.categoria_detalle?.nombre || "COMPETICIÓN"}
-              </Badge>
+              {categoriaNombre && <Badge variant="neon">{categoriaNombre}</Badge>}
               <Badge variant="outline">
-                {producto.genero || "UNISEX PRO"}
+                {producto.genero_display || producto.genero}
               </Badge>
             </div>
 
@@ -321,8 +303,7 @@ export default function ProductDetailClient({ producto }) {
               {producto.nombre}
             </h1>
             <p className="text-xs uppercase text-[#9CA3AF]">
-              Marca: {producto.marca_detalle?.nombre || "VELOX Performance"} •
-              Categoría: {producto.categoria_detalle?.nombre || "Running"}
+              Marca: {marcaNombre || "—"} • Categoría: {categoriaNombre || "—"}
             </p>
             <div className="pt-2">
               <span className="font-heading text-3xl font-extrabold text-[#39FF14]">
@@ -341,6 +322,11 @@ export default function ProductDetailClient({ producto }) {
             </div>
 
             <div className="grid grid-cols-4 gap-2">
+              {tallesDisponibles.length === 0 && (
+                <p className="col-span-4 text-xs text-[#9CA3AF]">
+                  Este modelo no tiene talles cargados por el momento.
+                </p>
+              )}
               {tallesDisponibles.map((t) => {
                 const activo = t.talle === talleSeleccionado;
                 const sinStock = t.stock === 0;

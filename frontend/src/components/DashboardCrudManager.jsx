@@ -1,23 +1,14 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { api, ApiError } from "../lib/api";
+import { api } from "../lib/api";
 import { parseJwt } from "../lib/jwt";
 import Badge from "./Badge";
 import Button from "./Button";
 import Modal from "./Modal";
 
-// Productos base para selectores en formularios
-const PRODUCTOS_CATALOGO = [
-  { id: 1, nombre: "Air Zoom Pegasus 40" },
-  { id: 2, nombre: "Ultraboost Light" },
-  { id: 3, nombre: "Gel-Trabuco 12" },
-  { id: 4, nombre: "Fuse 3.0" },
-  { id: 5, nombre: "LeBron XXI" },
-  { id: 6, nombre: "Velox Carbon X" },
-  { id: 7, nombre: "Velox Street Run" },
-];
-
+// Talles y colores para el alta de variantes (mismos IDs que la BD).
+// No tienen endpoint propio en la API, por eso se mantienen acá. Los productos sí se piden a /productos/.
 const TALLES_BASE = [
   { id: 1, numero: "38 AR" },
   { id: 2, numero: "39 AR" },
@@ -28,80 +19,11 @@ const TALLES_BASE = [
 ];
 
 const COLORES_BASE = [
-  { id: 1, nombre: "Negro", hex: "#121212" },
-  { id: 2, nombre: "Blanco", hex: "#FFFFFF" },
-  { id: 3, nombre: "Verde Neón", hex: "#39FF14" },
-  { id: 4, nombre: "Gris Carbón", hex: "#4B5563" },
-  { id: 5, nombre: "Azul", hex: "#2563EB" },
-];
-
-// Datos iniciales de demostración para el inventario
-export const SAMPLE_VARIANTES = [
-  {
-    id: 44,
-    sku: "VX-VCX-39-NEG",
-    producto: 6,
-    producto_nombre: "Velox Carbon X",
-    talle: 2,
-    talle_detalle: "39 AR",
-    color: 1,
-    color_nombre: "Negro",
-    stock: 12,
-    precio_ajustado: null,
-    precio_final: "249999.00",
-    activo: true,
-  },
-  {
-    id: 54,
-    sku: "VX-VSR-38-BLA",
-    producto: 7,
-    producto_nombre: "Velox Street Run",
-    talle: 1,
-    talle_detalle: "38 AR",
-    color: 2,
-    color_nombre: "Blanco",
-    stock: 8,
-    precio_ajustado: null,
-    precio_final: "99999.00",
-    activo: true,
-  },
-  {
-    id: 49,
-    sku: "VX-VSR-38-GRI",
-    producto: 7,
-    producto_nombre: "Velox Street Run",
-    talle: 1,
-    talle_detalle: "38 AR",
-    color: 4,
-    color_nombre: "Gris Carbón",
-    stock: 5,
-    precio_ajustado: null,
-    precio_final: "99999.00",
-    activo: true,
-  },
-];
-
-const SAMPLE_RESENAS = [
-  {
-    id: 101,
-    usuario: 1,
-    usuario_nombre: "atleta_maraton",
-    producto: 6,
-    producto_nombre: "Velox Carbon X",
-    calificacion: 5,
-    comentario: "Excelente retorno de energía con la placa de carbono en 21K.",
-    creado_en: "2026-10-30T14:30:00Z",
-  },
-  {
-    id: 102,
-    usuario: 2,
-    usuario_nombre: "corredor_trail",
-    producto: 3,
-    producto_nombre: "Gel-Trabuco 12",
-    calificacion: 4,
-    comentario: "Gran tracción en senderos de barro y piedra suelta.",
-    creado_en: "2026-10-29T18:00:00Z",
-  },
+  { id: 1, nombre: "Negro" },
+  { id: 2, nombre: "Blanco" },
+  { id: 3, nombre: "Verde Neón" },
+  { id: 4, nombre: "Gris Carbón" },
+  { id: 5, nombre: "Azul" },
 ];
 
 function formatARS(valor) {
@@ -114,8 +36,7 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
   const [token, setToken] = useState(null);
 
   // Estados de datos
-  const [variantes, setVariantes] = useState(SAMPLE_VARIANTES);
-  // Arranca vacío: las reseñas reales se piden al montar (antes la solapa mostraba las 2 de ejemplo).
+  const [variantes, setVariantes] = useState([]);
   const [resenas, setResenas] = useState([]);
   const [resenasCargadas, setResenasCargadas] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -133,7 +54,7 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
   const [isCreateVarianteOpen, setIsCreateVarianteOpen] = useState(false);
   const [createVarianteError, setCreateVarianteError] = useState(null);
   const [isSubmittingVariante, setIsSubmittingVariante] = useState(false);
-  const [newVarProducto, setNewVarProducto] = useState(6);
+  const [newVarProducto, setNewVarProducto] = useState("");
   const [newVarTalle, setNewVarTalle] = useState(3);
   const [newVarColor, setNewVarColor] = useState(3);
   const [newVarSku, setNewVarSku] = useState("");
@@ -147,7 +68,7 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
 
   // 4. Creación de Reseña
   const [isCreateResenaOpen, setIsCreateResenaOpen] = useState(false);
-  const [newResenaProducto, setNewResenaProducto] = useState(6);
+  const [newResenaProducto, setNewResenaProducto] = useState("");
   const [newResenaCalificacion, setNewResenaCalificacion] = useState(5);
   const [newResenaComentario, setNewResenaComentario] = useState("");
 
@@ -179,13 +100,27 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
     };
   }, []);
 
+  // Productos para los selectores de alta (variantes y reseñas)
+  const [productosCatalogo, setProductosCatalogo] = useState([]);
+
+  useEffect(() => {
+    api
+      .getPaginated("/productos/", { params: { page_size: 100, ordering: "nombre" } })
+      .then((res) => {
+        setProductosCatalogo(res.results);
+        const primero = res.results[0]?.id ?? "";
+        setNewVarProducto((actual) => actual || primero);
+        setNewResenaProducto((actual) => actual || primero);
+      })
+      .catch((err) => console.warn("No se pudieron cargar los productos:", err));
+  }, []);
+
   // Cargar Variantes desde API
   const loadVariantes = useCallback(async () => {
     setLoading(true);
     try {
       // page_size=100: sin esto la API devuelve solo las primeras 10 variantes del inventario.
       const res = await api.getPaginated("/variantes/", { params: { page_size: 100 } });
-      // Los datos de ejemplo quedan solo si la API no responde (catch).
       setVariantes(res.results);
     } catch (err) {
       console.warn("No se pudo sincronizar inventario con el servidor:", err);
@@ -199,21 +134,9 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
     setLoading(true);
     try {
       const res = await api.getPaginated("/resenas/", { params: { page_size: 100 } });
-      const items = res?.results || (Array.isArray(res) ? res : []);
-      if (Array.isArray(items)) {
-        const enriched = items.map((r) => ({
-          ...r,
-          producto_nombre:
-            r.producto_nombre ||
-            PRODUCTOS_CATALOGO.find((p) => p.id === r.producto)?.nombre ||
-            `Calzado #${r.producto}`,
-        }));
-        setResenas(enriched);
-      }
+      setResenas(res.results);
     } catch (err) {
       console.warn("No se pudieron cargar reseñas del servidor:", err);
-      // Solo si la API no responde se muestran las reseñas de ejemplo.
-      setResenas(SAMPLE_RESENAS);
     } finally {
       setResenasCargadas(true);
       setLoading(false);
@@ -900,7 +823,7 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
                 }}
                 className="w-full rounded bg-[#121212] border border-[#2A2A2A] px-3 py-2 text-xs text-white focus:border-[#39FF14] focus:outline-none"
               >
-                {PRODUCTOS_CATALOGO.map((p) => (
+                {productosCatalogo.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.nombre}
                   </option>
@@ -1104,7 +1027,7 @@ export default function DashboardCrudManager({ onVariantesChange } = {}) {
               onChange={(e) => setNewResenaProducto(e.target.value)}
               className="w-full rounded bg-[#121212] border border-[#2A2A2A] px-3 py-2 text-xs text-white focus:border-[#39FF14] focus:outline-none"
             >
-              {PRODUCTOS_CATALOGO.map((p) => (
+              {productosCatalogo.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.nombre}
                 </option>

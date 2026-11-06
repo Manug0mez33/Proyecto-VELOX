@@ -1,11 +1,9 @@
 "use client";
-// Client Component ("use client"): Maneja los estados controlados de búsqueda y filtrado de catálogo (marca, categoría, género, talle, orden) y sincroniza los query params con useRouter y useSearchParams para consultar la API de DRF.
+// Client Component ("use client"): Maneja los estados controlados de búsqueda y filtrado de catálogo (marca, categoría, género, orden) y sincroniza los query params con useRouter y useSearchParams para consultar la API de DRF.
 
 import { useState, useTransition } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import Button from "./Button";
-
-const TALLES_RAPIDOS = ["39", "40", "41", "42", "43", "44"];
 
 export default function FilterBar({ marcas = [], categorias = [] }) {
   const router = useRouter();
@@ -18,7 +16,6 @@ export default function FilterBar({ marcas = [], categorias = [] }) {
   const [marca, setMarca] = useState(searchParams.get("marca") || "");
   const [categoria, setCategoria] = useState(searchParams.get("categoria") || "");
   const [genero, setGenero] = useState(searchParams.get("genero") || "");
-  const [talle, setTalle] = useState(searchParams.get("talle") || "");
   const [ordering, setOrdering] = useState(searchParams.get("ordering") || "");
 
   const handleApplyFilters = (e) => {
@@ -30,7 +27,6 @@ export default function FilterBar({ marcas = [], categorias = [] }) {
     if (marca) params.set("marca", marca);
     if (categoria) params.set("categoria", categoria);
     if (genero) params.set("genero", genero);
-    if (talle) params.set("talle", talle);
     if (ordering) params.set("ordering", ordering);
 
     // Siempre resetear a la primera página al aplicar nuevos filtros
@@ -46,7 +42,6 @@ export default function FilterBar({ marcas = [], categorias = [] }) {
     setMarca("");
     setCategoria("");
     setGenero("");
-    setTalle("");
     setOrdering("");
 
     startTransition(() => {
@@ -54,25 +49,8 @@ export default function FilterBar({ marcas = [], categorias = [] }) {
     });
   };
 
-  const handleTalleToggle = (t) => {
-    const nuevoTalle = talle === t ? "" : t;
-    setTalle(nuevoTalle);
-
-    const params = new URLSearchParams(searchParams.toString());
-    if (nuevoTalle) {
-      params.set("talle", nuevoTalle);
-    } else {
-      params.delete("talle");
-    }
-    params.set("page", "1");
-
-    startTransition(() => {
-      router.push(`${pathname}?${params.toString()}`);
-    });
-  };
-
   const hayFiltrosActivos = Boolean(
-    search || marca || categoria || genero || talle || ordering
+    search || marca || categoria || genero || ordering
   );
 
   return (
@@ -129,7 +107,7 @@ export default function FilterBar({ marcas = [], categorias = [] }) {
             >
               <option value="">Todas las categorías</option>
               {categorias.map((c) => (
-                <option key={c.id || c.nombre} value={c.nombre || c.id}>
+                <option key={c.id} value={c.id}>
                   {c.nombre}
                 </option>
               ))}
@@ -152,7 +130,7 @@ export default function FilterBar({ marcas = [], categorias = [] }) {
             >
               <option value="">Todas las marcas</option>
               {marcas.map((m) => (
-                <option key={m.id || m.nombre} value={m.nombre || m.id}>
+                <option key={m.id} value={m.id}>
                   {m.nombre}
                 </option>
               ))}
@@ -205,31 +183,8 @@ export default function FilterBar({ marcas = [], categorias = [] }) {
           </div>
         </div>
 
-        {/* Fila Secundaria: Filtro Rápido de Talles y Orden */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#343434] text-xs">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="font-heading text-[11px] font-bold uppercase text-[#D1D5DB] mr-1">
-              TALLES AR:
-            </span>
-            {TALLES_RAPIDOS.map((t) => {
-              const activo = talle === t;
-              return (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => handleTalleToggle(t)}
-                  className={`inline-flex h-7 min-w-[32px] items-center justify-center rounded px-2 font-heading text-xs font-bold transition-all ${
-                    activo
-                      ? "bg-[#39FF14] text-[#121212] shadow-[0_0_8px_rgba(57,255,20,0.5)]"
-                      : "bg-[#121212] text-[#D1D5DB] border border-[#383838] hover:border-[#39FF14]"
-                  }`}
-                >
-                  {t}
-                </button>
-              );
-            })}
-          </div>
-
+        {/* Fila Secundaria: Orden */}
+        <div className="flex flex-wrap items-center justify-end gap-3 pt-3 border-t border-[#343434] text-xs">
           <div className="flex items-center gap-2">
             <label
               htmlFor="filter-ordering"

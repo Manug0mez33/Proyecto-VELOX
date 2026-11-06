@@ -116,7 +116,7 @@ export default function CarritoPage() {
         // "detalles" es el campo que espera PedidoCreateSerializer. El precio no se envía:
         // lo calcula el backend desde la variante para que no se pueda manipular.
         detalles: items.map((item) => ({
-          variante: item.variante_id || item.id,
+          variante: item.variante_id,
           cantidad: item.cantidad,
         })),
       };

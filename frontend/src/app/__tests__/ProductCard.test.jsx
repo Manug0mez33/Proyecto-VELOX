@@ -3,21 +3,21 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import ProductCard from "../../components/ProductCard";
 import { CartProvider } from "../../context/CartContext";
 
+// Misma forma que ProductoNestedSerializer / VarianteResumenSerializer de la API.
 const MOCK_PRODUCTO = {
   id: 1,
   nombre: "VELOX AERO NITRO ELITE",
-  marca_detalle: { nombre: "VELOX Performance" },
-  categoria_detalle: { nombre: "Running" },
+  marca: { id: 5, nombre: "VELOX Performance" },
+  categoria: { id: 1, nombre: "Running" },
   genero: "UNISEX",
+  genero_display: "Unisex",
   precio_base: "189500.00",
-  sku_referencia: "VLX-AER-41-NEO",
-  stock_total: 14,
-  es_destacado: true,
+  stock_total: 12,
   descripcion: "Suela de carbono propulsiva y amortiguación Nitro-Foam.",
   variantes: [
-    { id: 101, sku: "VLX-AER-40-NEO", talle: "40", stock: 3, color: "Neón", precio_ajustado: null },
-    { id: 102, sku: "VLX-AER-41-NEO", talle: "41", stock: 5, color: "Neón", precio_ajustado: null },
-    { id: 103, sku: "VLX-AER-42-NEO", talle: "42", stock: 4, color: "Neón", precio_ajustado: "195000.00" },
+    { id: 101, sku: "VLX-AER-40-NEO", talle: "40 AR", color: "Neón", codigo_hex: "#39FF14", stock: 3, precio_final: "189500.00" },
+    { id: 102, sku: "VLX-AER-41-NEO", talle: "41 AR", color: "Neón", codigo_hex: "#39FF14", stock: 5, precio_final: "189500.00" },
+    { id: 103, sku: "VLX-AER-42-NEO", talle: "42 AR", color: "Neón", codigo_hex: "#39FF14", stock: 4, precio_final: "195000.00" },
   ],
 };
 

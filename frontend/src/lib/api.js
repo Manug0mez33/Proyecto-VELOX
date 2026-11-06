@@ -139,13 +139,6 @@ export const api = {
       ...options,
     }),
 
-  put: (endpoint, body, options = {}) =>
-    fetchApi(endpoint, {
-      method: "PUT",
-      body: body instanceof FormData ? body : JSON.stringify(body),
-      ...options,
-    }),
-
   patch: (endpoint, body, options = {}) =>
     fetchApi(endpoint, {
       method: "PATCH",

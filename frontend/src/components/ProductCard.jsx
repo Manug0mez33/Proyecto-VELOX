@@ -10,100 +10,62 @@ import { useCart } from "../context/CartContext";
 export default function ProductCard({ producto }) {
   const { addToCart } = useCart();
 
-  // Normalización de datos con soporte DRF (snake_case) y fallbacks
+  // Campos tal como los envía ProductoNestedSerializer (marca/categoria anidadas, variantes resumidas).
   const id = producto.id;
-  const nombre = producto.nombre || "Calzado VELOX";
-  const marcaNombre =
-    producto.marca_detalle?.nombre ||
-    producto.marca?.nombre ||
-    producto.marca ||
-    "VELOX LAB";
-  const categoriaNombre =
-    producto.categoria_detalle?.nombre ||
-    producto.categoria?.nombre ||
-    producto.categoria ||
-    "COMPETICIÓN";
-  const genero = producto.genero || "UNISEX";
-  const precioBase = Number(producto.precio_base || producto.precio || 0);
+  const nombre = producto.nombre;
+  const marcaNombre = producto.marca?.nombre || "";
+  const categoriaNombre = producto.categoria?.nombre || "";
+  const genero = producto.genero_display || producto.genero;
+  const precioBase = Number(producto.precio_base || 0);
 
-  // Variantes y talles deduplicados por número de talle
+  // Un botón por talle: suma el stock de todos sus colores y la compra rápida
+  // usa el color con más stock de ese talle (nunca uno agotado si hay otro).
   const variantes = Array.isArray(producto.variantes) ? producto.variantes : [];
   const tallesMap = new Map();
 
-  if (variantes.length > 0) {
-    variantes.forEach((v) => {
-      const numTalle = String(v.talle_detalle?.numero || v.talle?.numero || v.talle || "").trim();
-      if (!numTalle) return;
-      if (!tallesMap.has(numTalle)) {
-        tallesMap.set(numTalle, {
-          id: v.id,
-          sku: v.sku,
-          talle: numTalle,
-          stock: Number(v.stock_actual ?? v.stock ?? 0),
-          color: v.color_detalle?.nombre || v.color?.nombre || v.color || "Neón",
-          precioAjustado: Number(v.precio_final ?? v.precio_ajustado) || null,
-          variantePrincipal: v,
-        });
-      } else {
-        const item = tallesMap.get(numTalle);
-        const stockVariante = Number(v.stock_actual ?? v.stock ?? 0);
-        const stockPrincipal = Number(item.variantePrincipal?.stock_actual ?? item.variantePrincipal?.stock ?? 0);
-        item.stock += stockVariante;
-        // La compra rápida usa el color con más stock de ese talle (nunca uno agotado si hay otro).
-        if (stockVariante > stockPrincipal) {
-          item.id = v.id;
-          item.sku = v.sku;
-          item.color = v.color_detalle?.nombre || v.color?.nombre || v.color || item.color;
-          item.precioAjustado = Number(v.precio_final ?? v.precio_ajustado) || null;
-          item.variantePrincipal = v;
-        }
-      }
-    });
-  }
+  variantes.forEach((v) => {
+    const numTalle = String(v.talle || "").trim();
+    if (!numTalle) return;
+    const stockVariante = Number(v.stock) || 0;
+    const item = tallesMap.get(numTalle);
+    if (!item) {
+      tallesMap.set(numTalle, { talle: numTalle, stock: stockVariante, variante: v });
+      return;
+    }
+    item.stock += stockVariante;
+    if (stockVariante > (Number(item.variante.stock) || 0)) item.variante = v;
+  });
 
-  const tallesDisponibles =
-    tallesMap.size > 0
-      // parseFloat: los talles llegan como "40 AR" y Number() daría NaN.
-      ? Array.from(tallesMap.values()).sort((a, b) => parseFloat(a.talle) - parseFloat(b.talle))
-      : (producto.talles || ["39", "40", "41", "42"]).map((t, idx) => ({
-          id: idx + 1,
-          sku: `${producto.sku_referencia || "VLX-PRO"}-${t}`,
-          talle: String(t),
-          stock: producto.stock_total ?? 10,
-          color: "Negro/Neón",
-          precioAjustado: null,
-          variantePrincipal: null,
-        }));
-
-  const [talleSeleccionado, setTalleSeleccionado] = useState(
-    tallesDisponibles[0]?.talle || "41"
+  // parseFloat: los talles llegan como "40 AR" y Number() daría NaN.
+  const tallesDisponibles = Array.from(tallesMap.values()).sort(
+    (a, b) => parseFloat(a.talle) - parseFloat(b.talle)
   );
+
+  const [talleSeleccionado, setTalleSeleccionado] = useState(tallesDisponibles[0]?.talle);
   const [agregadoReciente, setAgregadoReciente] = useState(false);
 
-  const varianteActiva =
-    tallesDisponibles.find((t) => t.talle === talleSeleccionado) ||
-    tallesDisponibles[0];
+  const talleActivo =
+    tallesDisponibles.find((t) => t.talle === talleSeleccionado) || tallesDisponibles[0];
+  const varianteActiva = talleActivo?.variante;
 
-  const stockActual = varianteActiva?.stock ?? 0;
-  const skuActivo = varianteActiva?.sku || producto.sku_referencia || `VLX-${id}`;
-  const precioFinal = varianteActiva?.precioAjustado || precioBase;
-  const esDestacado = Boolean(producto.es_destacado);
+  const stockActual = talleActivo?.stock ?? 0;
+  const precioFinal = Number(varianteActiva?.precio_final) || precioBase;
 
   const handleAgregarAlCarrito = (e) => {
     e.preventDefault();
+    if (!varianteActiva || stockActual === 0) return;
     addToCart(
       {
         id,
-        variante_id: varianteActiva?.id || id,
-        sku: skuActivo,
+        variante_id: varianteActiva.id,
+        sku: varianteActiva.sku,
         nombre,
         marca: marcaNombre,
         categoria: categoriaNombre,
-        talle: talleSeleccionado,
-        color: varianteActiva?.color || "Neón",
-        precio_base: precioFinal,
+        talle: talleActivo.talle,
+        color: varianteActiva.color,
         precio_final: precioFinal,
-        imagen_portada: producto.imagen_portada || producto.imagenes?.[0]?.url,
+        imagen_portada: producto.imagen_portada,
       },
       1
     );
@@ -114,11 +76,7 @@ export default function ProductCard({ producto }) {
 
   return (
     <article
-      className={`group flex flex-col justify-between rounded-lg bg-[#2A2A2A] p-5 transition-all duration-200 hover:-translate-y-1 ${
-        esDestacado
-          ? "border-[1.5px] border-[#39FF14] shadow-[0_0_24px_rgba(57,255,20,0.15)]"
-          : "border border-[#383838] hover:border-[#39FF14]/60"
-      }`}
+      className="group flex flex-col justify-between rounded-lg bg-[#2A2A2A] p-5 transition-all duration-200 hover:-translate-y-1 border border-[#383838] hover:border-[#39FF14]/60"
     >
       <div>
         {/* Imagen técnica con Glow y Badges (Manual de Marca VELOX) */}
@@ -130,11 +88,11 @@ export default function ProductCard({ producto }) {
             />
 
             {/* Badges superiores */}
-            <div className="absolute top-3 left-3 z-10">
-              <Badge variant={esDestacado ? "neon" : "default"}>
-                {esDestacado ? "★ DESTACADO" : categoriaNombre}
-              </Badge>
-            </div>
+            {categoriaNombre && (
+              <div className="absolute top-3 left-3 z-10">
+                <Badge variant="default">{categoriaNombre}</Badge>
+              </div>
+            )}
 
             <div className="absolute top-3 right-3 z-10">
               <Badge
@@ -164,7 +122,7 @@ export default function ProductCard({ producto }) {
               <path
                 d="M45 125 L80 65 L150 72 L215 45 L285 88 L300 120 L45 125 Z"
                 fill="#242424"
-                stroke={esDestacado ? "#FFFFFF" : "#39FF14"}
+                stroke="#39FF14"
                 strokeWidth="2"
               />
               <path
@@ -195,11 +153,10 @@ export default function ProductCard({ producto }) {
             </h3>
           </Link>
           <p className="text-xs text-[#D1D5DB] line-clamp-2 min-h-[32px]">
-            {producto.descripcion ||
-              "Calzado deportivo biomecánico con placa de fibra de carbono y retorno energético superior."}
+            {producto.descripcion}
           </p>
           <p className="text-[11px] font-mono text-[#39FF14] pt-1">
-            SKU: {skuActivo}
+            SKU: {varianteActiva?.sku || "—"}
           </p>
         </div>
 
@@ -213,13 +170,16 @@ export default function ProductCard({ producto }) {
           </div>
 
           <div className="flex flex-wrap gap-1.5">
+            {tallesDisponibles.length === 0 && (
+              <span className="text-[11px] text-[#9CA3AF]">Sin talles cargados</span>
+            )}
             {tallesDisponibles.map((t) => {
               const activo = t.talle === talleSeleccionado;
               const sinStock = t.stock === 0;
 
               return (
                 <button
-                  key={t.sku || t.talle}
+                  key={t.talle}
                   type="button"
                   onClick={() => setTalleSeleccionado(t.talle)}
                   disabled={sinStock}
@@ -247,9 +207,7 @@ export default function ProductCard({ producto }) {
             PRECIO ARS
           </span>
           <span
-            className={`font-heading text-xl sm:text-2xl font-extrabold ${
-              esDestacado ? "text-[#39FF14]" : "text-[#FFFFFF]"
-            }`}
+            className="font-heading text-xl sm:text-2xl font-extrabold text-[#FFFFFF]"
           >
             ${precioFinal.toLocaleString("es-AR", { maximumFractionDigits: 0 })}
           </span>

@@ -6,7 +6,6 @@ import {
   AUTH_COOKIE_NAME,
   REFRESH_COOKIE_NAME,
   USER_COOKIE_NAME,
-  getServerToken,
 } from "../lib/auth";
 import { esPersonalTienda } from "../lib/jwt";
 
@@ -78,27 +77,4 @@ export async function logoutAction() {
   revalidatePath("/dashboard");
   revalidatePath("/productos");
   return { success: true };
-}
-
-/**
- * Server Action para consultar el estado de sesión actual desde las Cookies.
- * Reutiliza getServerToken() de lib/auth.
- */
-export async function getAuthSessionAction() {
-  const token = await getServerToken();
-  if (!token) return { isAuthenticated: false, username: null };
-
-  const cookieStore = await cookies();
-  const username = cookieStore.get(USER_COOKIE_NAME)?.value || null;
-
-  return { isAuthenticated: true, username };
-}
-
-/**
- * Revalida la caché de Next.js para rutas de productos tras mutaciones CRUD (R3).
- */
-export async function revalidateProductsAction() {
-  revalidatePath("/productos");
-  revalidatePath("/dashboard");
-  return { revalidated: true, now: Date.now() };
 }

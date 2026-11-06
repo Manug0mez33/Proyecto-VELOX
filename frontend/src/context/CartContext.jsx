@@ -70,8 +70,9 @@ export function CartProvider({ children }) {
   // 3. Agregar producto o variante al carrito
   const addToCart = useCallback((producto, cantidad = 1) => {
     const qty = Math.max(1, Math.floor(Number(cantidad)) || 1);
-    const sku = producto.sku || producto.sku_referencia || `ITEM-${producto.id || Date.now()}`;
-    const precio = Number(producto.precio_final ?? producto.precio_base ?? producto.precio) || 0;
+    // Cada ítem es una variante real (ProductCard / ProductDetailClient siempre mandan su SKU).
+    const sku = producto.sku;
+    const precio = Number(producto.precio_final) || 0;
 
     setItems((prevItems) => {
       const existingIndex = prevItems.findIndex((it) => it.sku === sku);
@@ -87,15 +88,15 @@ export function CartProvider({ children }) {
 
       const newItem = {
         id: producto.id,
-        variante_id: producto.variante_id || producto.id,
+        variante_id: producto.variante_id,
         sku,
-        nombre: producto.nombre || "Calzado VELOX",
-        marca: producto.marca_detalle?.nombre || producto.marca?.nombre || producto.marca || "VELOX LAB",
-        categoria: producto.categoria_detalle?.nombre || producto.categoria?.nombre || producto.categoria || "COMPETICIÓN",
-        talle: producto.talle_seleccionado || producto.talle || "41",
-        color: producto.color_seleccionado || producto.color || "NEO GREEN",
+        nombre: producto.nombre,
+        marca: producto.marca,
+        categoria: producto.categoria,
+        talle: producto.talle,
+        color: producto.color,
         precio,
-        imagen_url: producto.imagen_portada || producto.imagenes?.[0]?.url || null,
+        imagen_url: producto.imagen_portada || null,
         cantidad: qty,
       };
 

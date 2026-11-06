@@ -1,11 +1,25 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import Link from "next/link";
-import DashboardCrudManager, { SAMPLE_VARIANTES } from "../../components/DashboardCrudManager";
+import DashboardCrudManager from "../../components/DashboardCrudManager";
+import { api } from "../../lib/api";
 
 export default function DashboardPage() {
-  const [variantes, setVariantes] = useState(SAMPLE_VARIANTES);
+  const [variantes, setVariantes] = useState([]);
+  // Totales reales de la API (page_size=1: solo interesa el "count" de la respuesta paginada).
+  const [totalModelos, setTotalModelos] = useState(null);
+  const [totalPedidos, setTotalPedidos] = useState(null);
+
+  useEffect(() => {
+    const contar = (endpoint, setter) =>
+      api
+        .getPaginated(endpoint, { params: { page_size: 1 } })
+        .then((res) => setter(res.count))
+        .catch(() => setter(null));
+    contar("/productos/", setTotalModelos);
+    contar("/pedidos/", setTotalPedidos);
+  }, []);
 
   const handleVariantesChange = useCallback((nuevasVariantes) => {
     setVariantes(nuevasVariantes);
@@ -26,8 +40,8 @@ export default function DashboardPage() {
     () => [
       {
         titulo: "MODELOS EN CATÁLOGO",
-        valor: "12",
-        subtexto: "Modelos activos disponibles",
+        valor: totalModelos ?? "—",
+        subtexto: "Modelos cargados en el catálogo",
         color: "#39FF14",
         enlace: "/productos",
       },
@@ -47,13 +61,13 @@ export default function DashboardPage() {
       },
       {
         titulo: "GESTIÓN DE PEDIDOS",
-        valor: "24",
+        valor: totalPedidos ?? "—",
         subtexto: "Órdenes de compra registradas",
         color: "#FFFFFF",
         enlace: "/dashboard/pedidos",
       },
     ],
-    [activasCount, totalStock]
+    [activasCount, totalStock, totalModelos, totalPedidos]
   );
 
   return (
